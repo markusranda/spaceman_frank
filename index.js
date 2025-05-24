@@ -11,10 +11,12 @@ import {
 } from "./draw.js";
 import { updateFrank, updateLetters, updateMailbox } from "./update.js";
 
+const body = document.getElementById("rootElement");
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-export const worldX = 1200;
-export const worldY = 900;
+console.log(body.clientWidth, body.clientHeight);
+export const worldX = body.clientWidth;
+export const worldY = body.clientHeight;
 canvas.width = worldX;
 canvas.height = worldY;
 

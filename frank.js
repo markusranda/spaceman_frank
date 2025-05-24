@@ -1,3 +1,5 @@
+import { sprites } from "./index.js";
+
 export class Frank {
   x = 0;
   y = 0;
@@ -15,10 +17,7 @@ export class Frank {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-
-    const sprite = new Image();
-    sprite.src = "frank.png";
-    this.sprite = sprite;
+    this.sprite = sprites["frank"];
     this.radius = this.sprite.width / 2;
   }
 }

@@ -19,7 +19,8 @@ canvas.width = worldX;
 canvas.height = worldY;
 
 // State
-export let frank = new Frank(50, 50);
+export const sprites = {};
+export let frank = undefined;
 export let planets = [];
 export let letters = [];
 export let mailbox = undefined;
@@ -87,7 +88,7 @@ function runGame() {
     const planet = createPlanet(worldX, worldY, planets);
     if (planet) planets.push(planet);
   }
-  for (let i = 0; i < 2 + level; i++) {
+  for (let i = 0; i < 1 + level; i++) {
     const letter = createLetter(worldX, worldY, planets);
     if (letter) letters.push(letter);
   }
@@ -104,4 +105,31 @@ function nextLevel() {
   runGame();
 }
 
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.src = src;
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+  });
+}
+
+async function loadSprites() {
+  const spritePaths = {
+    frank: "sprites/frank.png",
+    letter: "sprites/letter.png",
+    mailbox: "sprites/mailbox.png",
+  };
+
+  const entries = Object.entries(spritePaths);
+  for (const [key, path] of entries) {
+    sprites[key] = await loadImage(path);
+  }
+}
+
+const song = new Audio("spaceman_frank_1.mp3");
+song.volume = 0.1;
+song.play();
+
+await loadSprites();
 runGame();

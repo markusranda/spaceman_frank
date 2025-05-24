@@ -1,5 +1,5 @@
 import { checkCollision } from "./collision.js";
-import { frank, planets } from "./index.js";
+import { frank, letters, planets, sprites } from "./index.js";
 
 export class Letter {
   x = 0;
@@ -12,38 +12,49 @@ export class Letter {
     this.x = x;
     this.y = y;
     this.id = `letter_${new Date().getUTCMilliseconds()}_${Math.random()}`;
-
-    const sprite = new Image();
-    sprite.src = "letter.png";
-    this.sprite = sprite;
+    this.sprite = sprites["letter"];
     this.radius = this.sprite.width / 2;
   }
+}
+
+function checkPlanetCollision(letter) {
+  for (const planet of planets) {
+    if (checkCollision(letter, planet, 10)) return true;
+  }
+
+  return false;
+}
+
+function checkLetterCollision(letterA) {
+  for (const letterB of letters) {
+    if (checkCollision(letterA, letterB, 10)) return true;
+  }
+
+  return false;
 }
 
 export function createLetter(worldX, worldY) {
   const maxRetries = 10;
 
   function doCreate(retries = 0) {
-    console.log(`Retry: ${retries}`);
     const x = Math.round(Math.random() * worldX);
     const y = Math.round(Math.random() * worldY);
 
     const letter = new Letter(x, y);
-    for (const planet of planets) {
-      if (
-        checkCollision(letter, planet, 10) ||
-        checkCollision(letter, frank, 50)
-      ) {
-        if (retries < maxRetries) {
-          return doCreate(retries + 1);
-        } else {
-          console.warn("Too many retries, there's no more room for letters");
-          return null;
-        }
+    if (
+      checkCollision(letter, frank, 50) ||
+      checkPlanetCollision(letter) ||
+      checkLetterCollision(letter)
+    ) {
+      if (retries < maxRetries) {
+        return doCreate(retries + 1);
+      } else {
+        console.warn("Too many retries, there's no more room for letters");
+        return null;
       }
-
-      return letter;
     }
+
+    return letter;
   }
 
   return doCreate();

@@ -9,6 +9,7 @@ export class Frank {
   maxSpeed = 4;
   friction = 0.9945;
   sprite = undefined;
+  radius = 0;
 
   constructor(x, y) {
     this.x = x;
@@ -17,5 +18,6 @@ export class Frank {
     const sprite = new Image();
     sprite.src = "frank.png";
     this.sprite = sprite;
+    this.radius = this.sprite.width / 2;
   }
 }

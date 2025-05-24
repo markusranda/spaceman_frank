@@ -30,6 +30,23 @@ window.addEventListener("keyup", (e) => {
 });
 
 function update() {
+  // Predict next position
+  const nextX = frank.x + frank.vx;
+  const nextY = frank.y + frank.vy;
+
+  let movementBlocked = false;
+
+  // Check for future collision
+  for (const obj of objects) {
+    const dx = nextX - obj.x;
+    const dy = nextY - obj.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < frank.radius + obj.size) {
+      movementBlocked = true;
+      break;
+    }
+  }
+
   // Rotate
   if (keys.a) frank.angle -= frank.rotationSpeed;
   if (keys.d) frank.angle += frank.rotationSpeed;
@@ -48,9 +65,14 @@ function update() {
     frank.vy *= scale;
   }
 
-  // Update position
-  frank.x += frank.vx;
-  frank.y += frank.vy;
+  // If no collision ahead, update position
+  if (!movementBlocked) {
+    frank.x = nextX;
+    frank.y = nextY;
+  } else {
+    frank.vx = 0;
+    frank.vy = 0;
+  }
 
   // Apply friction (so he slows down if no key is pressed)
   frank.vx *= frank.friction;

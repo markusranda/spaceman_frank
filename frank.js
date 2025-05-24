@@ -10,6 +10,7 @@ export class Frank {
   friction = 0.9945;
   sprite = undefined;
   radius = 0;
+  letter = undefined;
 
   constructor(x, y) {
     this.x = x;

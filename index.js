@@ -1,4 +1,5 @@
 import { Frank } from "./frank.js";
+import { createLetter } from "./letter.js";
 import { createPlanet } from "./planet.js";
 
 const canvas = document.getElementById("game");
@@ -8,7 +9,8 @@ const worldY = 900;
 canvas.width = worldX;
 canvas.height = worldY;
 const frank = new Frank(50, 50);
-const objects = [];
+const planets = [];
+const letters = [];
 
 const keys = {
   w: false,
@@ -28,6 +30,32 @@ window.addEventListener("keyup", (e) => {
     keys[e.key.toLowerCase()] = false;
   }
 });
+
+function handleLetterCollision() {
+  const foreheadOffset = 40;
+
+  if (frank.letter) {
+    frank.letter.x = frank.x + Math.cos(frank.angle) * foreheadOffset;
+    frank.letter.y = frank.y + Math.sin(frank.angle) * foreheadOffset;
+    frank.letter.angle = frank.angle;
+  } else {
+    for (const letter of letters) {
+      const dx = letter.x - frank.x;
+      const dy = letter.y - frank.y;
+      const distSq = dx * dx + dy * dy;
+      const dist = Math.sqrt(distSq);
+
+      if (dist <= frank.radius) {
+        frank.letter = letter;
+        letter.x = frank.x + Math.cos(frank.angle) * foreheadOffset;
+        letter.y = frank.y + Math.sin(frank.angle) * foreheadOffset;
+        letter.angle = frank.angle;
+      } else {
+        letter.caught = false;
+      }
+    }
+  }
+}
 
 function update() {
   // === ROTATION ===
@@ -51,12 +79,12 @@ function update() {
   // === Try X movement ===
   let blockedX = false;
   const nextX = frank.x + frank.vx;
-  for (const obj of objects) {
+  for (const obj of planets) {
     const dx = nextX - obj.x;
     const dy = frank.y - obj.y; // Y remains unchanged
     const dist = Math.sqrt(dx * dx + dy * dy);
 
-    if (dist < frank.radius + obj.size) {
+    if (dist < frank.radius + obj.radius) {
       blockedX = true;
       break;
     }
@@ -68,12 +96,12 @@ function update() {
   // === Try Y movement ===
   let blockedY = false;
   const nextY = frank.y + frank.vy;
-  for (const obj of objects) {
+  for (const obj of planets) {
     const dx = frank.x - obj.x; // X is updated from above
     const dy = nextY - obj.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
 
-    if (dist < frank.radius + obj.size) {
+    if (dist < frank.radius + obj.radius) {
       blockedY = true;
       break;
     }
@@ -93,7 +121,7 @@ function update() {
   }
 
   // === GRAVITY ===
-  for (const planet of objects) {
+  for (const planet of planets) {
     const dx = planet.x - frank.x;
     const dy = planet.y - frank.y;
     const distSq = dx * dx + dy * dy;
@@ -112,6 +140,8 @@ function update() {
     frank.vx += fx;
     frank.vy += fy;
   }
+
+  handleLetterCollision();
 }
 
 function drawFrank() {
@@ -125,6 +155,21 @@ function drawFrank() {
   );
 
   ctx.restore();
+}
+
+function drawLetters() {
+  for (const letter of letters) {
+    ctx.save();
+    ctx.translate(letter.x, letter.y); // Move to Frank's position
+    ctx.rotate(letter.angle + Math.PI / 2); // Rotate the canvas
+    ctx.drawImage(
+      letter.sprite,
+      -letter.sprite.width / 2, // Offset to center
+      -letter.sprite.height / 2
+    );
+
+    ctx.restore();
+  }
 }
 
 function drawFlame() {
@@ -175,18 +220,23 @@ function drawFlame() {
   ctx.restore();
 }
 
+function drawPlanets() {
+  for (const planet of planets) {
+    ctx.beginPath();
+    // x, y, radius, startAngle, endAngle
+    ctx.arc(planet.x, planet.y, planet.radius, 0, Math.PI * 2);
+    ctx.fillStyle = planet.color;
+    ctx.fill();
+  }
+}
+
 function draw() {
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, worldX, worldY);
-  for (const object of objects) {
-    ctx.beginPath();
-    // x, y, radius, startAngle, endAngle
-    ctx.arc(object.x, object.y, object.size, 0, Math.PI * 2);
-    ctx.fillStyle = object.color;
-    ctx.fill();
-  }
 
   drawFrank();
+  drawLetters();
+  drawPlanets();
   drawFlame();
 }
 
@@ -200,7 +250,10 @@ function loop() {
 function runGame() {
   // Init
   for (let i = 0; i < 4; i++) {
-    objects.push(createPlanet(worldX, worldY, objects));
+    planets.push(createPlanet(worldX, worldY, planets));
+  }
+  for (let i = 0; i < 2; i++) {
+    letters.push(createLetter(worldX, worldY, planets));
   }
 
   loop();

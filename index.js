@@ -77,18 +77,23 @@ function runGame() {
   cancelAnimationFrame(frameId);
 
   // Reset world
-  frank = new Frank(50, 50);
+  frank = new Frank(worldX / 2, worldY / 2);
   planets = [];
   letters = [];
   mailbox = undefined;
 
   // Init
   for (let i = 0; i < 4 + level; i++) {
-    planets.push(createPlanet(worldX, worldY, planets));
+    const planet = createPlanet(worldX, worldY, planets);
+    if (planet) planets.push(planet);
   }
   for (let i = 0; i < 2 + level; i++) {
-    letters.push(createLetter(worldX, worldY, planets));
+    const letter = createLetter(worldX, worldY, planets);
+    if (letter) letters.push(letter);
   }
+  if (letters.length < 1)
+    throw Error("No letters were created, game failed to be created");
+
   mailbox = createMailbox(worldX, worldY, planets);
 
   frameId = requestAnimationFrame(() => loop(level));

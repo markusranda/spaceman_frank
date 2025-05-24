@@ -1,3 +1,6 @@
+import { checkCollision } from "./collision.js";
+import { frank, planets } from "./index.js";
+
 export class Letter {
   x = 0;
   y = 0;
@@ -17,20 +20,31 @@ export class Letter {
   }
 }
 
-export function createLetter(worldX, worldY, planets) {
-  const x = Math.round(Math.random() * worldX);
-  const y = Math.round(Math.random() * worldY);
+export function createLetter(worldX, worldY) {
+  const maxRetries = 10;
 
-  const letter = new Letter(x, y);
-  for (const planet of planets) {
-    const dx = planet.x - letter.x;
-    const dy = planet.y - letter.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    if (distance < planet.radius + letter.radius) {
-      // Collision: try again
-      return createLetter(worldX, worldY, planets);
+  function doCreate(retries = 0) {
+    console.log(`Retry: ${retries}`);
+    const x = Math.round(Math.random() * worldX);
+    const y = Math.round(Math.random() * worldY);
+
+    const letter = new Letter(x, y);
+    for (const planet of planets) {
+      if (
+        checkCollision(letter, planet, 10) ||
+        checkCollision(letter, frank, 50)
+      ) {
+        if (retries < maxRetries) {
+          return doCreate(retries + 1);
+        } else {
+          console.warn("Too many retries, there's no more room for letters");
+          return null;
+        }
+      }
+
+      return letter;
     }
   }
 
-  return letter;
+  return doCreate();
 }

@@ -1,3 +1,6 @@
+import { checkCollision } from "./collision.js";
+import { frank, planets, worldX, worldY } from "./index.js";
+
 export class Planet {
   radius = 0;
   x = 0;
@@ -15,21 +18,32 @@ function randomBetween(min, max) {
   return Math.round(Math.random() * (max - min)) + min;
 }
 
-export function createPlanet(worldX, worldY, objects) {
-  const x = Math.round(Math.random() * worldX);
-  const y = Math.round(Math.random() * worldY);
-  const radius = randomBetween(50, 90);
+export function createPlanet() {
+  const maxRetries = 10;
 
-  const planet = new Planet(x, y, radius);
-  for (const obj of objects) {
-    const dx = obj.x - planet.x;
-    const dy = obj.y - planet.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    if (distance < obj.radius + planet.radius) {
-      // Collision: try again
-      return createPlanet(worldX, worldY, objects);
+  function doCreate(retries = 0) {
+    const x = Math.round(Math.random() * worldX);
+    const y = Math.round(Math.random() * worldY);
+    const radius = randomBetween(50, 90);
+
+    const planet = new Planet(x, y, radius);
+
+    for (const obj of planets) {
+      if (
+        checkCollision(obj, planet, 10) ||
+        checkCollision(frank, planet, 50)
+      ) {
+        if (retries < maxRetries) {
+          return doCreate(retries + 1);
+        } else {
+          console.warn("Too many retries, there's no more room for planets");
+          return null;
+        }
+      }
     }
+
+    return planet;
   }
 
-  return planet;
+  return doCreate();
 }

@@ -3,7 +3,7 @@ export class Frank {
   y = 0;
   vx = 0;
   vy = 0;
-  angle = Math.PI / 2;
+  angle = (3 * Math.PI) / 2;
   acceleration = 0.05;
   rotationSpeed = 0.05;
   maxSpeed = 4;

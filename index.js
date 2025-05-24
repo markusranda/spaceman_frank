@@ -1,16 +1,78 @@
-import { Planet } from "./planet.js";
+import { Frank } from "./frank.js";
+import { createPlanet } from "./planet.js";
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 const worldX = 1200;
-const worldY = 750;
+const worldY = 900;
 canvas.width = worldX;
 canvas.height = worldY;
-ctx.fillRect(0, 0, worldX, worldY);
-
+const frank = new Frank(50, 50);
 const objects = [];
 
-function loop() {
+const keys = {
+  w: false,
+  a: false,
+  s: false,
+  d: false,
+};
+
+window.addEventListener("keydown", (e) => {
+  if (e.key.toLowerCase() in keys) {
+    keys[e.key.toLowerCase()] = true;
+  }
+});
+
+window.addEventListener("keyup", (e) => {
+  if (e.key.toLowerCase() in keys) {
+    keys[e.key.toLowerCase()] = false;
+  }
+});
+
+function update() {
+  // Rotate
+  if (keys.a) frank.angle -= frank.rotationSpeed;
+  if (keys.d) frank.angle += frank.rotationSpeed;
+
+  // Thrust forward/backward
+  if (keys.w) {
+    frank.vx += Math.cos(frank.angle) * frank.acceleration;
+    frank.vy += Math.sin(frank.angle) * frank.acceleration;
+  }
+
+  // Clamp speed
+  const speed = Math.sqrt(frank.vx ** 2 + frank.vy ** 2);
+  if (speed > frank.maxSpeed) {
+    const scale = frank.maxSpeed / speed;
+    frank.vx *= scale;
+    frank.vy *= scale;
+  }
+
+  // Update position
+  frank.x += frank.vx;
+  frank.y += frank.vy;
+
+  // Apply friction (so he slows down if no key is pressed)
+  frank.vx *= frank.friction;
+  frank.vy *= frank.friction;
+}
+
+function drawFrank() {
+  ctx.save();
+  ctx.translate(frank.x, frank.y); // Move to Frank's position
+  ctx.rotate(frank.angle + Math.PI / 2); // Rotate the canvas
+  ctx.drawImage(
+    frank.sprite,
+    -frank.sprite.width / 2, // Offset to center
+    -frank.sprite.height / 2
+  );
+
+  ctx.restore();
+}
+
+function draw() {
+  ctx.fillStyle = "#111";
+  ctx.fillRect(0, 0, worldX, worldY);
   for (const object of objects) {
     ctx.beginPath();
     // x, y, radius, startAngle, endAngle
@@ -19,40 +81,25 @@ function loop() {
     ctx.fill();
   }
 
+  drawFrank();
+}
+
+function loop() {
+  update();
+  draw();
+
   requestAnimationFrame(loop);
-}
-
-function randomBetween(min, max) {
-  return Math.round(Math.random() * (max - min)) + min;
-}
-
-function createPlanet() {
-  const x = Math.round(Math.random() * worldX);
-  const y = Math.round(Math.random() * worldY);
-  const size = randomBetween(50, 90);
-
-  const planet = new Planet(x, y, size);
-  // Ensure planet.size is set at this point
-  for (const obj of objects) {
-    const dx = obj.x - planet.x;
-    const dy = obj.y - planet.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    if (distance < obj.size + planet.size) {
-      // Collision: try again
-      return createPlanet();
-    }
-  }
-
-  return planet;
 }
 
 function runGame() {
   // Init
   for (let i = 0; i < 4; i++) {
-    objects.push(createPlanet());
+    objects.push(createPlanet(worldX, worldY, objects));
   }
 
   loop();
 }
 
-runGame();
+frank.sprite.onload = () => {
+  runGame();
+};

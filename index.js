@@ -19,10 +19,12 @@ canvas.width = worldX;
 canvas.height = worldY;
 
 // State
-export const frank = new Frank(50, 50);
-export const planets = [];
-export const letters = [];
+export let frank = new Frank(50, 50);
+export let planets = [];
+export let letters = [];
 export let mailbox = undefined;
+let frameId = 0;
+let level = 0;
 
 export const keys = {
   w: false,
@@ -44,6 +46,8 @@ window.addEventListener("keyup", (e) => {
 });
 
 function update() {
+  if (letters.length < 1) nextLevel();
+
   updateFrank();
   updateLetters();
   if (frank.letter) updateMailbox();
@@ -60,26 +64,39 @@ function draw() {
   drawFlame(ctx);
 }
 
-function loop() {
+function loop(currentLevel) {
+  // Clear old loop
+  if (currentLevel !== level) return;
   update();
   draw();
-
-  requestAnimationFrame(loop);
+  frameId = requestAnimationFrame(() => loop(currentLevel));
 }
 
 function runGame() {
+  // Reset state completely
+  cancelAnimationFrame(frameId);
+
+  // Reset world
+  frank = new Frank(50, 50);
+  planets = [];
+  letters = [];
+  mailbox = undefined;
+
   // Init
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 4 + level; i++) {
     planets.push(createPlanet(worldX, worldY, planets));
   }
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 2 + level; i++) {
     letters.push(createLetter(worldX, worldY, planets));
   }
   mailbox = createMailbox(worldX, worldY, planets);
 
-  loop();
+  frameId = requestAnimationFrame(() => loop(level));
 }
 
-frank.sprite.onload = () => {
+function nextLevel() {
+  level++;
   runGame();
-};
+}
+
+runGame();

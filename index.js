@@ -70,6 +70,54 @@ function drawFrank() {
   ctx.restore();
 }
 
+function drawFlame() {
+  if (!keys.w) return;
+
+  ctx.save();
+  ctx.translate(frank.x, frank.y);
+  ctx.rotate(frank.angle + Math.PI / 2);
+
+  const flameBase = frank.sprite.width * 0.6;
+  const flameLength = 30 + Math.random() * 20;
+  const baseCurve = 6; // how "rounded" the base is
+
+  const gradient = ctx.createLinearGradient(
+    0,
+    frank.sprite.height / 2,
+    0,
+    frank.sprite.height / 2 + flameLength
+  );
+  gradient.addColorStop(0, "white");
+  gradient.addColorStop(0.3, "yellow");
+  gradient.addColorStop(0.7, "orange");
+  gradient.addColorStop(1, "red");
+
+  ctx.beginPath();
+
+  // Rounded base
+  ctx.moveTo(-flameBase / 2, frank.sprite.height / 2);
+  ctx.lineTo(-flameBase / 2 + baseCurve, frank.sprite.height / 2 - baseCurve);
+
+  // Left side curve to tip
+  ctx.lineTo(-flameBase * 0.2, frank.sprite.height / 2 + flameLength * 0.5);
+
+  // Tip
+  ctx.lineTo(0, frank.sprite.height / 2 + flameLength);
+
+  // Right side curve
+  ctx.lineTo(flameBase * 0.2, frank.sprite.height / 2 + flameLength * 0.5);
+
+  // Rounded base other side
+  ctx.lineTo(flameBase / 2 - baseCurve, frank.sprite.height / 2 - baseCurve);
+  ctx.lineTo(flameBase / 2, frank.sprite.height / 2);
+
+  ctx.closePath();
+  ctx.fillStyle = gradient;
+  ctx.fill();
+
+  ctx.restore();
+}
+
 function draw() {
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, worldX, worldY);
@@ -82,6 +130,7 @@ function draw() {
   }
 
   drawFrank();
+  drawFlame();
 }
 
 function loop() {

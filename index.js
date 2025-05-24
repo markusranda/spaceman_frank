@@ -30,34 +30,17 @@ window.addEventListener("keyup", (e) => {
 });
 
 function update() {
-  // Predict next position
-  const nextX = frank.x + frank.vx;
-  const nextY = frank.y + frank.vy;
-
-  let movementBlocked = false;
-
-  // Check for future collision
-  for (const obj of objects) {
-    const dx = nextX - obj.x;
-    const dy = nextY - obj.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < frank.radius + obj.size) {
-      movementBlocked = true;
-      break;
-    }
-  }
-
-  // Rotate
+  // === ROTATION ===
   if (keys.a) frank.angle -= frank.rotationSpeed;
   if (keys.d) frank.angle += frank.rotationSpeed;
 
-  // Thrust forward/backward
+  // === THRUST ===
   if (keys.w) {
     frank.vx += Math.cos(frank.angle) * frank.acceleration;
     frank.vy += Math.sin(frank.angle) * frank.acceleration;
   }
 
-  // Clamp speed
+  // === Clamp speed ===
   const speed = Math.sqrt(frank.vx ** 2 + frank.vy ** 2);
   if (speed > frank.maxSpeed) {
     const scale = frank.maxSpeed / speed;
@@ -65,18 +48,70 @@ function update() {
     frank.vy *= scale;
   }
 
-  // If no collision ahead, update position
-  if (!movementBlocked) {
-    frank.x = nextX;
-    frank.y = nextY;
-  } else {
-    frank.vx = 0;
-    frank.vy = 0;
+  // === Try X movement ===
+  let blockedX = false;
+  const nextX = frank.x + frank.vx;
+  for (const obj of objects) {
+    const dx = nextX - obj.x;
+    const dy = frank.y - obj.y; // Y remains unchanged
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist < frank.radius + obj.size) {
+      blockedX = true;
+      break;
+    }
   }
 
-  // Apply friction (so he slows down if no key is pressed)
-  frank.vx *= frank.friction;
-  frank.vy *= frank.friction;
+  if (!blockedX) frank.x = nextX;
+  else frank.vx = 0;
+
+  // === Try Y movement ===
+  let blockedY = false;
+  const nextY = frank.y + frank.vy;
+  for (const obj of objects) {
+    const dx = frank.x - obj.x; // X is updated from above
+    const dy = nextY - obj.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist < frank.radius + obj.size) {
+      blockedY = true;
+      break;
+    }
+  }
+
+  if (!blockedY) frank.y = nextY;
+  else frank.vy = 0;
+
+  // === World bounds ===
+  if (frank.x < 1 || frank.x > worldX) frank.vx = 0;
+  if (frank.y < 1 || frank.y > worldY) frank.vy = 0;
+
+  // === Friction ===
+  if (!keys.w) {
+    frank.vx *= frank.friction;
+    frank.vy *= frank.friction;
+  }
+
+  // === GRAVITY ===
+  for (const planet of objects) {
+    const dx = planet.x - frank.x;
+    const dy = planet.y - frank.y;
+    const distSq = dx * dx + dy * dy;
+    const dist = Math.sqrt(distSq);
+
+    if (dist === 0) continue;
+
+    const gravityStrength = 0.03;
+    const falloff = Math.exp(-dist / 100);
+
+    const force = gravityStrength * falloff;
+
+    const fx = (dx / dist) * force;
+    const fy = (dy / dist) * force;
+
+    frank.vx += fx;
+    frank.vy += fy;
+  }
 }
 
 function drawFrank() {

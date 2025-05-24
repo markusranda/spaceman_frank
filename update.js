@@ -3,8 +3,10 @@ import {
   keys,
   letters,
   mailbox,
+  paperAudio,
   particles,
   planets,
+  thrusterAudio,
   worldX,
   worldY,
 } from "./index.js";
@@ -22,6 +24,7 @@ export function updateMailbox() {
     if (foundAt > -1) letters.splice(foundAt, 1);
     else throw Error(`Failed to find letter with id: ${frank.letter.id}`);
     frank.letter = undefined;
+    paperAudio.play();
   }
 }
 
@@ -142,5 +145,18 @@ export function updateParticles() {
     p.life -= 1;
 
     if (p.life <= 0) particles.splice(i, 1);
+  }
+}
+
+export function updateThrusterAudio() {
+  if (keys["w"]) {
+    const isPlaying =
+      !thrusterAudio.paused &&
+      !thrusterAudio.ended &&
+      thrusterAudio.currentTime > 0;
+    if (!isPlaying) thrusterAudio.play();
+  } else {
+    thrusterAudio.pause();
+    thrusterAudio.currentTime = 0;
   }
 }

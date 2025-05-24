@@ -17,6 +17,7 @@ import {
   updateLetters,
   updateMailbox,
   updateParticles,
+  updateThrusterAudio,
 } from "./update.js";
 
 const body = document.getElementById("rootElement");
@@ -60,6 +61,7 @@ window.addEventListener("keyup", (e) => {
 function update() {
   if (letters.length < 1 && !victory) nextLevel();
 
+  updateThrusterAudio();
   updateFrank();
   updateLetters();
   updateParticles();
@@ -170,6 +172,11 @@ async function loadSprites() {
   }
 }
 
+export const thrusterAudio = new Audio("thruster_2.mp3");
+export const paperAudio = new Audio("paper.mp3");
+thrusterAudio.volume = 0.1;
+paperAudio.volume = 0.2;
+thrusterAudio.loop = true;
 const song = new Audio("spaceman_frank_1.mp3");
 song.volume = 0.05;
 song.play();

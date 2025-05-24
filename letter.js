@@ -3,10 +3,12 @@ export class Letter {
   y = 0;
   radius = undefined;
   angle = (3 * Math.pi) / 2;
+  id = "";
 
   constructor(x, y) {
     this.x = x;
     this.y = y;
+    this.id = `letter_${new Date().getUTCMilliseconds()}_${Math.random()}`;
 
     const sprite = new Image();
     sprite.src = "letter.png";
@@ -15,18 +17,18 @@ export class Letter {
   }
 }
 
-export function createLetter(worldX, worldY, objects) {
+export function createLetter(worldX, worldY, planets) {
   const x = Math.round(Math.random() * worldX);
   const y = Math.round(Math.random() * worldY);
 
   const letter = new Letter(x, y);
-  for (const obj of objects) {
-    const dx = obj.x - letter.x;
-    const dy = obj.y - letter.y;
+  for (const planet of planets) {
+    const dx = planet.x - letter.x;
+    const dy = planet.y - letter.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
-    if (distance < obj.radius + letter.radius) {
+    if (distance < planet.radius + letter.radius) {
       // Collision: try again
-      return createLetter(worldX, worldY, objects);
+      return createLetter(worldX, worldY, planets);
     }
   }
 

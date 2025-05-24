@@ -31,7 +31,5 @@ export function createPlanet(worldX, worldY, objects) {
     }
   }
 
-  console.log(planet);
-
   return planet;
 }

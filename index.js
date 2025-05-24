@@ -1,6 +1,7 @@
 import { Frank } from "./frank.js";
 import { createLetter } from "./letter.js";
 import { createPlanet } from "./planet.js";
+import { createMailbox } from "./mailbox.js";
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
@@ -11,6 +12,7 @@ canvas.height = worldY;
 const frank = new Frank(50, 50);
 const planets = [];
 const letters = [];
+let mailbox = undefined;
 
 const keys = {
   w: false,
@@ -31,6 +33,22 @@ window.addEventListener("keyup", (e) => {
   }
 });
 
+function handleMailboxCollision() {
+  const dx = mailbox.x - frank.x;
+  const dy = mailbox.y - frank.y;
+  const distSq = dx * dx + dy * dy;
+  const dist = Math.sqrt(distSq);
+
+  if (dist <= frank.radius) {
+    const foundAt = letters.findIndex(
+      (letter) => letter.id === frank.letter.id
+    );
+    if (foundAt > -1) letters.splice(foundAt, 1);
+    else throw Error(`Failed to find letter with id: ${frank.letter.id}`);
+    frank.letter = undefined;
+  }
+}
+
 function handleLetterCollision() {
   const foreheadOffset = 40;
 
@@ -50,8 +68,6 @@ function handleLetterCollision() {
         letter.x = frank.x + Math.cos(frank.angle) * foreheadOffset;
         letter.y = frank.y + Math.sin(frank.angle) * foreheadOffset;
         letter.angle = frank.angle;
-      } else {
-        letter.caught = false;
       }
     }
   }
@@ -142,6 +158,7 @@ function update() {
   }
 
   handleLetterCollision();
+  if (frank.letter) handleMailboxCollision();
 }
 
 function drawFrank() {
@@ -230,10 +247,24 @@ function drawPlanets() {
   }
 }
 
+function drawMailbox() {
+  ctx.save();
+  ctx.translate(mailbox.x, mailbox.y); // Move to Frank's position
+  ctx.rotate(mailbox.angle + Math.PI / 2); // Rotate the canvas
+  ctx.drawImage(
+    mailbox.sprite,
+    -mailbox.sprite.width / 2, // Offset to center
+    -mailbox.sprite.height / 2
+  );
+
+  ctx.restore();
+}
+
 function draw() {
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, worldX, worldY);
 
+  drawMailbox();
   drawFrank();
   drawLetters();
   drawPlanets();
@@ -255,6 +286,7 @@ function runGame() {
   for (let i = 0; i < 2; i++) {
     letters.push(createLetter(worldX, worldY, planets));
   }
+  mailbox = createMailbox(worldX, worldY, planets);
 
   loop();
 }

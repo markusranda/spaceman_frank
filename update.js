@@ -3,6 +3,7 @@ import {
   keys,
   letters,
   mailbox,
+  particles,
   planets,
   worldX,
   worldY,
@@ -130,5 +131,16 @@ export function updateFrank() {
 
     frank.vx += fx;
     frank.vy += fy;
+  }
+}
+
+export function updateParticles() {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life -= 1;
+
+    if (p.life <= 0) particles.splice(i, 1);
   }
 }

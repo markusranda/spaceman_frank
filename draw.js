@@ -1,4 +1,4 @@
-import { frank, keys, letters, mailbox, planets } from "./index.js";
+import { frank, keys, letters, mailbox, particles, planets } from "./index.js";
 
 export function drawFrank(ctx) {
   ctx.save();
@@ -110,4 +110,31 @@ export function drawLevelText(ctx, level) {
   ctx.fillText(`Level ${level}`, 20, 20);
 
   ctx.restore();
+}
+
+export function drawLevelCleared(ctx, canvas) {
+  ctx.save();
+
+  ctx.font = "32px 'Press Start 2P'";
+  ctx.fillStyle = "white";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+
+  ctx.shadowColor = "gold";
+  ctx.shadowBlur = 15;
+  ctx.fillText("LEVEL CLEARED", centerX, centerY);
+
+  ctx.restore();
+}
+
+export function drawParticles(ctx) {
+  for (const p of particles) {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = p.color;
+    ctx.fill();
+  }
 }

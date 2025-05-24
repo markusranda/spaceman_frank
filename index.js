@@ -6,11 +6,18 @@ import {
   drawFlame,
   drawFrank,
   drawLetters,
+  drawLevelCleared,
   drawLevelText,
   drawMailbox,
+  drawParticles,
   drawPlanets,
 } from "./draw.js";
-import { updateFrank, updateLetters, updateMailbox } from "./update.js";
+import {
+  updateFrank,
+  updateLetters,
+  updateMailbox,
+  updateParticles,
+} from "./update.js";
 
 const body = document.getElementById("rootElement");
 const canvas = document.getElementById("game");
@@ -26,8 +33,10 @@ export let frank = undefined;
 export let planets = [];
 export let letters = [];
 export let mailbox = undefined;
+export let particles = [];
 let frameId = 0;
 let level = 0;
+let victory = false;
 
 export const keys = {
   w: false,
@@ -49,10 +58,11 @@ window.addEventListener("keyup", (e) => {
 });
 
 function update() {
-  if (letters.length < 1) nextLevel();
+  if (letters.length < 1 && !victory) nextLevel();
 
   updateFrank();
   updateLetters();
+  updateParticles();
   if (frank.letter) updateMailbox();
 }
 
@@ -66,6 +76,10 @@ function draw() {
   drawPlanets(ctx);
   drawFlame(ctx);
   drawLevelText(ctx, level);
+  if (victory) {
+    drawParticles(ctx);
+    drawLevelCleared(ctx, canvas);
+  }
 }
 
 function loop(currentLevel) {
@@ -84,9 +98,11 @@ function runGame() {
   frank = new Frank(worldX / 2, worldY / 2);
   planets = [];
   letters = [];
+  particles = [];
   mailbox = undefined;
+  victory = false;
 
-  // Init
+  // Spawn stuff
   for (let i = 0; i < 4 + level; i++) {
     const planet = createPlanet(worldX, worldY, planets);
     if (planet) planets.push(planet);
@@ -97,15 +113,39 @@ function runGame() {
   }
   if (letters.length < 1)
     throw Error("No letters were created, game failed to be created");
-
   mailbox = createMailbox(worldX, worldY, planets);
 
+  // Run
   frameId = requestAnimationFrame(() => loop(level));
 }
 
+function spawnVictoryParticles(count = 1000) {
+  const arcStart = 0; // Start angle (e.g. 10 o'clock)
+  const arcEnd = 2 * Math.PI; // End angle (e.g. 2 o'clock)
+
+  for (let i = 0; i < count; i++) {
+    const angle = arcStart + Math.random() * (arcEnd - arcStart);
+    const speed = 2 + Math.random() * 6;
+
+    particles.push({
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 60 + Math.random() * 60,
+      color: `hsl(${Math.random() * 360}, 100%, 60%)`,
+    });
+  }
+}
+
 function nextLevel() {
-  level++;
-  runGame();
+  victory = true;
+  spawnVictoryParticles();
+
+  setTimeout(() => {
+    level++;
+    runGame();
+  }, 1000);
 }
 
 function loadImage(src) {
@@ -131,7 +171,7 @@ async function loadSprites() {
 }
 
 const song = new Audio("spaceman_frank_1.mp3");
-song.volume = 0.1;
+song.volume = 0.05;
 song.play();
 
 await loadSprites();

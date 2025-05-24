@@ -98,3 +98,16 @@ export function drawMailbox(ctx) {
 
   ctx.restore();
 }
+
+export function drawLevelText(ctx, level) {
+  ctx.save();
+
+  ctx.font = "16px 'Press Start 2P'";
+  ctx.fillStyle = "lime"; // CRT-style green
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+
+  ctx.fillText(`Level ${level}`, 20, 20);
+
+  ctx.restore();
+}

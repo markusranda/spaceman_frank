@@ -6,6 +6,7 @@ import {
   drawFlame,
   drawFrank,
   drawLetters,
+  drawLevelText,
   drawMailbox,
   drawPlanets,
 } from "./draw.js";
@@ -14,7 +15,6 @@ import { updateFrank, updateLetters, updateMailbox } from "./update.js";
 const body = document.getElementById("rootElement");
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-console.log(body.clientWidth, body.clientHeight);
 export const worldX = body.clientWidth;
 export const worldY = body.clientHeight;
 canvas.width = worldX;
@@ -65,6 +65,7 @@ function draw() {
   drawLetters(ctx);
   drawPlanets(ctx);
   drawFlame(ctx);
+  drawLevelText(ctx, level);
 }
 
 function loop(currentLevel) {

@@ -7,6 +7,7 @@ import {
   mailbox,
   particles,
   planets,
+  sprites,
   timers,
 } from "./index.js";
 
@@ -179,4 +180,17 @@ export function drawDamaged(ctx, canvas) {
     ctx.fillStyle = `rgba(168, 50, 64, ${alpha.toFixed(3)})`;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
+}
+
+export function drawLettersUI(ctx) {
+  const yCord = 160;
+  const sprite = sprites["letter"];
+  if (!sprite) throw Error("can't draw letters without sprite");
+  ctx.drawImage(sprite, 20, yCord, 40, 25);
+
+  ctx.font = "16px 'Press Start 2P'";
+  ctx.fillStyle = "lime"; // CRT-style green
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  ctx.fillText(level.letters.length, 20 + 40 + 8, yCord + 4);
 }

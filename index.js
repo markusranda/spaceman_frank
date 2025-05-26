@@ -8,6 +8,7 @@ import {
   drawFrank,
   drawFuel,
   drawLetters,
+  drawLettersUI,
   drawLevelCleared,
   drawLevelText,
   drawMailbox,
@@ -103,6 +104,7 @@ function draw() {
     drawLevelCleared(ctx, canvas);
   }
   drawFuel(ctx);
+  drawLettersUI(ctx);
   drawDamaged(ctx, canvas);
 }
 

@@ -160,12 +160,6 @@ function updateFrankMovement() {
   if (!blockedY) frank.y = nextY;
   else frank.vy = 0;
 
-  // === Friction ===
-  if (!keys.w) {
-    frank.vx *= frank.friction;
-    frank.vy *= frank.friction;
-  }
-
   // === GRAVITY ===
   for (const planet of planets) {
     const dx = planet.x - frank.x;

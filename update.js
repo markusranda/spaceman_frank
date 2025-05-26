@@ -1,3 +1,4 @@
+import { getDistance } from "./coords.js";
 import {
   camera,
   DAMAGE_TIMER_MAX,
@@ -9,9 +10,11 @@ import {
   particles,
   planets,
   playDmgSound,
+  SONAR_TIMEOUT,
   thrusterAudio,
   timers,
 } from "./index.js";
+import { playSpatialPing } from "./spatial_audio.js";
 
 export function updateMailbox() {
   const dx = mailbox.x - frank.x;
@@ -93,11 +96,6 @@ function updateFrankCrash(collisions) {
       frank.fuel = Math.max(0, frank.fuel - fuelLoss);
       timers.damagedTimer = DAMAGE_TIMER_MAX;
       playDmgSound();
-      console.log(
-        `CRASH: Speed ${impactSpeed.toFixed(2)} → -${fuelLoss.toFixed(
-          1
-        )} fuel on ${obj.name ?? "[unnamed]"}`
-      );
     }
   }
 }
@@ -237,4 +235,23 @@ export function updateTimers(delta) {
 export function updateCamera() {
   camera.x = frank.x - camera.width / 2;
   camera.y = frank.y - camera.height / 2;
+}
+
+export function updateSonar() {
+  if (timers["sonar"] <= 0 && keys[" "]) {
+    let nearestLetter;
+    let prevShortest = Infinity;
+    for (const letter of level.letters) {
+      const distanceBetween = getDistance(letter.x, letter.y, frank.x, frank.y);
+      if (distanceBetween < prevShortest) {
+        nearestLetter = letter;
+        prevShortest = distanceBetween;
+      }
+    }
+
+    if (nearestLetter) {
+      playSpatialPing(nearestLetter.x, nearestLetter.y, SONAR_TIMEOUT / 4);
+      timers["sonar"] = SONAR_TIMEOUT;
+    }
+  }
 }

@@ -18,9 +18,9 @@ export class Frank {
   fuelConsumption = 0.5;
 
   constructor(x, y) {
-    this.x = x;
-    this.y = y;
     this.sprite = sprites["frank"];
     this.radius = this.sprite.width / 2;
+    this.x = x + this.sprite.width / 2;
+    this.y = y + this.sprite.height / 2;
   }
 }

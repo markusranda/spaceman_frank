@@ -23,6 +23,7 @@ import {
   updateLetters,
   updateMailbox,
   updateParticles,
+  updateSonar,
   updateThrusterAudio,
   updateTimers,
 } from "./update.js";
@@ -54,8 +55,10 @@ export let mailbox = undefined;
 export let particles = [];
 export const timers = {
   damagedTimer: 0,
+  sonar: 0,
 };
 export const DAMAGE_TIMER_MAX = 1000;
+export const SONAR_TIMEOUT = 1500;
 
 let frameId = 0;
 let victory = false;
@@ -74,6 +77,7 @@ export const keys = {
   a: false,
   s: false,
   d: false,
+  " ": false,
 };
 
 window.addEventListener("keydown", (e) => {
@@ -98,6 +102,7 @@ function update(delta) {
   updateParticles();
   if (frank.letter) updateMailbox();
   updateTimers(delta);
+  updateSonar();
 }
 
 function draw() {

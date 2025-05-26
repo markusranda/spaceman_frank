@@ -56,6 +56,7 @@ export function updateLetters() {
 }
 
 function updateFrankFuel() {
+  if (!keys["w"]) return;
   let newFuel = frank.fuel - frank.fuelConsumption;
   if (newFuel < 0) frank.fuel = 0;
   else frank.fuel = newFuel;

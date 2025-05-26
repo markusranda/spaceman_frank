@@ -3,6 +3,7 @@ import { createLetter } from "./letter.js";
 import { createPlanet } from "./planet.js";
 import { createMailbox } from "./mailbox.js";
 import {
+  drawDamaged,
   drawFlame,
   drawFrank,
   drawFuel,
@@ -37,7 +38,10 @@ export let planets = [];
 export let letters = [];
 export let mailbox = undefined;
 export let particles = [];
-export const timers = {};
+export const timers = {
+  damagedTimer: 0,
+};
+export const DAMAGE_TIMER_MAX = 1000;
 
 let frameId = 0;
 let level = 0;
@@ -89,6 +93,7 @@ function draw() {
     drawLevelCleared(ctx, canvas);
   }
   drawFuel(ctx);
+  drawDamaged(ctx, canvas);
 }
 
 function loop(currentTime, currentLevel) {

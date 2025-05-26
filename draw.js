@@ -1,4 +1,13 @@
-import { frank, keys, letters, mailbox, particles, planets } from "./index.js";
+import {
+  DAMAGE_TIMER_MAX,
+  frank,
+  keys,
+  letters,
+  mailbox,
+  particles,
+  planets,
+  timers,
+} from "./index.js";
 
 export function drawFrank(ctx) {
   ctx.save();
@@ -154,4 +163,13 @@ export function drawFuel(ctx) {
   ctx.fillStyle = "lime";
   // Draw from the bottom up
   ctx.fillRect(22, 60 + height - fuelHeight - 2, width - 4, fuelHeight);
+}
+
+export function drawDamaged(ctx, canvas) {
+  if (timers.damagedTimer > 0) {
+    const maxAlpha = 0.4;
+    const alpha = (timers.damagedTimer / DAMAGE_TIMER_MAX) * maxAlpha;
+    ctx.fillStyle = `rgba(168, 50, 64, ${alpha.toFixed(3)})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
 }

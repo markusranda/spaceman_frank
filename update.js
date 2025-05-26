@@ -1,4 +1,5 @@
 import {
+  DAMAGE_TIMER_MAX,
   frank,
   keys,
   letters,
@@ -59,8 +60,49 @@ function updateFrankFuel() {
   else frank.fuel = newFuel;
 }
 
+function updateFrankCrash(collisions) {
+  const impactThreshold = 1.5;
+  const fuelLossMultiplier = 10;
+
+  const alreadyChecked = new Set();
+
+  for (const obj of collisions) {
+    if (alreadyChecked.has(obj)) continue;
+    alreadyChecked.add(obj);
+
+    // Use predicted position before the collision was blocked
+    const nextX = frank.x + frank.vx;
+    const nextY = frank.y + frank.vy;
+
+    const dx = nextX - obj.x;
+    const dy = nextY - obj.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist === 0) continue;
+
+    const nx = dx / dist;
+    const ny = dy / dist;
+
+    // Project velocity onto normal
+    const normalVelocity = frank.vx * nx + frank.vy * ny;
+
+    const impactSpeed = Math.abs(normalVelocity); // direction doesn't matter — magnitude does
+
+    if (impactSpeed > impactThreshold) {
+      const fuelLoss = impactSpeed * fuelLossMultiplier;
+      frank.fuel = Math.max(0, frank.fuel - fuelLoss);
+      timers.damagedTimer = DAMAGE_TIMER_MAX;
+      console.log(
+        `CRASH: Speed ${impactSpeed.toFixed(2)} → -${fuelLoss.toFixed(
+          1
+        )} fuel on ${obj.name ?? "[unnamed]"}`
+      );
+    }
+  }
+}
+
 function updateFrankMovement() {
   const hasFuel = frank.fuel > 0;
+  const collisions = [];
 
   // === ROTATION ===
   if (keys.a) frank.angle -= frank.rotationSpeed;
@@ -90,7 +132,7 @@ function updateFrankMovement() {
 
     if (dist < frank.radius + obj.radius) {
       blockedX = true;
-      break;
+      collisions.push(obj);
     }
   }
 
@@ -107,8 +149,12 @@ function updateFrankMovement() {
 
     if (dist < frank.radius + obj.radius) {
       blockedY = true;
-      break;
+      collisions.push(obj);
     }
+  }
+
+  if (collisions.length > 0) {
+    updateFrankCrash(collisions);
   }
 
   if (!blockedY) frank.y = nextY;

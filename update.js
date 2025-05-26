@@ -7,6 +7,7 @@ import {
   particles,
   planets,
   thrusterAudio,
+  timers,
   worldX,
   worldY,
 } from "./index.js";
@@ -177,5 +178,14 @@ export function updateThrusterAudio() {
   } else {
     thrusterAudio.pause();
     thrusterAudio.currentTime = 0;
+  }
+}
+
+export function updateTimers(delta) {
+  for (const [key, val] of Object.entries(timers)) {
+    if (val !== undefined && val > 0) {
+      const newValue = val - delta;
+      timers[key] = newValue > 0 ? newValue : 0;
+    }
   }
 }

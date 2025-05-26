@@ -19,6 +19,7 @@ import {
   updateMailbox,
   updateParticles,
   updateThrusterAudio,
+  updateTimers,
 } from "./update.js";
 
 const body = document.getElementById("rootElement");
@@ -36,9 +37,12 @@ export let planets = [];
 export let letters = [];
 export let mailbox = undefined;
 export let particles = [];
+export const timers = {};
+
 let frameId = 0;
 let level = 0;
 let victory = false;
+let lastTime = 0;
 
 export const keys = {
   w: false,
@@ -59,7 +63,7 @@ window.addEventListener("keyup", (e) => {
   }
 });
 
-function update() {
+function update(delta) {
   if (letters.length < 1 && !victory) nextLevel();
 
   updateThrusterAudio();
@@ -67,6 +71,7 @@ function update() {
   updateLetters();
   updateParticles();
   if (frank.letter) updateMailbox();
+  updateTimers(delta);
 }
 
 function draw() {
@@ -86,12 +91,16 @@ function draw() {
   drawFuel(ctx);
 }
 
-function loop(currentLevel) {
+function loop(currentTime, currentLevel) {
   // Clear old loop
   if (currentLevel !== level) return;
-  update();
+  const delta = currentTime - lastTime;
+
+  update(delta);
   draw();
-  frameId = requestAnimationFrame(() => loop(currentLevel));
+
+  lastTime = currentTime;
+  frameId = requestAnimationFrame((newTime) => loop(newTime, currentLevel));
 }
 
 function runGame() {
@@ -120,7 +129,7 @@ function runGame() {
   mailbox = createMailbox(worldX, worldY, planets);
 
   // Run
-  frameId = requestAnimationFrame(() => loop(level));
+  frameId = requestAnimationFrame(() => loop(0, level));
 }
 
 function spawnVictoryParticles(count = 1000) {

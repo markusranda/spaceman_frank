@@ -3,7 +3,7 @@ import {
   DAMAGE_TIMER_MAX,
   frank,
   keys,
-  letters,
+  level,
   mailbox,
   particles,
   planets,
@@ -24,7 +24,7 @@ export function drawFrank(ctx) {
 }
 
 export function drawLetters(ctx) {
-  for (const letter of letters) {
+  for (const letter of level.letters) {
     ctx.save();
     ctx.translate(letter.x - camera.x, letter.y - camera.y); // Move to Frank's position
     ctx.rotate(letter.angle + Math.PI / 2); // Rotate the canvas
@@ -126,7 +126,7 @@ export function drawLevelText(ctx, level) {
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
 
-  ctx.fillText(`Level ${level}`, 20, 20);
+  ctx.fillText(`Level ${level.level}`, 20, 20);
 
   ctx.restore();
 }

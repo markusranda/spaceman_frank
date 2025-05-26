@@ -23,6 +23,7 @@ import {
   updateThrusterAudio,
   updateTimers,
 } from "./update.js";
+import { Level } from "./level.js";
 
 const body = document.getElementById("rootElement");
 const canvas = document.getElementById("game");
@@ -36,7 +37,7 @@ canvas.height = worldY;
 export const sprites = {};
 export let frank = undefined;
 export let planets = [];
-export let letters = [];
+export let level = undefined;
 export let mailbox = undefined;
 export let particles = [];
 export const timers = {
@@ -45,7 +46,6 @@ export const timers = {
 export const DAMAGE_TIMER_MAX = 1000;
 
 let frameId = 0;
-let level = 0;
 let victory = false;
 let lastTime = 0;
 let lastDmgAudioIndex = 0;
@@ -77,7 +77,7 @@ window.addEventListener("keyup", (e) => {
 });
 
 function update(delta) {
-  if (letters.length < 1 && !victory) nextLevel();
+  if (level.letters.length < 1 && !victory) nextLevel();
 
   updateCamera();
   updateThrusterAudio();
@@ -122,24 +122,26 @@ function runGame() {
   // Reset state completely
   cancelAnimationFrame(frameId);
 
+  const prevLevel = level?.level ?? 0;
+
   // Reset world
   frank = new Frank(worldX / 2, worldY / 2);
   planets = [];
-  letters = [];
+  level = new Level([], prevLevel + 1);
   particles = [];
   mailbox = undefined;
   victory = false;
 
   // Spawn stuff
-  for (let i = 0; i < 4 + level; i++) {
+  for (let i = 0; i < 4 + level.level; i++) {
     const planet = createPlanet(worldX, worldY, planets);
     if (planet) planets.push(planet);
   }
-  for (let i = 0; i < 1 + level; i++) {
+  for (let i = 0; i < 1 + level.level; i++) {
     const letter = createLetter(worldX, worldY, planets);
-    if (letter) letters.push(letter);
+    if (letter) level.letters.push(letter);
   }
-  if (letters.length < 1)
+  if (level.letters.length < 1)
     throw Error("No letters were created, game failed to be created");
   mailbox = createMailbox(worldX, worldY, planets);
 
@@ -171,7 +173,6 @@ function nextLevel() {
   spawnVictoryParticles();
 
   setTimeout(() => {
-    level++;
     runGame();
   }, 1000);
 }

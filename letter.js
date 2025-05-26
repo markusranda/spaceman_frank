@@ -1,5 +1,5 @@
 import { checkCollision } from "./collision.js";
-import { frank, letters, planets, sprites } from "./index.js";
+import { frank, level, planets, sprites } from "./index.js";
 
 export class Letter {
   x = 0;
@@ -26,7 +26,7 @@ function checkPlanetCollision(letter) {
 }
 
 function checkLetterCollision(letterA) {
-  for (const letterB of letters) {
+  for (const letterB of level.letters) {
     if (checkCollision(letterA, letterB, 10)) return true;
   }
 

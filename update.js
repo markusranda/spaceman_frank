@@ -3,7 +3,7 @@ import {
   DAMAGE_TIMER_MAX,
   frank,
   keys,
-  letters,
+  level,
   mailbox,
   paperAudio,
   particles,
@@ -11,8 +11,6 @@ import {
   playDmgSound,
   thrusterAudio,
   timers,
-  worldX,
-  worldY,
 } from "./index.js";
 
 export function updateMailbox() {
@@ -22,10 +20,10 @@ export function updateMailbox() {
   const dist = Math.sqrt(distSq);
 
   if (dist <= frank.radius) {
-    const foundAt = letters.findIndex(
+    const foundAt = level.letters.findIndex(
       (letter) => letter.id === frank.letter.id
     );
-    if (foundAt > -1) letters.splice(foundAt, 1);
+    if (foundAt > -1) level.letters.splice(foundAt, 1);
     else throw Error(`Failed to find letter with id: ${frank.letter.id}`);
     frank.letter = undefined;
     paperAudio.play();
@@ -40,7 +38,7 @@ export function updateLetters() {
     frank.letter.y = frank.y + Math.sin(frank.angle) * foreheadOffset;
     frank.letter.angle = frank.angle;
   } else {
-    for (const letter of letters) {
+    for (const letter of level.letters) {
       const dx = letter.x - frank.x;
       const dy = letter.y - frank.y;
       const distSq = dx * dx + dy * dy;

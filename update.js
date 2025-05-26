@@ -1,4 +1,5 @@
 import {
+  camera,
   DAMAGE_TIMER_MAX,
   frank,
   keys,
@@ -163,10 +164,6 @@ function updateFrankMovement() {
   if (!blockedY) frank.y = nextY;
   else frank.vy = 0;
 
-  // === World bounds ===
-  if (frank.x < 1 || frank.x > worldX) frank.vx = 0;
-  if (frank.y < 1 || frank.y > worldY) frank.vy = 0;
-
   // === Friction ===
   if (!keys.w) {
     frank.vx *= frank.friction;
@@ -237,4 +234,9 @@ export function updateTimers(delta) {
       timers[key] = newValue > 0 ? newValue : 0;
     }
   }
+}
+
+export function updateCamera() {
+  camera.x = frank.x - camera.width / 2;
+  camera.y = frank.y - camera.height / 2;
 }

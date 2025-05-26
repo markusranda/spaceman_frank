@@ -1,4 +1,5 @@
 import {
+  camera,
   DAMAGE_TIMER_MAX,
   frank,
   keys,
@@ -11,11 +12,11 @@ import {
 
 export function drawFrank(ctx) {
   ctx.save();
-  ctx.translate(frank.x, frank.y); // Move to Frank's position
+  ctx.translate(frank.x - camera.x, frank.y - camera.y); // Move to Frank's position
   ctx.rotate(frank.angle + Math.PI / 2); // Rotate the canvas
   ctx.drawImage(
     frank.sprite,
-    -frank.sprite.width / 2, // Offset to center
+    -frank.sprite.width / 2,
     -frank.sprite.height / 2
   );
 
@@ -25,7 +26,7 @@ export function drawFrank(ctx) {
 export function drawLetters(ctx) {
   for (const letter of letters) {
     ctx.save();
-    ctx.translate(letter.x, letter.y); // Move to Frank's position
+    ctx.translate(letter.x - camera.x, letter.y - camera.y); // Move to Frank's position
     ctx.rotate(letter.angle + Math.PI / 2); // Rotate the canvas
     ctx.drawImage(
       letter.sprite,
@@ -44,7 +45,7 @@ export function drawFlame(ctx) {
   if (!keys.w) return;
 
   ctx.save();
-  ctx.translate(frank.x, frank.y);
+  ctx.translate(frank.x - camera.x, frank.y - camera.y);
   ctx.rotate(frank.angle + Math.PI / 2);
 
   const flameBase = frank.sprite.width * 0.6;
@@ -92,7 +93,13 @@ export function drawPlanets(ctx) {
   for (const planet of planets) {
     ctx.beginPath();
     // x, y, radius, startAngle, endAngle
-    ctx.arc(planet.x, planet.y, planet.radius, 0, Math.PI * 2);
+    ctx.arc(
+      planet.x - camera.x,
+      planet.y - camera.y,
+      planet.radius,
+      0,
+      Math.PI * 2
+    );
     ctx.fillStyle = planet.color;
     ctx.fill();
   }
@@ -100,7 +107,7 @@ export function drawPlanets(ctx) {
 
 export function drawMailbox(ctx) {
   ctx.save();
-  ctx.translate(mailbox.x, mailbox.y); // Move to Frank's position
+  ctx.translate(mailbox.x - camera.x, mailbox.y - camera.y); // Move to Frank's position
   ctx.rotate(mailbox.angle + Math.PI / 2); // Rotate the canvas
   ctx.drawImage(
     mailbox.sprite,

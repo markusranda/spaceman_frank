@@ -15,6 +15,7 @@ import {
   drawPlanets,
 } from "./draw.js";
 import {
+  updateCamera,
   updateFrank,
   updateLetters,
   updateMailbox,
@@ -49,6 +50,13 @@ let victory = false;
 let lastTime = 0;
 let lastDmgAudioIndex = 0;
 
+export const camera = {
+  x: 0,
+  y: 0,
+  width: canvas.width,
+  height: canvas.height,
+};
+
 export const keys = {
   w: false,
   a: false,
@@ -71,6 +79,7 @@ window.addEventListener("keyup", (e) => {
 function update(delta) {
   if (letters.length < 1 && !victory) nextLevel();
 
+  updateCamera();
   updateThrusterAudio();
   updateFrank();
   updateLetters();

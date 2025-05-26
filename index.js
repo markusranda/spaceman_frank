@@ -47,6 +47,7 @@ let frameId = 0;
 let level = 0;
 let victory = false;
 let lastTime = 0;
+let lastDmgAudioIndex = 0;
 
 export const keys = {
   w: false,
@@ -186,6 +187,15 @@ async function loadSprites() {
   for (const [key, path] of entries) {
     sprites[key] = await loadImage(path);
   }
+}
+
+export function playDmgSound() {
+  const audioList = [new Audio("damage_1.mp3"), new Audio("damage_2.mp3")];
+  const index = (lastDmgAudioIndex + 1) % audioList.length;
+  const audio = audioList[index];
+  audio.volume = 0.3;
+  audio.play();
+  lastDmgAudioIndex = index;
 }
 
 export const thrusterAudio = new Audio("thruster_2.mp3");

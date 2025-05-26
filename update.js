@@ -7,6 +7,7 @@ import {
   paperAudio,
   particles,
   planets,
+  playDmgSound,
   thrusterAudio,
   timers,
   worldX,
@@ -91,6 +92,7 @@ function updateFrankCrash(collisions) {
       const fuelLoss = impactSpeed * fuelLossMultiplier;
       frank.fuel = Math.max(0, frank.fuel - fuelLoss);
       timers.damagedTimer = DAMAGE_TIMER_MAX;
+      playDmgSound();
       console.log(
         `CRASH: Speed ${impactSpeed.toFixed(2)} → -${fuelLoss.toFixed(
           1

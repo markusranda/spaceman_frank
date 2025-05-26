@@ -127,7 +127,7 @@ function runGame() {
   const prevLevel = level?.level ?? 0;
 
   // Reset world
-  frank = new Frank(worldX / 2, worldY / 2);
+  frank = new Frank(0, 0);
   planets = [];
   level = new Level([], prevLevel + 1);
   particles = [];
@@ -136,11 +136,11 @@ function runGame() {
 
   // Spawn stuff
   for (let i = 0; i < 4 + level.level; i++) {
-    const planet = createPlanet(worldX, worldY, planets);
+    const planet = createPlanet(500 * level.level);
     if (planet) planets.push(planet);
   }
   for (let i = 0; i < 1 + level.level; i++) {
-    const letter = createLetter(worldX, worldY, planets);
+    const letter = createLetter(500 * level.level);
     if (letter) level.letters.push(letter);
   }
   if (level.letters.length < 1)

@@ -1,5 +1,6 @@
 import { checkCollision } from "./collision.js";
-import { frank, planets, worldX, worldY } from "./index.js";
+import { getRandomCoordinateFarFrom } from "./coords.js";
+import { frank, planets } from "./index.js";
 
 export class Planet {
   radius = 0;
@@ -18,14 +19,17 @@ function randomBetween(min, max) {
   return Math.round(Math.random() * (max - min)) + min;
 }
 
-export function createPlanet() {
+export function createPlanet(maxDistance) {
   const maxRetries = 10;
 
   function doCreate(retries = 0) {
-    const x = Math.round(Math.random() * worldX);
-    const y = Math.round(Math.random() * worldY);
     const radius = randomBetween(50, 90);
-
+    const { x, y } = getRandomCoordinateFarFrom(
+      0,
+      0,
+      500 + radius,
+      maxDistance
+    );
     const planet = new Planet(x, y, radius);
 
     for (const obj of planets) {

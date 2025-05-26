@@ -1,4 +1,5 @@
 import { checkCollision } from "./collision.js";
+import { getRandomCoordinateFarFrom } from "./coords.js";
 import { frank, level, planets, sprites } from "./index.js";
 
 export class Letter {
@@ -33,12 +34,11 @@ function checkLetterCollision(letterA) {
   return false;
 }
 
-export function createLetter(worldX, worldY) {
+export function createLetter(maxDistance) {
   const maxRetries = 10;
 
   function doCreate(retries = 0) {
-    const x = Math.round(Math.random() * worldX);
-    const y = Math.round(Math.random() * worldY);
+    const { x, y } = getRandomCoordinateFarFrom(0, 0, 500, maxDistance);
 
     const letter = new Letter(x, y);
     if (

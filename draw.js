@@ -29,6 +29,9 @@ export function drawLetters(ctx) {
 }
 
 export function drawFlame(ctx) {
+  // This action requires fuel
+  if (frank.fuel <= 0) return;
+
   if (!keys.w) return;
 
   ctx.save();
@@ -137,4 +140,18 @@ export function drawParticles(ctx) {
     ctx.fillStyle = p.color;
     ctx.fill();
   }
+}
+
+export function drawFuel(ctx) {
+  const width = 40;
+  const height = 80;
+  let fuelHeight = height * (frank.fuel / frank.maxFuel) - 2;
+  if (fuelHeight < 0) fuelHeight = 0;
+
+  ctx.fillStyle = "grey";
+  ctx.fillRect(20, 60, width, height);
+
+  ctx.fillStyle = "lime";
+  // Draw from the bottom up
+  ctx.fillRect(22, 60 + height - fuelHeight - 2, width - 4, fuelHeight);
 }

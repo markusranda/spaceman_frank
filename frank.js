@@ -13,6 +13,9 @@ export class Frank {
   sprite = undefined;
   radius = 0;
   letter = undefined;
+  maxFuel = 2000;
+  fuel = 2000;
+  fuelConsumption = 0.5;
 
   constructor(x, y) {
     this.x = x;

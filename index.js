@@ -5,6 +5,7 @@ import { createMailbox } from "./mailbox.js";
 import {
   drawFlame,
   drawFrank,
+  drawFuel,
   drawLetters,
   drawLevelCleared,
   drawLevelText,
@@ -82,6 +83,7 @@ function draw() {
     drawParticles(ctx);
     drawLevelCleared(ctx, canvas);
   }
+  drawFuel(ctx);
 }
 
 function loop(currentLevel) {

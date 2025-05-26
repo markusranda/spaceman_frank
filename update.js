@@ -52,13 +52,21 @@ export function updateLetters() {
   }
 }
 
-export function updateFrank() {
+function updateFrankFuel() {
+  let newFuel = frank.fuel - frank.fuelConsumption;
+  if (newFuel < 0) frank.fuel = 0;
+  else frank.fuel = newFuel;
+}
+
+function updateFrankMovement() {
+  const hasFuel = frank.fuel > 0;
+
   // === ROTATION ===
   if (keys.a) frank.angle -= frank.rotationSpeed;
   if (keys.d) frank.angle += frank.rotationSpeed;
 
   // === THRUST ===
-  if (keys.w) {
+  if (hasFuel && keys.w) {
     frank.vx += Math.cos(frank.angle) * frank.acceleration;
     frank.vy += Math.sin(frank.angle) * frank.acceleration;
   }
@@ -137,6 +145,11 @@ export function updateFrank() {
   }
 }
 
+export function updateFrank() {
+  updateFrankFuel();
+  updateFrankMovement();
+}
+
 export function updateParticles() {
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
@@ -149,6 +162,12 @@ export function updateParticles() {
 }
 
 export function updateThrusterAudio() {
+  // This action requires fuel
+  if (frank.fuel <= 0) {
+    thrusterAudio.pause();
+    return;
+  }
+
   if (keys["w"]) {
     const isPlaying =
       !thrusterAudio.paused &&

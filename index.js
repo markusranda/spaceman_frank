@@ -1,8 +1,10 @@
+import { drawBackgroundCanvasElement } from "./background.js";
 import { Frank } from "./frank.js";
 import { createLetter } from "./letter.js";
 import { createPlanet } from "./planet.js";
 import { createMailbox } from "./mailbox.js";
 import {
+  drawBackground,
   drawDamaged,
   drawFlame,
   drawFrank,
@@ -29,6 +31,15 @@ import { Level } from "./level.js";
 const body = document.getElementById("rootElement");
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
+
+let backgroundCanvas;
+export function setBackgroundCanvas(canvas) {
+  backgroundCanvas = canvas;
+}
+export function getBackgroundCanvas() {
+  return backgroundCanvas;
+}
+
 export const worldX = body.clientWidth;
 export const worldY = body.clientHeight;
 canvas.width = worldX;
@@ -92,6 +103,8 @@ function update(delta) {
 function draw() {
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, worldX, worldY);
+
+  drawBackground(ctx);
 
   drawMailbox(ctx);
   drawFrank(ctx);
@@ -220,4 +233,5 @@ song.volume = 0.05;
 song.play();
 
 await loadSprites();
+drawBackgroundCanvasElement();
 runGame();

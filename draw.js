@@ -2,6 +2,7 @@ import {
   camera,
   DAMAGE_TIMER_MAX,
   frank,
+  getBackgroundCanvas,
   keys,
   level,
   mailbox,
@@ -193,4 +194,21 @@ export function drawLettersUI(ctx) {
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
   ctx.fillText(level.letters.length, 20 + 40 + 8, yCord + 4);
+}
+
+export function drawBackground(ctx) {
+  const parallax = 0.1;
+  const backgroundCanvas = getBackgroundCanvas();
+  const bgX = (-camera.x * parallax) % backgroundCanvas.width;
+  const bgY = (-camera.y * parallax) % backgroundCanvas.height;
+
+  for (let x = -1; x <= 1; x++) {
+    for (let y = -1; y <= 1; y++) {
+      ctx.drawImage(
+        backgroundCanvas,
+        bgX + x * backgroundCanvas.width,
+        bgY + y * backgroundCanvas.height
+      );
+    }
+  }
 }

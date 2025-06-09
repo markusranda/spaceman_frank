@@ -101,12 +101,10 @@ export function drawPlanets(ctx) {
 
     ctx.save();
     ctx.imageSmoothingEnabled = false;
-
-    // Translate to the planet's center
     ctx.translate(destX, destY);
     ctx.rotate(planet.angle);
-
-    // Draw centered
+    ctx.shadowColor = "rgba(200,200,200,0.3)";
+    ctx.shadowBlur = 40;
     ctx.drawImage(
       planet.sprite,
       -planet.radius, // offset x to center

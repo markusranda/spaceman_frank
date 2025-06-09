@@ -19,17 +19,12 @@ function randomBetween(min, max) {
   return Math.round(Math.random() * (max - min)) + min;
 }
 
-export function createPlanet(maxDistance) {
+export function createPlanet(minDistance, maxDistance) {
   const maxRetries = 10;
 
   function doCreate(retries = 0) {
     const radius = randomBetween(50, 90);
-    const { x, y } = getRandomCoordinateFarFrom(
-      0,
-      0,
-      500 + radius,
-      maxDistance
-    );
+    const { x, y } = getRandomCoordinateFarFrom(0, 0, minDistance, maxDistance);
     const planet = new Planet(x, y, radius);
 
     for (const obj of galaxy.planets) {

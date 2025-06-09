@@ -150,12 +150,12 @@ function runGame() {
   frank = new Frank(0, 0);
 
   // Spawn stuff
-  for (let i = 0; i < 4 + galaxy.iterations; i++) {
-    const planet = createPlanet(500 * galaxy.iterations);
+  for (let i = 0; i < 4 + galaxy.evolutions; i++) {
+    const planet = createPlanet(500, 1000);
     if (planet) galaxy.planets.push(planet);
   }
-  for (let i = 0; i < 1 + galaxy.iterations; i++) {
-    const letter = createLetter(500 * galaxy.iterations);
+  for (let i = 0; i < 5; i++) {
+    const letter = createLetter(500, 1000);
     if (letter) galaxy.letters.push(letter);
   }
   if (galaxy.letters.length < 1)
@@ -170,15 +170,18 @@ function evolveGalaxy() {
   victory = false;
   particles = [];
   frank.fuel = frank.maxFuel;
-  galaxy.iterations++;
+  galaxy.evolutions++;
 
   // Spawn stuff
-  for (let i = 0; i < 4 + galaxy.iterations; i++) {
-    const planet = createPlanet(500 * galaxy.iterations);
+  for (let i = 0; i < 4 + galaxy.evolutions; i++) {
+    const planet = createPlanet(
+      500 * galaxy.evolutions - 1,
+      500 * galaxy.evolutions
+    );
     if (planet) galaxy.planets.push(planet);
   }
-  for (let i = 0; i < 1 + galaxy.iterations; i++) {
-    const letter = createLetter(500 * galaxy.iterations);
+  for (let i = 0; i < 5; i++) {
+    const letter = createLetter(500 * galaxy.evolutions);
     if (letter) galaxy.letters.push(letter);
   }
   if (galaxy.letters.length < 1)

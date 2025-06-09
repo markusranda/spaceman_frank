@@ -34,11 +34,11 @@ function checkLetterCollision(letterA) {
   return false;
 }
 
-export function createLetter(maxDistance) {
+export function createLetter(minDistance, maxDistance) {
   const maxRetries = 10;
 
   function doCreate(retries = 0) {
-    const { x, y } = getRandomCoordinateFarFrom(0, 0, 500, maxDistance);
+    const { x, y } = getRandomCoordinateFarFrom(0, 0, minDistance, maxDistance);
 
     const letter = new Letter(x, y);
     if (

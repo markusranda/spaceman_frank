@@ -1,7 +1,7 @@
 export class Galaxy {
   planets = [];
   letters = [];
-  iterations = 1;
+  evolutions = 1;
 
   constructor() {}
 }

@@ -16,6 +16,7 @@ export class Frank {
   maxFuel = 2000;
   fuel = 2000;
   fuelConsumption = 0.5;
+  lettersDelivered = 0;
 
   constructor(x, y) {
     this.sprite = sprites["frank"];

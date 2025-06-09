@@ -30,6 +30,7 @@ export function updateMailbox() {
     if (foundAt > -1) galaxy.letters.splice(foundAt, 1);
     else throw Error(`Failed to find letter with id: ${frank.letter.id}`);
     frank.letter = undefined;
+    frank.lettersDelivered++;
     paperAudio.play();
   }
 }

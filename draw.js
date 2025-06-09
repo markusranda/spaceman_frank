@@ -180,7 +180,7 @@ export function drawLettersUI(ctx) {
   ctx.fillStyle = "lime"; // CRT-style green
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
-  ctx.fillText(galaxy.letters.length, 20 + 40 + 8, yCord + 4);
+  ctx.fillText(frank.lettersDelivered, 20 + 40 + 8, yCord + 4);
 }
 
 export function drawBackground(ctx) {

@@ -123,6 +123,8 @@ export function drawMailbox(ctx) {
   ctx.save();
   ctx.translate(mailbox.x - camera.x, mailbox.y - camera.y); // Move to Frank's position
   ctx.rotate(mailbox.angle + Math.PI / 2); // Rotate the canvas
+  ctx.shadowColor = "rgba(255, 255, 128, 0.7)"; // yellowish glow
+  ctx.shadowBlur = 15000;
   ctx.drawImage(
     mailbox.sprite,
     -mailbox.sprite.width / 2, // Offset to center

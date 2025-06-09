@@ -217,11 +217,12 @@ export function drawUpgradeUI(ctx, canvas) {
 
   // Title
   ctx.fillStyle = "white";
-  ctx.font = "24px Arial";
+  ctx.font = "32px 'Press Start 2P'";
   ctx.textAlign = "center";
   ctx.fillText("Choose Your Upgrade", width / 2, 100);
 
   // Buttons
+  const imageTextMargin = 20;
   const buttonWidth = 200;
   const buttonHeight = 60;
   const buttonSpacing = 40;
@@ -229,8 +230,8 @@ export function drawUpgradeUI(ctx, canvas) {
   const startY = (height - totalHeight) / 2;
   const buttonX = (width - buttonWidth) / 2;
 
-  ctx.font = "20px Arial";
-  ctx.textAlign = "center";
+  ctx.font = "8px 'Press Start 2P'";
+  ctx.textAlign = "left";
   ctx.textBaseline = "middle";
 
   for (let i = 0; i < availableUpgrades.length; i++) {
@@ -246,10 +247,17 @@ export function drawUpgradeUI(ctx, canvas) {
 
     // Draw label
     ctx.fillStyle = "white";
-    ctx.fillText(
+    ctx.drawImage(
+      upgrade.sprite,
+      buttonX + 10,
+      buttonY + upgrade.sprite.height / 4
+    );
+    drawTextWithEllipsis(
+      ctx,
       upgrade.name,
-      buttonX + buttonWidth / 2,
-      buttonY + buttonHeight / 2
+      buttonX + upgrade.sprite.width + imageTextMargin,
+      buttonY + buttonHeight / 2,
+      buttonWidth - upgrade.sprite.width - imageTextMargin
     );
 
     // Save bounds for click detection
@@ -261,6 +269,20 @@ export function drawUpgradeUI(ctx, canvas) {
       upgrade: upgrade,
     });
   }
+}
+
+function drawTextWithEllipsis(ctx, text, x, y, maxWidth) {
+  let truncatedText = text;
+  while (
+    ctx.measureText(truncatedText).width > maxWidth &&
+    truncatedText.length > 0
+  ) {
+    truncatedText = truncatedText.slice(0, -1);
+  }
+  if (truncatedText.length < text.length) {
+    truncatedText = truncatedText.slice(0, -1) + "…";
+  }
+  ctx.fillText(truncatedText, x, y);
 }
 
 export function drawBackground(ctx) {

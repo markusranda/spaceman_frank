@@ -1,3 +1,4 @@
+import { Pulse } from "./pulse.js";
 import { getDistance } from "./coords.js";
 import {
   camera,
@@ -10,6 +11,7 @@ import {
   particles,
   planets,
   playDmgSound,
+  pulses,
   SONAR_TIMEOUT,
   thrusterAudio,
   timers,
@@ -246,6 +248,19 @@ export function updateSonar() {
     if (nearestLetter) {
       playSpatialPing(nearestLetter.x, nearestLetter.y, SONAR_TIMEOUT / 4);
       timers["sonar"] = SONAR_TIMEOUT;
+      pulses.push(new Pulse());
+    }
+  }
+}
+
+export function updatePulses() {
+  for (let i = pulses.length - 1; i >= 0; i--) {
+    const pulse = pulses[i];
+    pulse.radius += pulse.speed;
+
+    //TODO USE THE PULSE AND LETTER COLLISION TO PLAY THE SONAR SOUND
+    if (pulse.radius > pulse.maxRadius) {
+      pulses.splice(i, 1);
     }
   }
 }

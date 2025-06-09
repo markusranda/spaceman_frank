@@ -16,6 +16,7 @@ import {
   drawMailbox,
   drawParticles,
   drawPlanets,
+  drawPulses,
 } from "./draw.js";
 import {
   updateCamera,
@@ -23,6 +24,7 @@ import {
   updateLetters,
   updateMailbox,
   updateParticles,
+  updatePulses,
   updateSonar,
   updateThrusterAudio,
   updateTimers,
@@ -53,6 +55,7 @@ export let planets = [];
 export let level = undefined;
 export let mailbox = undefined;
 export let particles = [];
+export const pulses = [];
 export const timers = {
   damagedTimer: 0,
   sonar: 0,
@@ -103,6 +106,7 @@ function update(delta) {
   if (frank.letter) updateMailbox();
   updateTimers(delta);
   updateSonar();
+  updatePulses();
 }
 
 function draw() {
@@ -116,6 +120,8 @@ function draw() {
   drawLetters(ctx);
   drawPlanets(ctx);
   drawFlame(ctx);
+  drawPulses(ctx);
+
   drawLevelText(ctx, level);
   if (victory) {
     drawParticles(ctx);

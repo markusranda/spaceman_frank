@@ -8,6 +8,7 @@ import {
   mailbox,
   particles,
   planets,
+  pulses,
   sprites,
   timers,
 } from "./index.js";
@@ -210,5 +211,20 @@ export function drawBackground(ctx) {
         bgY + y * backgroundCanvas.height
       );
     }
+  }
+}
+
+export function drawPulses(ctx) {
+  for (const pulse of pulses) {
+    const screenX = pulse.x - camera.x;
+    const screenY = pulse.y - camera.y;
+
+    ctx.beginPath();
+    ctx.arc(screenX, screenY, pulse.radius, 0, Math.PI * 2);
+    ctx.strokeStyle = `rgba(0, 255, 255, ${
+      1 - pulse.radius / pulse.maxRadius
+    })`;
+    ctx.lineWidth = 2;
+    ctx.stroke();
   }
 }

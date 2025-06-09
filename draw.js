@@ -2,12 +2,11 @@ import {
   camera,
   DAMAGE_TIMER_MAX,
   frank,
+  galaxy,
   getBackgroundCanvas,
   keys,
-  level,
   mailbox,
   particles,
-  planets,
   pulses,
   sprites,
   timers,
@@ -27,7 +26,7 @@ export function drawFrank(ctx) {
 }
 
 export function drawLetters(ctx) {
-  for (const letter of level.letters) {
+  for (const letter of galaxy.letters) {
     ctx.save();
     ctx.translate(letter.x - camera.x, letter.y - camera.y); // Move to Frank's position
     ctx.rotate(letter.angle + Math.PI / 2); // Rotate the canvas
@@ -93,7 +92,7 @@ export function drawFlame(ctx) {
 }
 
 export function drawPlanets(ctx) {
-  for (const planet of planets) {
+  for (const planet of galaxy.planets) {
     ctx.beginPath();
     // x, y, radius, startAngle, endAngle
     ctx.arc(
@@ -121,19 +120,6 @@ export function drawMailbox(ctx) {
   ctx.restore();
 }
 
-export function drawLevelText(ctx, level) {
-  ctx.save();
-
-  ctx.font = "16px 'Press Start 2P'";
-  ctx.fillStyle = "lime"; // CRT-style green
-  ctx.textAlign = "left";
-  ctx.textBaseline = "top";
-
-  ctx.fillText(`Level ${level.level}`, 20, 20);
-
-  ctx.restore();
-}
-
 export function drawLevelCleared(ctx, canvas) {
   ctx.save();
 
@@ -147,7 +133,7 @@ export function drawLevelCleared(ctx, canvas) {
 
   ctx.shadowColor = "gold";
   ctx.shadowBlur = 15;
-  ctx.fillText("LEVEL CLEARED", centerX, centerY);
+  ctx.fillText("THE GALAXY IS GROWING", centerX, centerY);
 
   ctx.restore();
 }
@@ -194,7 +180,7 @@ export function drawLettersUI(ctx) {
   ctx.fillStyle = "lime"; // CRT-style green
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
-  ctx.fillText(level.letters.length, 20 + 40 + 8, yCord + 4);
+  ctx.fillText(galaxy.letters.length, 20 + 40 + 8, yCord + 4);
 }
 
 export function drawBackground(ctx) {
@@ -229,7 +215,7 @@ export function drawPulses(ctx) {
   }
 }
 
-let spinAngle = 0; // global or module-level variable
+let spinAngle = 0;
 export function drawCompass(ctx, canvas) {
   const origin = { x: 0, y: 0 };
   const { width } = canvas;

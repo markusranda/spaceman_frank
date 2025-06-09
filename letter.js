@@ -1,6 +1,6 @@
 import { checkCollision } from "./collision.js";
 import { getRandomCoordinateFarFrom } from "./coords.js";
-import { frank, level, planets, sprites } from "./index.js";
+import { frank, galaxy, sprites } from "./index.js";
 
 export class Letter {
   x = 0;
@@ -19,7 +19,7 @@ export class Letter {
 }
 
 function checkPlanetCollision(letter) {
-  for (const planet of planets) {
+  for (const planet of galaxy.planets) {
     if (checkCollision(letter, planet, 10)) return true;
   }
 
@@ -27,7 +27,7 @@ function checkPlanetCollision(letter) {
 }
 
 function checkLetterCollision(letterA) {
-  for (const letterB of level.letters) {
+  for (const letterB of galaxy.letters) {
     if (checkCollision(letterA, letterB, 10)) return true;
   }
 

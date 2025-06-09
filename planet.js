@@ -1,6 +1,6 @@
 import { checkCollision } from "./collision.js";
 import { getRandomCoordinateFarFrom } from "./coords.js";
-import { frank, planets } from "./index.js";
+import { frank, galaxy } from "./index.js";
 
 export class Planet {
   radius = 0;
@@ -32,7 +32,7 @@ export function createPlanet(maxDistance) {
     );
     const planet = new Planet(x, y, radius);
 
-    for (const obj of planets) {
+    for (const obj of galaxy.planets) {
       if (
         checkCollision(obj, planet, 10) ||
         checkCollision(frank, planet, 50)

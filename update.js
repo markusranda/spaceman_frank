@@ -4,12 +4,11 @@ import {
   camera,
   DAMAGE_TIMER_MAX,
   frank,
+  galaxy,
   keys,
-  level,
   mailbox,
   paperAudio,
   particles,
-  planets,
   playDmgSound,
   pulses,
   SONAR_TIMEOUT,
@@ -25,10 +24,10 @@ export function updateMailbox() {
   const dist = Math.sqrt(distSq);
 
   if (dist <= frank.radius) {
-    const foundAt = level.letters.findIndex(
+    const foundAt = galaxy.letters.findIndex(
       (letter) => letter.id === frank.letter.id
     );
-    if (foundAt > -1) level.letters.splice(foundAt, 1);
+    if (foundAt > -1) galaxy.letters.splice(foundAt, 1);
     else throw Error(`Failed to find letter with id: ${frank.letter.id}`);
     frank.letter = undefined;
     paperAudio.play();
@@ -43,7 +42,7 @@ export function updateLetters() {
     frank.letter.y = frank.y + Math.sin(frank.angle) * foreheadOffset;
     frank.letter.angle = frank.angle;
   } else {
-    for (const letter of level.letters) {
+    for (const letter of galaxy.letters) {
       const dx = letter.x - frank.x;
       const dy = letter.y - frank.y;
       const distSq = dx * dx + dy * dy;
@@ -127,7 +126,7 @@ function updateFrankMovement() {
   // === Try X movement ===
   let blockedX = false;
   const nextX = frank.x + frank.vx;
-  for (const obj of planets) {
+  for (const obj of galaxy.planets) {
     const dx = nextX - obj.x;
     const dy = frank.y - obj.y; // Y remains unchanged
     const dist = Math.sqrt(dx * dx + dy * dy);
@@ -144,7 +143,7 @@ function updateFrankMovement() {
   // === Try Y movement ===
   let blockedY = false;
   const nextY = frank.y + frank.vy;
-  for (const obj of planets) {
+  for (const obj of galaxy.planets) {
     const dx = frank.x - obj.x; // X is updated from above
     const dy = nextY - obj.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
@@ -163,7 +162,7 @@ function updateFrankMovement() {
   else frank.vy = 0;
 
   // === GRAVITY ===
-  for (const planet of planets) {
+  for (const planet of galaxy.planets) {
     const dx = planet.x - frank.x;
     const dy = planet.y - frank.y;
     const distSq = dx * dx + dy * dy;
@@ -237,7 +236,7 @@ export function updateSonar() {
   if (timers["sonar"] <= 0 && keys[" "]) {
     let nearestLetter;
     let prevShortest = Infinity;
-    for (const letter of level.letters) {
+    for (const letter of galaxy.letters) {
       const distanceBetween = getDistance(letter.x, letter.y, frank.x, frank.y);
       if (distanceBetween < prevShortest) {
         nearestLetter = letter;

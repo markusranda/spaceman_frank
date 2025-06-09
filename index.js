@@ -3,6 +3,7 @@ import { Frank } from "./frank.js";
 import { createLetter } from "./letter.js";
 import { createPlanet } from "./planet.js";
 import { createMailbox } from "./mailbox.js";
+import { Galaxy } from "./galaxy.js";
 import {
   drawBackground,
   drawDamaged,
@@ -12,7 +13,6 @@ import {
   drawLetters,
   drawLettersUI,
   drawLevelCleared,
-  drawLevelText,
   drawMailbox,
   drawCompass,
   drawParticles,
@@ -30,7 +30,6 @@ import {
   updateThrusterAudio,
   updateTimers,
 } from "./update.js";
-import { Level } from "./level.js";
 
 const body = document.getElementById("rootElement");
 const canvas = document.getElementById("game");
@@ -52,8 +51,7 @@ canvas.height = worldY;
 // State
 export const sprites = {};
 export let frank = undefined;
-export let planets = [];
-export let level = undefined;
+export let galaxy = new Galaxy();
 export let mailbox = undefined;
 export let particles = [];
 export const pulses = [];
@@ -61,6 +59,7 @@ export const timers = {
   damagedTimer: 0,
   sonar: 0,
 };
+
 export const DAMAGE_TIMER_MAX = 1000;
 export const SONAR_TIMEOUT = 1500;
 
@@ -97,7 +96,7 @@ window.addEventListener("keyup", (e) => {
 });
 
 function update(delta) {
-  if (level.letters.length < 1 && !victory) nextLevel();
+  if (galaxy.letters.length < 1 && !victory) nextLevel();
 
   updateCamera();
   updateThrusterAudio();
@@ -123,7 +122,6 @@ function draw() {
   drawFlame(ctx);
   drawPulses(ctx);
 
-  drawLevelText(ctx, level);
   if (victory) {
     drawParticles(ctx);
     drawLevelCleared(ctx, canvas);
@@ -134,47 +132,57 @@ function draw() {
   drawCompass(ctx, canvas);
 }
 
-function loop(currentTime, currentLevel) {
-  // Clear old loop
-  if (currentLevel !== level) return;
+function loop(currentTime) {
   const delta = currentTime - lastTime;
 
   update(delta);
   draw();
 
   lastTime = currentTime;
-  frameId = requestAnimationFrame((newTime) => loop(newTime, currentLevel));
+  frameId = requestAnimationFrame((newTime) => loop(newTime));
 }
 
 function runGame() {
   // Reset state completely
   cancelAnimationFrame(frameId);
 
-  const prevLevel = level?.level ?? 0;
-
   // Reset world
   frank = new Frank(0, 0);
-  planets = [];
-  level = new Level([], prevLevel + 1);
-  particles = [];
-  mailbox = undefined;
-  victory = false;
 
   // Spawn stuff
-  for (let i = 0; i < 4 + level.level; i++) {
-    const planet = createPlanet(500 * level.level);
-    if (planet) planets.push(planet);
+  for (let i = 0; i < 4 + galaxy.iterations; i++) {
+    const planet = createPlanet(500 * galaxy.iterations);
+    if (planet) galaxy.planets.push(planet);
   }
-  for (let i = 0; i < 1 + level.level; i++) {
-    const letter = createLetter(500 * level.level);
-    if (letter) level.letters.push(letter);
+  for (let i = 0; i < 1 + galaxy.iterations; i++) {
+    const letter = createLetter(500 * galaxy.iterations);
+    if (letter) galaxy.letters.push(letter);
   }
-  if (level.letters.length < 1)
+  if (galaxy.letters.length < 1)
     throw Error("No letters were created, game failed to be created");
-  mailbox = createMailbox(worldX, worldY, planets);
+  mailbox = createMailbox(worldX, worldY, galaxy.planets);
 
   // Run
-  frameId = requestAnimationFrame(() => loop(0, level));
+  frameId = requestAnimationFrame(() => loop(0));
+}
+
+function evolveGalaxy() {
+  victory = false;
+  particles = [];
+  frank.fuel = frank.maxFuel;
+  galaxy.iterations++;
+
+  // Spawn stuff
+  for (let i = 0; i < 4 + galaxy.iterations; i++) {
+    const planet = createPlanet(500 * galaxy.iterations);
+    if (planet) galaxy.planets.push(planet);
+  }
+  for (let i = 0; i < 1 + galaxy.iterations; i++) {
+    const letter = createLetter(500 * galaxy.iterations);
+    if (letter) galaxy.letters.push(letter);
+  }
+  if (galaxy.letters.length < 1)
+    throw Error("No letters were created, game failed to be created");
 }
 
 function spawnVictoryParticles(count = 1000) {
@@ -201,8 +209,8 @@ function nextLevel() {
   spawnVictoryParticles();
 
   setTimeout(() => {
-    runGame();
-  }, 1000);
+    evolveGalaxy();
+  }, 1500);
 }
 
 function loadImage(src) {

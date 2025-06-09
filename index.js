@@ -84,7 +84,6 @@ export const keys = {
 };
 
 window.addEventListener("keydown", (e) => {
-  console.log(e.key);
   if (e.key.toLowerCase() in keys) {
     keys[e.key.toLowerCase()] = true;
   }

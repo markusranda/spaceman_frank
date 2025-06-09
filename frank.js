@@ -1,5 +1,4 @@
 import { sprites } from "./index.js";
-import { Upgrade } from "./upgrade.js";
 
 export class Frank {
   x = 0;

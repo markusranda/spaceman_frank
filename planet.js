@@ -1,17 +1,21 @@
 import { checkCollision } from "./collision.js";
 import { getRandomCoordinateFarFrom } from "./coords.js";
-import { frank, galaxy } from "./index.js";
+import { frank, galaxy, sprites } from "./index.js";
 
 export class Planet {
   radius = 0;
   x = 0;
   y = 0;
   color = "grey";
+  sprite = undefined;
+  angle = 0;
 
   constructor(x, y, radius) {
     this.x = x;
     this.y = y;
     this.radius = radius;
+    this.sprite = sprites["planet"];
+    this.angle = Math.random() * Math.PI * 2;
   }
 }
 
@@ -23,7 +27,7 @@ export function createPlanet(minDistance, maxDistance) {
   const maxRetries = 10;
 
   function doCreate(retries = 0) {
-    const radius = randomBetween(50, 90);
+    const radius = randomBetween(200, 500);
     const { x, y } = getRandomCoordinateFarFrom(0, 0, minDistance, maxDistance);
     const planet = new Planet(x, y, radius);
 

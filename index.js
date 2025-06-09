@@ -192,11 +192,11 @@ function runGame() {
 
   // Spawn stuff
   for (let i = 0; i < 4 + galaxy.evolutions; i++) {
-    const planet = createPlanet(500, 1000);
+    const planet = createPlanet(1000, 1500);
     if (planet) galaxy.planets.push(planet);
   }
   for (let i = 0; i < 5; i++) {
-    const letter = createLetter(500, 1000);
+    const letter = createLetter(1000, 1500);
     if (letter) galaxy.letters.push(letter);
   }
   if (galaxy.letters.length < 1)
@@ -216,13 +216,16 @@ function doEvolveGalaxy() {
   // Spawn stuff
   for (let i = 0; i < 4 + galaxy.evolutions; i++) {
     const planet = createPlanet(
-      500 * galaxy.evolutions - 1,
-      500 * galaxy.evolutions
+      1500 + 500 * galaxy.evolutions,
+      1500 + 500 * galaxy.evolutions + 1
     );
     if (planet) galaxy.planets.push(planet);
   }
   for (let i = 0; i < 5; i++) {
-    const letter = createLetter(500 * galaxy.evolutions);
+    const letter = createLetter(
+      1500 + 500 * galaxy.evolutions,
+      1500 + 500 * galaxy.evolutions + 1
+    );
     if (letter) galaxy.letters.push(letter);
   }
   if (galaxy.letters.length < 1)
@@ -270,6 +273,7 @@ async function loadSprites() {
   const spritePaths = {
     frank: "sprites/frank.png",
     letter: "sprites/letter.png",
+    planet: "sprites/planet.png",
     mailbox: "sprites/mailbox.png",
     max_speed: "sprites/max.png",
     acceleration: "sprites/acceleration.png",

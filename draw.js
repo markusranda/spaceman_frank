@@ -16,7 +16,7 @@ import {
 
 export function drawFrank(ctx) {
   ctx.save();
-  ctx.translate(frank.x - camera.x, frank.y - camera.y); // Move to Frank's position
+  ctx.translate(frank.x - camera.x, frank.y - camera.y);
   ctx.rotate(frank.angle + Math.PI / 2); // Rotate the canvas
   ctx.drawImage(
     frank.sprite,
@@ -30,7 +30,7 @@ export function drawFrank(ctx) {
 export function drawLetters(ctx) {
   for (const letter of galaxy.letters) {
     ctx.save();
-    ctx.translate(letter.x - camera.x, letter.y - camera.y); // Move to Frank's position
+    ctx.translate(letter.x - camera.x, letter.y - camera.y);
     ctx.rotate(letter.angle + Math.PI / 2); // Rotate the canvas
     ctx.drawImage(
       letter.sprite,
@@ -95,17 +95,27 @@ export function drawFlame(ctx) {
 
 export function drawPlanets(ctx) {
   for (const planet of galaxy.planets) {
-    ctx.beginPath();
-    // x, y, radius, startAngle, endAngle
-    ctx.arc(
-      planet.x - camera.x,
-      planet.y - camera.y,
-      planet.radius,
-      0,
-      Math.PI * 2
+    const destX = planet.x - camera.x;
+    const destY = planet.y - camera.y;
+    const size = 2 * planet.radius;
+
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+
+    // Translate to the planet's center
+    ctx.translate(destX, destY);
+    ctx.rotate(planet.angle);
+
+    // Draw centered
+    ctx.drawImage(
+      planet.sprite,
+      -planet.radius, // offset x to center
+      -planet.radius, // offset y to center
+      size,
+      size
     );
-    ctx.fillStyle = planet.color;
-    ctx.fill();
+
+    ctx.restore();
   }
 }
 

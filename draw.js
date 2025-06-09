@@ -228,3 +228,68 @@ export function drawPulses(ctx) {
     ctx.stroke();
   }
 }
+
+let spinAngle = 0; // global or module-level variable
+export function drawCompass(ctx, canvas) {
+  const origin = { x: 0, y: 0 };
+  const { width } = canvas;
+
+  // Calculate direction vector in world space
+  const dx = origin.x - frank.x;
+  const dy = origin.y - frank.y;
+
+  // Calculate distance to target
+  const distance = Math.sqrt(dx * dx + dy * dy);
+
+  // Determine angle
+  let angle;
+  const closeThreshold = 150; // Adjust this as needed
+
+  if (distance < closeThreshold) {
+    // Spin mode
+    spinAngle += 0.1; // Control the speed of spinning
+    angle = spinAngle;
+  } else {
+    // Normal mode
+    angle = Math.atan2(dy, dx);
+  }
+
+  // Compass position (e.g. top-right)
+  const compassX = width - 50; // 50 pixels from the right
+  const compassY = 50; // 50 pixels from the top
+
+  // Compass size
+  const compassRadius = 30;
+
+  // Draw compass circle
+  ctx.beginPath();
+  ctx.arc(compassX, compassY, compassRadius, 0, 2 * Math.PI);
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Draw the compass needle
+  const needleLength = 25;
+
+  ctx.save(); // Save the current state
+  ctx.translate(compassX, compassY); // Move to the compass center
+  ctx.rotate(angle); // Rotate to point towards the target (or spin)
+
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(needleLength, 0);
+  ctx.strokeStyle = "lime";
+  ctx.lineWidth = 4;
+  ctx.stroke();
+
+  // Optionally draw the needlehead
+  ctx.beginPath();
+  ctx.moveTo(needleLength, 0);
+  ctx.lineTo(needleLength - 7, -5);
+  ctx.lineTo(needleLength - 7, 5);
+  ctx.closePath();
+  ctx.fillStyle = "lime";
+  ctx.fill();
+
+  ctx.restore(); // Restore the state so other drawings aren't rotated
+}

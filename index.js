@@ -14,6 +14,7 @@ import {
   drawLevelCleared,
   drawLevelText,
   drawMailbox,
+  drawCompass,
   drawParticles,
   drawPlanets,
   drawPulses,
@@ -130,6 +131,7 @@ function draw() {
   drawFuel(ctx);
   drawLettersUI(ctx);
   drawDamaged(ctx, canvas);
+  drawCompass(ctx, canvas);
 }
 
 function loop(currentTime, currentLevel) {

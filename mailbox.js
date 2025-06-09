@@ -5,15 +5,12 @@ export class Mailbox {
   y = 0;
   radius = undefined;
 
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-
+  constructor() {
     this.sprite = sprites["mailbox"];
     this.radius = this.sprite.width / 2;
   }
 }
 
 export function createMailbox() {
-  return new Mailbox(frank.x, frank.y);
+  return new Mailbox();
 }

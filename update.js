@@ -5,6 +5,7 @@ import {
   DAMAGE_TIMER_MAX,
   frank,
   galaxy,
+  gameState,
   keys,
   mailbox,
   paperAudio,
@@ -14,6 +15,7 @@ import {
   SONAR_TIMEOUT,
   thrusterAudio,
   timers,
+  windowState,
 } from "./index.js";
 import { playSpatialPing } from "./spatial_audio.js";
 
@@ -61,7 +63,7 @@ export function updateLetters() {
 
 function updateFrankFuel() {
   if (!keys["w"]) return;
-  let newFuel = frank.fuel - frank.fuelConsumption;
+  let newFuel = frank.fuel - frank.getFuelConsumption();
   if (newFuel < 0) frank.fuel = 0;
   else frank.fuel = newFuel;
 }
@@ -112,14 +114,14 @@ function updateFrankMovement() {
 
   // === THRUST ===
   if (hasFuel && keys.w) {
-    frank.vx += Math.cos(frank.angle) * frank.acceleration;
-    frank.vy += Math.sin(frank.angle) * frank.acceleration;
+    frank.vx += Math.cos(frank.angle) * frank.getAcceleration();
+    frank.vy += Math.sin(frank.angle) * frank.getAcceleration();
   }
 
   // === Clamp speed ===
   const speed = Math.sqrt(frank.vx ** 2 + frank.vy ** 2);
-  if (speed > frank.maxSpeed) {
-    const scale = frank.maxSpeed / speed;
+  if (speed > frank.getMaxSpeed()) {
+    const scale = frank.getMaxSpeed() / speed;
     frank.vx *= scale;
     frank.vy *= scale;
   }
@@ -262,5 +264,27 @@ export function updatePulses() {
     if (pulse.radius > pulse.maxRadius) {
       pulses.splice(i, 1);
     }
+  }
+}
+
+export function updateUpgradeClicked() {
+  if (windowState.lastClick) {
+    for (const button of windowState.buttons) {
+      if (
+        windowState.lastClick.x >= button.x &&
+        windowState.lastClick.x <= button.x + button.width &&
+        windowState.lastClick.y >= button.y &&
+        windowState.lastClick.y <= button.y + button.height
+      ) {
+        const { upgrade } = button;
+        if (!upgrade) throw Error("What is even going on here?");
+
+        if (!frank.upgrades[upgrade.name]) frank.upgrades[upgrade.name] = [];
+        frank.upgrades[upgrade.name].push(upgrade);
+
+        gameState.upgradeState = false;
+      }
+    }
+    windowState.lastClick = null; // reset click
   }
 }

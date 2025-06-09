@@ -18,6 +18,7 @@ import {
   drawParticles,
   drawPlanets,
   drawPulses,
+  drawUpgradeUI,
 } from "./draw.js";
 import {
   updateCamera,
@@ -29,7 +30,9 @@ import {
   updateSonar,
   updateThrusterAudio,
   updateTimers,
+  updateUpgradeClicked,
 } from "./update.js";
+import { getRandomUpgrade } from "./upgrades.js";
 
 const body = document.getElementById("rootElement");
 const canvas = document.getElementById("game");
@@ -54,6 +57,16 @@ export let frank = undefined;
 export let galaxy = new Galaxy();
 export let mailbox = undefined;
 export let particles = [];
+export let upgradeTracker = {};
+export let windowState = {
+  lastClick: null,
+  buttons: [],
+};
+export let gameState = {
+  victoryState: false,
+  upgradeState: false,
+};
+export let availableUpgrades = [];
 export const pulses = [];
 export const timers = {
   damagedTimer: 0,
@@ -64,7 +77,6 @@ export const DAMAGE_TIMER_MAX = 1000;
 export const SONAR_TIMEOUT = 1500;
 
 let frameId = 0;
-let victory = false;
 let lastTime = 0;
 let lastDmgAudioIndex = 0;
 
@@ -95,18 +107,41 @@ window.addEventListener("keyup", (e) => {
   }
 });
 
-function update(delta) {
-  if (galaxy.letters.length < 1 && !victory) nextLevel();
+window.addEventListener("click", (e) => {
+  windowState.lastClick = { x: e.offsetX, y: e.offsetY };
+});
 
-  updateCamera();
-  updateThrusterAudio();
-  updateFrank();
-  updateLetters();
-  updateParticles();
-  if (frank.letter) updateMailbox();
-  updateTimers(delta);
-  updateSonar();
-  updatePulses();
+function update(delta) {
+  if (galaxy.letters.length < 1 && !gameState.victoryState) evolveGalaxy();
+
+  if (
+    frank.lettersDelivered !== 0 &&
+    frank.lettersDelivered % 5 === 0 &&
+    !gameState.upgradeState &&
+    !upgradeTracker[frank.lettersDelivered]
+  ) {
+    gameState.upgradeState = true;
+    upgradeTracker[frank.lettersDelivered] = true;
+    availableUpgrades = [
+      getRandomUpgrade(),
+      getRandomUpgrade(),
+      getRandomUpgrade(),
+    ];
+  }
+
+  if (!gameState.upgradeState) {
+    updateCamera();
+    updateThrusterAudio();
+    updateFrank();
+    updateLetters();
+    updateParticles();
+    if (frank.letter) updateMailbox();
+    updateTimers(delta);
+    updateSonar();
+    updatePulses();
+  } else {
+    updateUpgradeClicked();
+  }
 }
 
 function draw() {
@@ -122,7 +157,7 @@ function draw() {
   drawFlame(ctx);
   drawPulses(ctx);
 
-  if (victory) {
+  if (gameState.victoryState) {
     drawParticles(ctx);
     drawLevelCleared(ctx, canvas);
   }
@@ -130,6 +165,10 @@ function draw() {
   drawLettersUI(ctx);
   drawDamaged(ctx, canvas);
   drawCompass(ctx, canvas);
+
+  if (gameState.upgradeState) {
+    drawUpgradeUI(ctx, canvas);
+  }
 }
 
 function loop(currentTime) {
@@ -166,8 +205,8 @@ function runGame() {
   frameId = requestAnimationFrame(() => loop(0));
 }
 
-function evolveGalaxy() {
-  victory = false;
+function doEvolveGalaxy() {
+  gameState.victoryState = false;
   particles = [];
   frank.fuel = frank.maxFuel;
   galaxy.evolutions++;
@@ -207,12 +246,12 @@ function spawnVictoryParticles(count = 1000) {
   }
 }
 
-function nextLevel() {
-  victory = true;
+function evolveGalaxy() {
+  gameState.victoryState = true;
   spawnVictoryParticles();
 
   setTimeout(() => {
-    evolveGalaxy();
+    doEvolveGalaxy();
   }, 1500);
 }
 

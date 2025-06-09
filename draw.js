@@ -1,4 +1,5 @@
 import {
+  availableUpgrades,
   camera,
   DAMAGE_TIMER_MAX,
   frank,
@@ -10,6 +11,7 @@ import {
   pulses,
   sprites,
   timers,
+  windowState,
 } from "./index.js";
 
 export function drawFrank(ctx) {
@@ -181,6 +183,62 @@ export function drawLettersUI(ctx) {
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
   ctx.fillText(frank.lettersDelivered, 20 + 40 + 8, yCord + 4);
+}
+
+export function drawUpgradeUI(ctx, canvas) {
+  const { width, height } = canvas;
+  windowState.buttons = [];
+
+  // Background
+  ctx.fillStyle = "rgba(0,0,0,0.7)";
+  ctx.fillRect(0, 0, width, height);
+
+  // Title
+  ctx.fillStyle = "white";
+  ctx.font = "24px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText("Choose Your Upgrade", width / 2, 100);
+
+  // Buttons
+  const buttonWidth = 200;
+  const buttonHeight = 60;
+  const buttonSpacing = 40;
+  const totalHeight = 3 * buttonHeight + 2 * buttonSpacing;
+  const startY = (height - totalHeight) / 2;
+  const buttonX = (width - buttonWidth) / 2;
+
+  ctx.font = "20px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  for (let i = 0; i < availableUpgrades.length; i++) {
+    const upgrade = availableUpgrades[i];
+    const buttonY = startY + i * (buttonHeight + buttonSpacing);
+
+    // Draw button
+    ctx.fillStyle = "gray";
+    ctx.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(buttonX, buttonY, buttonWidth, buttonHeight);
+
+    // Draw label
+    ctx.fillStyle = "white";
+    ctx.fillText(
+      upgrade.name,
+      buttonX + buttonWidth / 2,
+      buttonY + buttonHeight / 2
+    );
+
+    // Save bounds for click detection
+    windowState.buttons.push({
+      x: buttonX,
+      y: buttonY,
+      width: buttonWidth,
+      height: buttonHeight,
+      upgrade: upgrade,
+    });
+  }
 }
 
 export function drawBackground(ctx) {

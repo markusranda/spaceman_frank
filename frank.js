@@ -17,11 +17,27 @@ export class Frank {
   fuel = 2000;
   fuelConsumption = 0.5;
   lettersDelivered = 0;
+  upgrades = {};
 
   constructor(x, y) {
     this.sprite = sprites["frank"];
     this.radius = this.sprite.width / 2;
     this.x = x + this.sprite.width / 2;
     this.y = y + this.sprite.height / 2;
+  }
+
+  getMaxSpeed() {
+    const upgrades = 1 + (this.upgrades["max_speed"]?.length ?? 0);
+    return this.maxSpeed * upgrades;
+  }
+
+  getAcceleration() {
+    const upgrades = 1 + (this.upgrades["acceleration"]?.length ?? 0);
+    return this.acceleration * upgrades;
+  }
+
+  getFuelConsumption() {
+    const upgrades = 1 + (this.upgrades["fuel_consumption"]?.length ?? 0);
+    return this.fuelConsumption / upgrades;
   }
 }

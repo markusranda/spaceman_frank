@@ -25,7 +25,6 @@ export class Planet {
       sprites["planet_3"],
     ];
     const index = Math.floor(Math.random() * planetSprites.length);
-    console.log(index);
     return planetSprites[index];
   }
 }

@@ -289,3 +289,9 @@ export function updateUpgradeClicked() {
     windowState.lastClick = null; // reset click
   }
 }
+
+export function updatePlanets() {
+  for (const planet of galaxy.planets) {
+    planet.angle += 0.0001;
+  }
+}

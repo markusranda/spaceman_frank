@@ -27,6 +27,7 @@ import {
   updateLetters,
   updateMailbox,
   updateParticles,
+  updatePlanets,
   updatePulses,
   updateSonar,
   updateThrusterAudio,
@@ -140,6 +141,7 @@ function update(delta) {
     updateTimers(delta);
     updateSonar();
     updatePulses();
+    updatePlanets();
   } else {
     updateUpgradeClicked();
   }

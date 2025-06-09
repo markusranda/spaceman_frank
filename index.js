@@ -273,11 +273,13 @@ async function loadSprites() {
   const spritePaths = {
     frank: "sprites/frank.png",
     letter: "sprites/letter.png",
-    planet: "sprites/planet.png",
     mailbox: "sprites/mailbox.png",
     max_speed: "sprites/max.png",
     acceleration: "sprites/acceleration.png",
     fuel_consumption: "sprites/fuel.png",
+    planet_1: "sprites/planet_1.png",
+    planet_2: "sprites/planet_2.png",
+    planet_3: "sprites/planet_3.png",
   };
 
   const entries = Object.entries(spritePaths);

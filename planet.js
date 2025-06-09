@@ -14,8 +14,19 @@ export class Planet {
     this.x = x;
     this.y = y;
     this.radius = radius;
-    this.sprite = sprites["planet"];
+    this.sprite = this.getRandomPlanetSprite();
     this.angle = Math.random() * Math.PI * 2;
+  }
+
+  getRandomPlanetSprite() {
+    const planetSprites = [
+      sprites["planet_1"],
+      sprites["planet_2"],
+      sprites["planet_3"],
+    ];
+    const index = Math.floor(Math.random() * planetSprites.length);
+    console.log(index);
+    return planetSprites[index];
   }
 }
 

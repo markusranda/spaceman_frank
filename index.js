@@ -9,7 +9,7 @@ import {
   drawDamaged,
   drawFlame,
   drawFrank,
-  drawFuel,
+  drawFuelUI,
   drawLetters,
   drawLettersUI,
   drawLevelCleared,
@@ -19,6 +19,7 @@ import {
   drawPlanets,
   drawPulses,
   drawUpgradeUI,
+  drawUpgradeHUD,
 } from "./draw.js";
 import {
   updateCamera,
@@ -32,7 +33,7 @@ import {
   updateTimers,
   updateUpgradeClicked,
 } from "./update.js";
-import { getRandomUpgrade } from "./upgrades.js";
+import { getRandomUpgrade, initPossibleUpgrades } from "./upgrades.js";
 
 const body = document.getElementById("rootElement");
 const canvas = document.getElementById("game");
@@ -161,10 +162,11 @@ function draw() {
     drawParticles(ctx);
     drawLevelCleared(ctx, canvas);
   }
-  drawFuel(ctx);
+  drawFuelUI(ctx);
   drawLettersUI(ctx);
   drawDamaged(ctx, canvas);
   drawCompass(ctx, canvas);
+  drawUpgradeHUD(ctx, canvas);
 
   if (gameState.upgradeState) {
     drawUpgradeUI(ctx, canvas);
@@ -269,6 +271,9 @@ async function loadSprites() {
     frank: "sprites/frank.png",
     letter: "sprites/letter.png",
     mailbox: "sprites/mailbox.png",
+    max_speed: "sprites/max.png",
+    acceleration: "sprites/acceleration.png",
+    fuel_consumption: "sprites/fuel.png",
   };
 
   const entries = Object.entries(spritePaths);
@@ -296,5 +301,6 @@ song.volume = 0.05;
 song.play();
 
 await loadSprites();
+initPossibleUpgrades();
 drawBackgroundCanvasElement();
 runGame();

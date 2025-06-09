@@ -1,4 +1,5 @@
 import { sprites } from "./index.js";
+import { Upgrade } from "./upgrade.js";
 
 export class Frank {
   x = 0;
@@ -27,18 +28,18 @@ export class Frank {
   }
 
   getMaxSpeed() {
-    const upgrades = this.upgrades["max_speed"]?.length ?? 0;
+    const upgrades = this.upgrades["max_speed"]?.level ?? 0;
     const factor = 1 + 0.2 * upgrades;
     return this.maxSpeed * factor;
   }
 
   getAcceleration() {
-    const upgrades = this.upgrades["acceleration"]?.length ?? 0;
+    const upgrades = this.upgrades["acceleration"]?.level ?? 0;
     const factor = 1 + 0.15 * upgrades;
     return this.acceleration * factor;
   }
   getFuelConsumption() {
-    const upgrades = this.upgrades["fuel_consumption"]?.length ?? 0;
+    const upgrades = this.upgrades["fuel_consumption"]?.level ?? 0;
     const factor = Math.pow(0.95, upgrades);
     return this.fuelConsumption * factor;
   }

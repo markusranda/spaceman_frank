@@ -149,20 +149,6 @@ export function drawParticles(ctx) {
   }
 }
 
-export function drawFuel(ctx) {
-  const width = 40;
-  const height = 80;
-  let fuelHeight = height * (frank.fuel / frank.maxFuel) - 2;
-  if (fuelHeight < 0) fuelHeight = 0;
-
-  ctx.fillStyle = "grey";
-  ctx.fillRect(20, 60, width, height);
-
-  ctx.fillStyle = "lime";
-  // Draw from the bottom up
-  ctx.fillRect(22, 60 + height - fuelHeight - 2, width - 4, fuelHeight);
-}
-
 export function drawDamaged(ctx, canvas) {
   if (timers.damagedTimer > 0) {
     const maxAlpha = 0.4;
@@ -172,8 +158,22 @@ export function drawDamaged(ctx, canvas) {
   }
 }
 
+export function drawFuelUI(ctx) {
+  const width = 40;
+  const height = 80;
+  let fuelHeight = height * (frank.fuel / frank.maxFuel) - 2;
+  if (fuelHeight < 0) fuelHeight = 0;
+
+  ctx.fillStyle = "grey";
+  ctx.fillRect(20, 20, width, height);
+
+  ctx.fillStyle = "lime";
+  // Draw from the bottom up
+  ctx.fillRect(22, 20 + height - fuelHeight - 2, width - 4, fuelHeight);
+}
+
 export function drawLettersUI(ctx) {
-  const yCord = 160;
+  const yCord = 120;
   const sprite = sprites["letter"];
   if (!sprite) throw Error("can't draw letters without sprite");
   ctx.drawImage(sprite, 20, yCord, 40, 25);
@@ -183,6 +183,28 @@ export function drawLettersUI(ctx) {
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
   ctx.fillText(frank.lettersDelivered, 20 + 40 + 8, yCord + 4);
+}
+
+export function drawUpgradeHUD(ctx, canvas) {
+  const margin = 5;
+  let yCord = 160;
+  const xCoordMin = canvas.width - 110;
+  let xCoord = canvas.width - 110;
+  for (const [name, upgrade] of Object.entries(frank.upgrades)) {
+    for (let i = 0; i < upgrade.level; i++) {
+      if (!upgrade.sprite)
+        throw Error(`Failed to find sprite for upgrade ${name}`);
+      ctx.drawImage(upgrade.sprite, xCoord + 30, yCord - 8, 40, 40);
+
+      if (i + 1 >= upgrade.level) {
+        yCord += upgrade.sprite.height + margin;
+        xCoord = xCoordMin;
+      } else {
+        yCord += margin;
+        xCoord -= margin;
+      }
+    }
+  }
 }
 
 export function drawUpgradeUI(ctx, canvas) {

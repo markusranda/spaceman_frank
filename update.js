@@ -279,8 +279,9 @@ export function updateUpgradeClicked() {
         const { upgrade } = button;
         if (!upgrade) throw Error("What is even going on here?");
 
-        if (!frank.upgrades[upgrade.name]) frank.upgrades[upgrade.name] = [];
-        frank.upgrades[upgrade.name].push(upgrade);
+        if (!frank.upgrades[upgrade.name])
+          frank.upgrades[upgrade.name] = upgrade;
+        else frank.upgrades[upgrade.name].level++;
 
         gameState.upgradeState = false;
       }

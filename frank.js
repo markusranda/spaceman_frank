@@ -18,6 +18,9 @@ export class Frank {
   fuelConsumption = 0.5;
   lettersDelivered = 0;
   upgrades = {};
+  sonarRadius = 1500;
+  sonarAngle = 0;
+  sonarLetters = new Set();
 
   constructor(x, y) {
     this.sprite = sprites["frank"];

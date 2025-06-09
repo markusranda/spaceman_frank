@@ -4,11 +4,11 @@ import {
   DAMAGE_TIMER_MAX,
   frank,
   galaxy,
+  gameState,
   getBackgroundCanvas,
   keys,
   mailbox,
   particles,
-  pulses,
   sprites,
   timers,
   windowState,
@@ -314,19 +314,25 @@ export function drawBackground(ctx) {
   }
 }
 
-export function drawPulses(ctx) {
-  for (const pulse of pulses) {
-    const screenX = pulse.x - camera.x;
-    const screenY = pulse.y - camera.y;
+export function drawSonar(ctx) {
+  if (!gameState.sonarState) return;
 
-    ctx.beginPath();
-    ctx.arc(screenX, screenY, pulse.radius, 0, Math.PI * 2);
-    ctx.strokeStyle = `rgba(0, 255, 255, ${
-      1 - pulse.radius / pulse.maxRadius
-    })`;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  }
+  ctx.save();
+  ctx.strokeStyle = "rgba(0, 255, 0, 0.25)";
+  ctx.lineWidth = 10;
+  const screenX = frank.x - camera.x;
+  const screenY = frank.y - camera.y;
+
+  ctx.beginPath();
+  ctx.moveTo(screenX, screenY);
+  ctx.lineTo(
+    screenX + Math.cos(frank.sonarAngle) * frank.sonarRadius,
+    screenY + Math.sin(frank.sonarAngle) * frank.sonarRadius
+  );
+  ctx.stroke();
+
+  // Restore context state
+  ctx.restore();
 }
 
 let spinAngle = 0;

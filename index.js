@@ -17,9 +17,9 @@ import {
   drawCompass,
   drawParticles,
   drawPlanets,
-  drawPulses,
   drawUpgradeUI,
   drawUpgradeHUD,
+  drawSonar,
 } from "./draw.js";
 import {
   updateCamera,
@@ -28,7 +28,6 @@ import {
   updateMailbox,
   updateParticles,
   updatePlanets,
-  updatePulses,
   updateSonar,
   updateThrusterAudio,
   updateTimers,
@@ -67,16 +66,14 @@ export let windowState = {
 export let gameState = {
   victoryState: false,
   upgradeState: false,
+  sonarState: false,
 };
 export let availableUpgrades = [];
-export const pulses = [];
 export const timers = {
   damagedTimer: 0,
-  sonar: 0,
 };
 
 export const DAMAGE_TIMER_MAX = 1000;
-export const SONAR_TIMEOUT = 1500;
 
 let frameId = 0;
 let lastTime = 0;
@@ -140,7 +137,6 @@ function update(delta) {
     if (frank.letter) updateMailbox();
     updateTimers(delta);
     updateSonar();
-    updatePulses();
     updatePlanets();
   } else {
     updateUpgradeClicked();
@@ -154,11 +150,11 @@ function draw() {
   drawBackground(ctx);
 
   drawMailbox(ctx);
+  drawSonar(ctx);
   drawFrank(ctx);
   drawLetters(ctx);
   drawPlanets(ctx);
   drawFlame(ctx);
-  drawPulses(ctx);
 
   if (gameState.victoryState) {
     drawParticles(ctx);
@@ -304,9 +300,6 @@ export const paperAudio = new Audio("paper.mp3");
 thrusterAudio.volume = 0.1;
 paperAudio.volume = 0.2;
 thrusterAudio.loop = true;
-const song = new Audio("spaceman_frank_1.mp3");
-song.volume = 0.05;
-song.play();
 
 await loadSprites();
 initPossibleUpgrades();

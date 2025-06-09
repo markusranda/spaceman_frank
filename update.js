@@ -1,5 +1,3 @@
-import { Pulse } from "./pulse.js";
-import { getDistance } from "./coords.js";
 import {
   camera,
   DAMAGE_TIMER_MAX,
@@ -11,8 +9,6 @@ import {
   paperAudio,
   particles,
   playDmgSound,
-  pulses,
-  SONAR_TIMEOUT,
   thrusterAudio,
   timers,
   windowState,
@@ -236,34 +232,42 @@ export function updateCamera() {
 }
 
 export function updateSonar() {
-  if (timers["sonar"] <= 0 && keys[" "]) {
-    let nearestLetter;
-    let prevShortest = Infinity;
+  if (keys[" "] && !gameState.sonarState) {
+    gameState.sonarState = true;
+  }
+
+  if (gameState.sonarState) {
+    frank.sonarAngle -= 0.01;
+
     for (const letter of galaxy.letters) {
-      const distanceBetween = getDistance(letter.x, letter.y, frank.x, frank.y);
-      if (distanceBetween < prevShortest) {
-        nearestLetter = letter;
-        prevShortest = distanceBetween;
+      if (frank.sonarLetters.has(letter.id)) continue;
+      if (frank.letter?.id === letter.id) continue;
+
+      const dx = letter.x - frank.x;
+      const dy = letter.y - frank.y;
+      const letterAngle = Math.atan2(dy, dx);
+
+      // Calculate the absolute angle difference
+      let diff = Math.abs(letterAngle - frank.sonarAngle);
+
+      // Wrap angle to [0, 2π]
+      if (diff > Math.PI) {
+        diff = 2 * Math.PI - diff;
+      }
+
+      // Check if letter is within the radar beam
+      const sweepWidth = 0.05; // adjust this angle as needed (in radians)
+      if (diff < sweepWidth) {
+        frank.sonarLetters.add(letter.id);
+        playSpatialPing(letter.x, letter.y, 200);
       }
     }
-
-    if (nearestLetter) {
-      playSpatialPing(nearestLetter.x, nearestLetter.y, SONAR_TIMEOUT / 4);
-      timers["sonar"] = SONAR_TIMEOUT;
-      pulses.push(new Pulse());
-    }
   }
-}
 
-export function updatePulses() {
-  for (let i = pulses.length - 1; i >= 0; i--) {
-    const pulse = pulses[i];
-    pulse.radius += pulse.speed;
-
-    //TODO USE THE PULSE AND LETTER COLLISION TO PLAY THE SONAR SOUND
-    if (pulse.radius > pulse.maxRadius) {
-      pulses.splice(i, 1);
-    }
+  if (frank.sonarAngle <= -2 * Math.PI) {
+    gameState.sonarState = false;
+    frank.sonarAngle = 0;
+    frank.sonarLetters.clear();
   }
 }
 

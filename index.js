@@ -116,7 +116,7 @@ function update(delta) {
 
   if (
     frank.lettersDelivered !== 0 &&
-    frank.lettersDelivered % 5 === 0 &&
+    frank.lettersDelivered % 10 === 0 &&
     !gameState.upgradeState &&
     !upgradeTracker[frank.lettersDelivered]
   ) {

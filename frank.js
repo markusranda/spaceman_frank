@@ -27,17 +27,19 @@ export class Frank {
   }
 
   getMaxSpeed() {
-    const upgrades = 1 + (this.upgrades["max_speed"]?.length ?? 0);
-    return this.maxSpeed * upgrades;
+    const upgrades = this.upgrades["max_speed"]?.length ?? 0;
+    const factor = 1 + 0.2 * upgrades;
+    return this.maxSpeed * factor;
   }
 
   getAcceleration() {
-    const upgrades = 1 + (this.upgrades["acceleration"]?.length ?? 0);
-    return this.acceleration * upgrades;
+    const upgrades = this.upgrades["acceleration"]?.length ?? 0;
+    const factor = 1 + 0.15 * upgrades;
+    return this.acceleration * factor;
   }
-
   getFuelConsumption() {
-    const upgrades = 1 + (this.upgrades["fuel_consumption"]?.length ?? 0);
-    return this.fuelConsumption / upgrades;
+    const upgrades = this.upgrades["fuel_consumption"]?.length ?? 0;
+    const factor = Math.pow(0.95, upgrades);
+    return this.fuelConsumption * factor;
   }
 }

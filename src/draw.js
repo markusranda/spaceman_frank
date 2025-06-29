@@ -39,7 +39,6 @@ export function drawTheSun(ctx) {
   ctx.save();
   const disFromCenter = radius / 8;
   ctx.translate(-camera.x + disFromCenter, -camera.y + disFromCenter);
-  console.log(-camera.x, disFromCenter, -camera.y, disFromCenter);
   ctx.fillStyle = gradient;
   ctx.beginPath();
   ctx.arc(0, 0, radius, 0, Math.PI * 2);

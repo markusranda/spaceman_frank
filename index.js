@@ -202,16 +202,20 @@ async function init() {
   runGame();
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-  backgroundCanvas = createBackgroundCanvasElement();
-  canvas.onre;
-  setTimeout(() => {
-    ctx.fillStyle = "#111";
-    ctx.fillRect(0, 0, worldX, worldY);
-    drawBackground(ctx, backgroundCanvas);
-    drawStartGame(ctx, canvas);
-  }, 100);
+window.addEventListener(
+  "DOMContentLoaded",
+  () => {
+    backgroundCanvas = createBackgroundCanvasElement();
+    canvas.onre;
+    setTimeout(() => {
+      ctx.fillStyle = "#111";
+      ctx.fillRect(0, 0, worldX, worldY);
+      drawBackground(ctx, backgroundCanvas);
+      drawStartGame(ctx, canvas);
+    }, 100);
 
-  document.addEventListener("click", init, { once: true });
-  document.addEventListener("keydown", init, { once: true });
-});
+    document.addEventListener("click", init, { once: true });
+    document.addEventListener("keydown", init, { once: true });
+  },
+  { once: true }
+);

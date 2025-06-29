@@ -1,7 +1,8 @@
-import { drawBackgroundCanvasElement } from "./src/background.js";
+import { loadSprites } from "./src/sprites.js";
 import { Frank } from "./src/frank.js";
 import { Galaxy } from "./src/galaxy.js";
 import {
+  createBackgroundCanvasElement,
   drawBackground,
   drawDamaged,
   drawFlame,
@@ -15,28 +16,21 @@ import {
   drawSonar,
   drawFuelUI,
   drawFullnessUI,
+  drawStartGame,
 } from "./src/draw.js";
 import {
   updateCamera,
   updateFrank,
   updateParticles,
   updatePlanets,
-  updateSonar,
   updateThrusterAudio,
   updateTimers,
 } from "./src/update.js";
+import { loadAudios } from "./src/audio.js";
 
 const body = document.getElementById("rootElement");
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-
-let backgroundCanvas;
-export function setBackgroundCanvas(canvas) {
-  backgroundCanvas = canvas;
-}
-export function getBackgroundCanvas() {
-  return backgroundCanvas;
-}
 
 export const worldX = body.clientWidth;
 export const worldY = body.clientHeight;
@@ -44,7 +38,7 @@ canvas.width = worldX;
 canvas.height = worldY;
 
 // State
-export const sprites = {};
+let backgroundCanvas = null;
 export let frank = undefined;
 export let galaxy = new Galaxy();
 export let mailbox = undefined;
@@ -68,7 +62,6 @@ export const DAMAGE_TIMER_MAX = 1000;
 
 let frameId = 0;
 let lastTime = 0;
-let lastDmgAudioIndex = 0;
 
 export const camera = {
   x: 0,
@@ -113,7 +106,6 @@ function update(delta) {
   updateFrank();
   updateParticles();
   updateTimers(delta);
-  updateSonar();
   updatePlanets();
 }
 
@@ -121,7 +113,7 @@ function draw() {
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, worldX, worldY);
 
-  drawBackground(ctx);
+  drawBackground(ctx, backgroundCanvas);
 
   drawTheSun(ctx);
   drawSonar(ctx);
@@ -204,58 +196,19 @@ function evolveGalaxy() {
   }, 1500);
 }
 
-function loadImage(src) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.src = src;
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-  });
+async function init() {
+  await loadSprites();
+  await loadAudios();
+  runGame();
 }
 
-async function loadSprites() {
-  const spritePaths = {
-    frank: "assets/sprites/frank.png",
-    letter: "assets/sprites/letter.png",
-    mailbox: "assets/sprites/mailbox.png",
-    max_speed: "assets/sprites/max.png",
-    acceleration: "assets/sprites/acceleration.png",
-    fuel_consumption: "assets/sprites/fuel.png",
-    planet_1: "assets/sprites/planet_1.png",
-    planet_2: "assets/sprites/planet_2.png",
-    planet_3: "assets/sprites/planet_3.png",
-  };
+backgroundCanvas = createBackgroundCanvasElement();
+setTimeout(() => {
+  ctx.fillStyle = "#111";
+  ctx.fillRect(0, 0, worldX, worldY);
+  drawBackground(ctx, backgroundCanvas);
+  drawStartGame(ctx, canvas);
+}, 100);
 
-  const entries = Object.entries(spritePaths);
-  for (const [key, path] of entries) {
-    sprites[key] = await loadImage(path);
-  }
-}
-
-export function playDmgSound() {
-  const audioList = [
-    new Audio("assets/audio/damage_1.mp3"),
-    new Audio("assets/audio/damage_2.mp3"),
-  ];
-  const index = (lastDmgAudioIndex + 1) % audioList.length;
-  const audio = audioList[index];
-  audio.volume = 0.3;
-  audio.play();
-  lastDmgAudioIndex = index;
-}
-
-export const thrusterAudio = new Audio("assets/audio/thruster_2.mp3");
-export const paperAudio = new Audio("assets/audio/paper.mp3");
-thrusterAudio.volume = 0.1;
-paperAudio.volume = 0.2;
-thrusterAudio.loop = true;
-export const thrusterAudioCtx = new (window.AudioContext ||
-  window.webkitAudioContext)();
-const source = thrusterAudioCtx.createMediaElementSource(thrusterAudio);
-export const thrusterGainNode = thrusterAudioCtx.createGain();
-thrusterGainNode.gain.value = 0; // start silent
-source.connect(thrusterGainNode).connect(thrusterAudioCtx.destination);
-
-await loadSprites();
-drawBackgroundCanvasElement();
-runGame();
+document.addEventListener("click", init, { once: true });
+document.addEventListener("keydown", init, { once: true });

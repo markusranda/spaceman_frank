@@ -1,0 +1,71 @@
+// TODO Figure it out
+let lastDmgAudioIndex = 0;
+
+// MAP {audio, gainNode, audioCtx}
+export const audios = {};
+
+export async function loadAudios() {
+  const configs = {
+    damage_1: { src: "assets/audio/damage_1.mp3", volume: 1.0 },
+    damage_2: { src: "assets/audio/damage_2.mp3", volume: 1.0 },
+    paper: { src: "assets/audio/paper.mp3", volume: 0.8 },
+    thruster: {
+      src: "assets/audio/thruster.mp3",
+      volume: 0.1,
+      gain: 0.0,
+      loop: true,
+    },
+  };
+
+  const entries = Object.entries(configs);
+  for (const [key, config] of entries) {
+    try {
+      audios[key] = await loadAudio(config.src, config);
+    } catch (err) {
+      console.error(`Failed to load audio: ${key}`, err);
+    }
+  }
+}
+
+function loadAudio(src, options = {}) {
+  return new Promise((resolve, reject) => {
+    const audio = new Audio();
+    audio.src = src;
+    audio.preload = "auto";
+    audio.loop = !!options.loop;
+    audio.volume = options.volume ?? 1.0;
+
+    audio.addEventListener(
+      "canplaythrough",
+      () => {
+        const audioCtx = new (window.AudioContext ||
+          window.webkitAudioContext)();
+        const source = audioCtx.createMediaElementSource(audio);
+        const gainNode = audioCtx.createGain();
+        gainNode.gain.value = options.gain ?? 1.0;
+
+        source.connect(gainNode).connect(audioCtx.destination);
+
+        resolve({ audio, gainNode, audioCtx });
+      },
+      { once: true }
+    );
+
+    audio.addEventListener(
+      "error",
+      () => {
+        reject(new Error(`Failed to load: ${src}`));
+      },
+      { once: true }
+    );
+  });
+}
+
+export function playDmgSound() {
+  const audioList = [audios["damage_1"], audios["damage_2"]];
+  const index = (lastDmgAudioIndex + 1) % audioList.length;
+  const audio = audioList[index];
+  audio.audio.volume = 0.3;
+  audio.audio.play();
+  lastDmgAudioIndex = index;
+}

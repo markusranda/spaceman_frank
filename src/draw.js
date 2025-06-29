@@ -5,11 +5,8 @@ import {
   frank,
   galaxy,
   gameState,
-  getBackgroundCanvas,
   keys,
-  mailbox,
   particles,
-  sprites,
   timers,
   windowState,
 } from "../index.js";
@@ -284,9 +281,32 @@ function drawTextWithEllipsis(ctx, text, x, y, maxWidth) {
   ctx.fillText(truncatedText, x, y);
 }
 
-export function drawBackground(ctx) {
+export function createBackgroundCanvasElement() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 2048;
+  canvas.height = 2048;
+  const bgCtx = canvas.getContext("2d");
+
+  for (let i = 0; i < 1000; i++) {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height;
+    const radius = Math.random() * 1.5;
+    const alpha = Math.random() * 0.5 + 0.5;
+    bgCtx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+    bgCtx.beginPath();
+    bgCtx.arc(x, y, radius, 0, Math.PI * 2);
+    bgCtx.fill();
+  }
+
+  return canvas;
+}
+
+export function drawBackground(ctx, backgroundCanvas) {
+  if (!ctx) throw Error("Can't draw background without canvas ctx");
+  if (!backgroundCanvas)
+    throw Error("Can't draw background without backgroundCanvas");
+
   const parallax = 0.1;
-  const backgroundCanvas = getBackgroundCanvas();
   const bgX = (-camera.x * parallax) % backgroundCanvas.width;
   const bgY = (-camera.y * parallax) % backgroundCanvas.height;
 
@@ -299,6 +319,27 @@ export function drawBackground(ctx) {
       );
     }
   }
+}
+
+export function drawStartGame(ctx, canvas) {
+  ctx.save();
+
+  ctx.font = "32px 'Press Start 2P'";
+  ctx.fillStyle = "white";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+
+  ctx.shadowColor = "gold";
+  ctx.shadowBlur = 15;
+  ctx.fillText("START GAME", centerX, centerY - 25);
+
+  ctx.font = "22px 'Press Start 2P'";
+  ctx.fillText("Press any key to start", centerX, centerY + 25);
+
+  ctx.restore();
 }
 
 export function drawSonar(ctx) {

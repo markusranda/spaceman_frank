@@ -1,4 +1,4 @@
-import { sprites } from "../index.js";
+import { sprites } from "./sprites.js";
 
 export class Planet {
   radius = 0;

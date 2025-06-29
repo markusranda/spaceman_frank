@@ -5,59 +5,11 @@ import {
   galaxy,
   gameState,
   keys,
-  mailbox,
-  paperAudio,
   particles,
-  playDmgSound,
-  thrusterAudio,
-  thrusterAudioCtx,
-  thrusterGainNode,
   timers,
   windowState,
 } from "../index.js";
-import { playSpatialPing } from "./spatial_audio.js";
-
-export function updateMailbox() {
-  const dx = mailbox.x - frank.x;
-  const dy = mailbox.y - frank.y;
-  const distSq = dx * dx + dy * dy;
-  const dist = Math.sqrt(distSq);
-
-  if (dist <= frank.radius) {
-    const foundAt = galaxy.letters.findIndex(
-      (letter) => letter.id === frank.letter.id
-    );
-    if (foundAt > -1) galaxy.letters.splice(foundAt, 1);
-    else throw Error(`Failed to find letter with id: ${frank.letter.id}`);
-    frank.letter = undefined;
-    frank.lettersDelivered++;
-    paperAudio.play();
-  }
-}
-
-export function updateLetters() {
-  const foreheadOffset = 40;
-
-  if (frank.letter) {
-    frank.letter.x = frank.x + Math.cos(frank.angle) * foreheadOffset;
-    frank.letter.y = frank.y + Math.sin(frank.angle) * foreheadOffset;
-    frank.letter.angle = frank.angle;
-  } else {
-    for (const letter of galaxy.letters) {
-      const dx = letter.x - frank.x;
-      const dy = letter.y - frank.y;
-      const distSq = dx * dx + dy * dy;
-      const dist = Math.sqrt(distSq);
-
-      if (dist <= frank.radius) {
-        frank.letter = letter;
-        letter.x = frank.x + Math.cos(frank.angle) * foreheadOffset;
-        letter.y = frank.y + Math.sin(frank.angle) * foreheadOffset;
-        letter.angle = frank.angle;
-      }
-    }
-  }
-}
+import { audios, playDmgSound } from "./audio.js";
 
 function updateFrankFuel() {
   if (!keys["w"]) return;
@@ -175,30 +127,22 @@ export function updateParticles() {
 }
 
 export function updateThrusterAudio() {
+  const { gainNode, audio, audioCtx } = audios["thruster"];
+  if (!gainNode || !audio || !audioCtx)
+    throw Error("Failed to find audio for thruster");
+
   if (frank.fuel <= 0) {
-    thrusterGainNode.gain.setTargetAtTime(
-      0,
-      thrusterAudioCtx.currentTime,
-      0.05
-    );
+    gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
     return;
   }
 
   if (keys["w"]) {
-    if (thrusterAudio.paused) {
-      thrusterAudio.play();
+    if (audio.paused) {
+      audio.play();
     }
-    thrusterGainNode.gain.setTargetAtTime(
-      1,
-      thrusterAudioCtx.currentTime,
-      0.05
-    ); // fade in
+    gainNode.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05); // fade in
   } else {
-    thrusterGainNode.gain.setTargetAtTime(
-      0,
-      thrusterAudioCtx.currentTime,
-      0.05
-    ); // fade out
+    gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05); // fade out
   }
 }
 
@@ -214,46 +158,6 @@ export function updateTimers(delta) {
 export function updateCamera() {
   camera.x = frank.x - camera.width / 2;
   camera.y = frank.y - camera.height / 2;
-}
-
-export function updateSonar() {
-  if (keys[" "] && !gameState.sonarState) {
-    gameState.sonarState = true;
-  }
-
-  if (gameState.sonarState) {
-    frank.sonarAngle -= 0.01;
-
-    for (const letter of galaxy.letters) {
-      if (frank.sonarLetters.has(letter.id)) continue;
-      if (frank.letter?.id === letter.id) continue;
-
-      const dx = letter.x - frank.x;
-      const dy = letter.y - frank.y;
-      const letterAngle = Math.atan2(dy, dx);
-
-      // Calculate the absolute angle difference
-      let diff = Math.abs(letterAngle - frank.sonarAngle);
-
-      // Wrap angle to [0, 2π]
-      if (diff > Math.PI) {
-        diff = 2 * Math.PI - diff;
-      }
-
-      // Check if letter is within the radar beam
-      const sweepWidth = 0.05; // adjust this angle as needed (in radians)
-      if (diff < sweepWidth) {
-        frank.sonarLetters.add(letter.id);
-        playSpatialPing(letter.x, letter.y, 200);
-      }
-    }
-  }
-
-  if (frank.sonarAngle <= -2 * Math.PI) {
-    gameState.sonarState = false;
-    frank.sonarAngle = 0;
-    frank.sonarLetters.clear();
-  }
 }
 
 export function updateUpgradeClicked() {

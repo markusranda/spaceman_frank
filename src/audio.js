@@ -6,8 +6,8 @@ export const audios = {};
 
 export async function loadAudios() {
   const configs = {
-    damage_1: { src: "assets/audio/damage_1.mp3", volume: 1.0 },
-    damage_2: { src: "assets/audio/damage_2.mp3", volume: 1.0 },
+    damage_1: { src: "assets/audio/damage_1.mp3", volume: 0.1 },
+    damage_2: { src: "assets/audio/damage_2.mp3", volume: 0.1 },
     paper: { src: "assets/audio/paper.mp3", volume: 0.8 },
     thruster: {
       src: "assets/audio/thruster.mp3",
@@ -71,7 +71,6 @@ export function playDmgSound() {
   const audioList = [audios["damage_1"], audios["damage_2"]];
   const index = (lastDmgAudioIndex + 1) % audioList.length;
   const audio = audioList[index];
-  audio.audio.volume = 0.3;
   audio.audio.play();
   lastDmgAudioIndex = index;
 }

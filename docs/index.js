@@ -13,7 +13,6 @@ import {
   drawParticles,
   drawPlanets,
   drawUpgradeHUD,
-  drawSonar,
   drawFuelUI,
   drawFullnessUI,
   drawStartGame,
@@ -119,7 +118,6 @@ function draw() {
   drawBackground(ctx, backgroundCanvas);
 
   drawTheSun(ctx);
-  drawSonar(ctx);
   drawFrank(ctx);
   drawPlanets(ctx);
   drawFlame(ctx);

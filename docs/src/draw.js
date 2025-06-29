@@ -337,27 +337,6 @@ export function drawStartGame(ctx, canvas) {
   ctx.restore();
 }
 
-export function drawSonar(ctx) {
-  if (!gameState.sonarState) return;
-
-  ctx.save();
-  ctx.strokeStyle = "rgba(0, 255, 0, 0.25)";
-  ctx.lineWidth = 10;
-  const screenX = frank.x - camera.x;
-  const screenY = frank.y - camera.y;
-
-  ctx.beginPath();
-  ctx.moveTo(screenX, screenY);
-  ctx.lineTo(
-    screenX + Math.cos(frank.sonarAngle) * frank.sonarRadius,
-    screenY + Math.sin(frank.sonarAngle) * frank.sonarRadius
-  );
-  ctx.stroke();
-
-  // Restore context state
-  ctx.restore();
-}
-
 let spinAngle = 0;
 export function drawCompass(ctx, canvas) {
   const origin = { x: 0, y: 0 };

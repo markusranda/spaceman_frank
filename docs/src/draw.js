@@ -145,6 +145,22 @@ export function drawDamaged(ctx, canvas) {
   }
 }
 
+export function drawFrankSizeUI(ctx, canvas) {
+  ctx.save();
+
+  ctx.font = "32px 'Press Start 2P'";
+  ctx.fillStyle = "lime";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  const x = canvas.width / 2;
+  const y = 40;
+
+  ctx.fillText(`${frank.radius}m`, x, y);
+
+  ctx.restore();
+}
+
 export function drawFuelUI(ctx) {
   const width = 40;
   const height = 80;

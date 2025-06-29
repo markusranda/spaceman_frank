@@ -16,6 +16,7 @@ import {
   drawFuelUI,
   drawFullnessUI,
   drawStartGame,
+  drawFrankSizeUI,
 } from "./src/draw.js";
 import {
   updateCamera,
@@ -123,6 +124,7 @@ function draw() {
   drawFlame(ctx);
   drawFuelUI(ctx);
   drawFullnessUI(ctx);
+  drawFrankSizeUI(ctx, canvas);
 
   if (gameState.victoryState) {
     drawParticles(ctx);

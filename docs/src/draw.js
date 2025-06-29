@@ -135,7 +135,7 @@ export function drawLevelCleared(ctx, canvas) {
 
   ctx.shadowColor = "gold";
   ctx.shadowBlur = 15;
-  ctx.fillText("THE GALAXY IS GROWING", centerX, centerY);
+  ctx.fillText("FRANK GROWS HUNGRIER", centerX, centerY);
 
   ctx.restore();
 }

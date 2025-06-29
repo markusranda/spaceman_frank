@@ -59,48 +59,32 @@ export function drawLetters(ctx) {
 }
 
 export function drawFlame(ctx) {
-  // This action requires fuel
-  if (frank.fuel <= 0) return;
-
-  if (!keys.w) return;
+  if (frank.fuel <= 0 || !keys.w) return;
 
   ctx.save();
   ctx.translate(frank.x - camera.x, frank.y - camera.y);
   ctx.rotate(frank.angle + Math.PI / 2);
 
-  const flameBase = frank.sprite.width * 0.6;
-  const flameLength = 30 + Math.random() * 20;
-  const baseCurve = 6; // how "rounded" the base is
+  const flameBase = frank.radius * 1.2;
+  const flameLength = frank.radius * 2 + Math.random() * 40;
 
-  const gradient = ctx.createLinearGradient(
-    0,
-    frank.sprite.height / 2,
-    0,
-    frank.sprite.height / 2 + flameLength
-  );
-  gradient.addColorStop(0, "white");
-  gradient.addColorStop(0.3, "yellow");
-  gradient.addColorStop(0.7, "orange");
-  gradient.addColorStop(1, "red");
+  const baseY = frank.radius;
+  const tipY = baseY + flameLength;
+
+  const gradient = ctx.createLinearGradient(0, baseY, 0, tipY);
+  gradient.addColorStop(0.0, "rgba(255, 255, 255, 1.0)"); // white, full opacity
+  gradient.addColorStop(0.3, "rgba(255, 255, 100, 0.8)"); // yellowish
+  gradient.addColorStop(0.7, "rgba(255, 100, 0, 0.4)"); // orange
+  gradient.addColorStop(1.0, "rgba(255, 0, 0, 0.0)"); // red, fully transparent
 
   ctx.beginPath();
+  ctx.moveTo(-flameBase / 2, baseY);
 
-  // Rounded base
-  ctx.moveTo(-flameBase / 2, frank.sprite.height / 2);
-  ctx.lineTo(-flameBase / 2 + baseCurve, frank.sprite.height / 2 - baseCurve);
+  // Left curve to tip
+  ctx.quadraticCurveTo(0, baseY + flameLength * 0.5, 0, tipY);
 
-  // Left side curve to tip
-  ctx.lineTo(-flameBase * 0.2, frank.sprite.height / 2 + flameLength * 0.5);
-
-  // Tip
-  ctx.lineTo(0, frank.sprite.height / 2 + flameLength);
-
-  // Right side curve
-  ctx.lineTo(flameBase * 0.2, frank.sprite.height / 2 + flameLength * 0.5);
-
-  // Rounded base other side
-  ctx.lineTo(flameBase / 2 - baseCurve, frank.sprite.height / 2 - baseCurve);
-  ctx.lineTo(flameBase / 2, frank.sprite.height / 2);
+  // Right curve back to base
+  ctx.quadraticCurveTo(0, baseY + flameLength * 0.5, flameBase / 2, baseY);
 
   ctx.closePath();
   ctx.fillStyle = gradient;
@@ -131,21 +115,6 @@ export function drawPlanets(ctx) {
 
     ctx.restore();
   }
-}
-
-export function drawMailbox(ctx) {
-  ctx.save();
-  ctx.translate(mailbox.x - camera.x, mailbox.y - camera.y); // Move to Frank's position
-  ctx.rotate(mailbox.angle + Math.PI / 2); // Rotate the canvas
-  ctx.shadowColor = "rgba(255, 255, 128, 0.7)"; // yellowish glow
-  ctx.shadowBlur = 15000;
-  ctx.drawImage(
-    mailbox.sprite,
-    -mailbox.sprite.width / 2, // Offset to center
-    -mailbox.sprite.height / 2
-  );
-
-  ctx.restore();
 }
 
 export function drawLevelCleared(ctx, canvas) {

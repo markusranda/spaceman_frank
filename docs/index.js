@@ -226,6 +226,9 @@ function evolveGalaxy() {
 }
 
 async function init() {
+  document.removeEventListener("click", init, { once: true });
+  document.removeEventListener("keydown", init, { once: true });
+
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   drawBackground(ctx, backgroundCanvas);
   drawLoadingIndicator(ctx, canvas);

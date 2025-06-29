@@ -167,17 +167,22 @@ export function drawFuelUI(ctx) {
   ctx.fillRect(22, 20 + height - fuelHeight - 2, width - 4, fuelHeight);
 }
 
-export function drawLettersUI(ctx) {
-  const yCord = 120;
-  const sprite = sprites["letter"];
-  if (!sprite) throw Error("can't draw letters without sprite");
-  ctx.drawImage(sprite, 20, yCord, 40, 25);
+export function drawFullnessUI(ctx) {
+  const width = 40;
+  const height = 80;
+  console.log(frank.fullness, frank.getFullnessGoal());
+  let fullnessHeight = height * (frank.fullness / frank.getFullnessGoal()) - 2;
+  if (fullnessHeight < 0) fullnessHeight = 0;
 
-  ctx.font = "16px 'Press Start 2P'";
-  ctx.fillStyle = "lime"; // CRT-style green
-  ctx.textAlign = "left";
-  ctx.textBaseline = "top";
-  ctx.fillText(frank.lettersDelivered, 20 + 40 + 8, yCord + 4);
+  ctx.save();
+  ctx.fillStyle = "grey";
+  ctx.translate(20, 120);
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.fillStyle = "pink";
+  // Draw from the bottom up
+  ctx.fillRect(2, height - fullnessHeight - 2, width - 4, fullnessHeight);
+  ctx.restore();
 }
 
 export function drawUpgradeHUD(ctx, canvas) {

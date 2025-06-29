@@ -13,7 +13,7 @@ export class Frank {
   sprite = undefined;
   radius = 0;
   letter = undefined;
-  maxFuel = 2000;
+  maxFuel = 10000;
   fuel = 10000;
   fuelConsumption = 0.5;
   lettersDelivered = 0;
@@ -22,6 +22,7 @@ export class Frank {
   sonarAngle = 0;
   sonarLetters = new Set();
   baseFrankRadius = 50;
+  fullness = 0;
 
   constructor() {
     this.sprite = sprites["frank"];
@@ -45,5 +46,24 @@ export class Frank {
     const upgrades = this.upgrades["fuel_consumption"]?.level ?? 0;
     const factor = Math.pow(0.95, upgrades);
     return this.fuelConsumption * factor;
+  }
+
+  getFullnessGoal() {
+    return 25;
+  }
+
+  eatPlanet(planet) {
+    const maxEdible = this.radius * 0.75;
+    const minEdible = this.radius * 0.5;
+
+    // Guard - Frank can't eat the big ones
+    if (planet.radius > maxEdible) return;
+
+    if (planet.radius >= minEdible) {
+      this.fullness += 1.0;
+    } else {
+      const levelDiff = Math.floor(Math.log2(this.radius / planet.radius));
+      this.fullness += 1.0 / 2 ** levelDiff;
+    }
   }
 }

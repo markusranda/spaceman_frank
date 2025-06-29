@@ -13,6 +13,8 @@ import {
   drawPlanets,
   drawUpgradeHUD,
   drawSonar,
+  drawFuelUI,
+  drawFullnessUI,
 } from "./src/draw.js";
 import {
   updateCamera,
@@ -127,6 +129,8 @@ function draw() {
   drawFrank(ctx);
   drawPlanets(ctx);
   drawFlame(ctx);
+  drawFuelUI(ctx);
+  drawFullnessUI(ctx);
 
   if (gameState.victoryState) {
     drawParticles(ctx);

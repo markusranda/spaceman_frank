@@ -95,7 +95,7 @@ function handlePlanetCollision(planets) {
       const index = galaxy.planets.indexOf(planet);
       if (index !== -1) {
         galaxy.planets.splice(index, 1);
-        console.log("Consumed planet with radius:", planet.radius);
+        frank.eatPlanet(planet);
       }
     } else {
       if (impactSpeed > impactThreshold) {

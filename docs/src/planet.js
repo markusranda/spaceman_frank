@@ -7,6 +7,7 @@ export class Planet {
   color = "grey";
   sprite = undefined;
   angle = 0;
+  type = "planet";
 
   constructor(x, y, radius) {
     this.x = x;

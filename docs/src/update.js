@@ -21,54 +21,6 @@ function updateFrankFuel() {
   else frank.fuel = newFuel;
 }
 
-function handlePlanetCollision(planets) {
-  const impactThreshold = 1.5;
-  const fuelLossMultiplier = 10;
-  const maxEdibleRadius = frank.radius * 0.75;
-
-  const alreadyChecked = new Set();
-
-  for (const planet of planets) {
-    if (alreadyChecked.has(planet)) continue;
-    alreadyChecked.add(planet);
-
-    const nextX = frank.x + frank.vx;
-    const nextY = frank.y + frank.vy;
-
-    const dx = nextX - planet.x;
-    const dy = nextY - planet.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist === 0) continue;
-
-    const nx = dx / dist;
-    const ny = dy / dist;
-
-    const normalVelocity = frank.vx * nx + frank.vy * ny;
-    const impactSpeed = Math.abs(normalVelocity);
-
-    if (planet.radius <= maxEdibleRadius) {
-      const index = galaxy.planets.indexOf(planet);
-      if (index !== -1) {
-        galaxy.planets.splice(index, 1);
-        frank.eatPlanet(planet);
-        playEatSound();
-      }
-    } else {
-      if (impactSpeed > impactThreshold) {
-        const fuelLoss = impactSpeed * fuelLossMultiplier;
-        frank.fuel = Math.max(0, frank.fuel - fuelLoss);
-        timers.damagedTimer = DAMAGE_TIMER_MAX;
-        playDmgSound();
-      }
-
-      if (normalVelocity < 0) {
-        frank.vx -= normalVelocity * nx;
-        frank.vy -= normalVelocity * ny;
-      }
-    }
-  }
-}
-
 export function updateFrankMovement() {
   const hasFuel = frank.fuel > 0;
 
@@ -92,25 +44,83 @@ export function updateFrankMovement() {
     frank.vy *= scale;
   }
 
-  // === MOVE Frank ===
+  // === MOVE ===
   frank.x += frank.vx;
   frank.y += frank.vy;
 
-  // === COLLISION ===
-  const planetCollisions = [];
-  for (const planet of galaxy.planets) {
-    const dx = frank.x - planet.x;
-    const dy = frank.y - planet.y;
-    const dist = Math.hypot(dx, dy);
-    const minDist = frank.radius + planet.radius;
+  // === COLLISIONS ===
+  const collisions = {};
+  collisions["planet"] = detectCollisions(galaxy.planets);
+  collisions["enemy"] = detectCollisions(galaxy.enemies);
+  handleEdibleCollisions(collisions);
+}
 
+function detectCollisions(objects) {
+  // index => object
+  const collisions = {};
+
+  for (let i = 0; i < objects.length; i++) {
+    const obj = objects[i];
+    const dx = frank.x - obj.x;
+    const dy = frank.y - obj.y;
+    const dist = Math.hypot(dx, dy);
+    const minDist = frank.radius + obj.radius;
     if (dist < minDist) {
-      planetCollisions.push(planet);
+      collisions[i] = obj;
     }
   }
 
-  if (planetCollisions.length > 0) {
-    handlePlanetCollision(planetCollisions);
+  return collisions;
+}
+
+function handleEdibleCollisions(objects) {
+  const maxEdibleRadius = frank.radius * 0.75;
+  const impactThreshold = 1.5;
+  const fuelLossMultiplier = 10;
+
+  for (const [type, mapByIndex] of Object.entries(objects)) {
+    console.log(objects);
+    for (const [index, obj] of Object.entries(mapByIndex)) {
+      const dx = frank.x + frank.vx - obj.x;
+      const dy = frank.y + frank.vy - obj.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist === 0) continue;
+
+      const nx = dx / dist;
+      const ny = dy / dist;
+      const normalVelocity = frank.vx * nx + frank.vy * ny;
+      const impactSpeed = Math.abs(normalVelocity);
+
+      const isEdible = obj.radius <= maxEdibleRadius;
+
+      if (isEdible) {
+        console.log(isEdible);
+        removeFromGalaxy(type, index);
+        frank.eatEntity(obj);
+        playEatSound();
+      } else {
+        if (impactSpeed > impactThreshold) {
+          frank.fuel = Math.max(
+            0,
+            frank.fuel - impactSpeed * fuelLossMultiplier
+          );
+          timers.damagedTimer = DAMAGE_TIMER_MAX;
+          playDmgSound();
+        }
+        if (normalVelocity < 0) {
+          frank.vx -= normalVelocity * nx;
+          frank.vy -= normalVelocity * ny;
+        }
+      }
+    }
+  }
+}
+
+function removeFromGalaxy(type, objIndex) {
+  if (type === "planet") {
+    galaxy.planets.splice(objIndex, 1);
+  } else if (type === "enemy") {
+    galaxy.enemies.splice(objIndex, 1);
   }
 }
 
@@ -174,7 +184,6 @@ export function updateProjectiles(delta) {
     const dist = Math.hypot(dx, dy);
     const minDist = frank.radius + projectile.radius;
 
-    console.log(frank.radius, projectile.radius);
     if (dist < minDist) {
       collided = true;
     }

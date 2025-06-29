@@ -5,7 +5,8 @@ export const MAX_ATTACK_TIMER = 2000;
 export class Enemy {
   x = 0;
   y = 0;
-  radius = 50;
+  radius = 25;
+  type = "enemy";
   sprite = sprites["enemy_1"];
   attackTimer = MAX_ATTACK_TIMER;
 

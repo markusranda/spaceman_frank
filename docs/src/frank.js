@@ -50,17 +50,19 @@ export class Frank {
     return 10;
   }
 
-  eatPlanet(planet) {
+  eatEntity(entity) {
+    if (!entity.radius)
+      throw Error(`Can't eat something without radius: ${entity}`);
     const maxEdible = this.radius * 0.75;
     const minEdible = this.radius * 0.5;
 
     // Guard - Frank can't eat the big ones
-    if (planet.radius > maxEdible) return;
+    if (entity.radius > maxEdible) return;
 
-    if (planet.radius >= minEdible) {
+    if (entity.radius >= minEdible) {
       this.fullness += 1.0;
     } else {
-      const levelDiff = Math.floor(Math.log2(this.radius / planet.radius));
+      const levelDiff = Math.floor(Math.log2(this.radius / entity.radius));
       this.fullness += 1.0 / 2 ** levelDiff;
     }
   }

@@ -131,10 +131,10 @@ function draw() {
 
   drawTheSun(ctx);
   drawFrank(ctx);
-  drawEnemies(ctx);
+  drawFlame(ctx);
   drawProjectiles(ctx);
   drawPlanets(ctx);
-  drawFlame(ctx);
+  drawEnemies(ctx);
   drawFuelUI(ctx);
   drawFullnessUI(ctx);
   drawFrankSizeUI(ctx, canvas);

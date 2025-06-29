@@ -6,9 +6,11 @@ export class Enemy {
   x = 0;
   y = 0;
   radius = 25;
+  speed = 2;
   type = "enemy";
   sprite = sprites["enemy_1"];
   attackTimer = MAX_ATTACK_TIMER;
+  attackRange = 600;
 
   constructor(frank, galaxy) {
     const { x, y } = this.getValidSpawnCoords(frank, galaxy);

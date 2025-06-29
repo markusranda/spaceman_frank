@@ -152,7 +152,7 @@ export function updateSpawnEnemies() {
 }
 
 export function updateEnemies(delta) {
-  const speed = 0.5; // adjust for how fast enemies should move
+  const sweetSpot = 400;
 
   for (const enemy of galaxy.enemies) {
     const dx = frank.x - enemy.x;
@@ -161,16 +161,21 @@ export function updateEnemies(delta) {
 
     if (dist === 0) continue;
 
-    const stepX = (dx / dist) * speed;
-    const stepY = (dy / dist) * speed;
+    // Move toward or away from Frank to reach the sweet spot
+    let moveDir = 0;
+    if (dist > sweetSpot + 10) moveDir = 1; // too far, move closer
+    else if (dist < sweetSpot - 10) moveDir = -1; // too close, back off
+    // else: stay put
+
+    const stepX = (dx / dist) * enemy.speed * moveDir;
+    const stepY = (dy / dist) * enemy.speed * moveDir;
 
     enemy.x += stepX;
     enemy.y += stepY;
 
-    if (enemy.attackTimer <= 0) {
+    if (enemy.attackTimer <= 0 && enemy.attackRange >= dist) {
       const angle = Math.atan2(frank.y - enemy.y, frank.x - enemy.x);
       galaxy.projectiles.push(new Projectile(enemy.x, enemy.y, angle));
-
       enemy.attackTimer = MAX_ATTACK_TIMER;
     }
 

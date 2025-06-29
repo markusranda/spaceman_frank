@@ -1,6 +1,5 @@
 import { drawBackgroundCanvasElement } from "./src/background.js";
 import { Frank } from "./src/frank.js";
-import { createPlanet } from "./src/planet.js";
 import { Galaxy } from "./src/galaxy.js";
 import {
   drawBackground,
@@ -155,14 +154,9 @@ function runGame() {
   // Reset state completely
   cancelAnimationFrame(frameId);
 
-  // Reset world
+  // Spawn
   frank = new Frank(0, 0);
-
-  // Spawn stuff
-  for (let i = 0; i < 4 + galaxy.evolutions; i++) {
-    const planet = createPlanet(1000, 1500);
-    if (planet) galaxy.planets.push(planet);
-  }
+  galaxy.spawnNextPlanetBelt(frank);
 
   // Run
   frameId = requestAnimationFrame(() => loop(0));
@@ -171,26 +165,8 @@ function runGame() {
 function doEvolveGalaxy() {
   gameState.victoryState = false;
   particles = [];
-  frank.fuel = frank.maxFuel;
+  galaxy.spawnNextPlanetBelt(frank);
   galaxy.evolutions++;
-
-  // Spawn stuff
-  for (let i = 0; i < 4 + galaxy.evolutions; i++) {
-    const planet = createPlanet(
-      1500 + 500 * galaxy.evolutions,
-      1500 + 500 * galaxy.evolutions + 1
-    );
-    if (planet) galaxy.planets.push(planet);
-  }
-  for (let i = 0; i < 5; i++) {
-    const letter = createLetter(
-      1500 + 500 * galaxy.evolutions,
-      1500 + 500 * galaxy.evolutions + 1
-    );
-    if (letter) galaxy.letters.push(letter);
-  }
-  if (galaxy.letters.length < 1)
-    throw Error("No letters were created, game failed to be created");
 }
 
 function spawnVictoryParticles(count = 1000) {

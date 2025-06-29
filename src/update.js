@@ -102,9 +102,8 @@ function updateFrankCrash(collisions) {
   }
 }
 
-function updateFrankMovement() {
+export function updateFrankMovement() {
   const hasFuel = frank.fuel > 0;
-  const collisions = [];
 
   // === ROTATION ===
   if (keys.a) frank.angle -= frank.rotationSpeed;
@@ -112,75 +111,53 @@ function updateFrankMovement() {
 
   // === THRUST ===
   if (hasFuel && keys.w) {
-    frank.vx += Math.cos(frank.angle) * frank.getAcceleration();
-    frank.vy += Math.sin(frank.angle) * frank.getAcceleration();
+    const accel = frank.getAcceleration();
+    frank.vx += Math.cos(frank.angle) * accel;
+    frank.vy += Math.sin(frank.angle) * accel;
   }
 
   // === Clamp speed ===
-  const speed = Math.sqrt(frank.vx ** 2 + frank.vy ** 2);
-  if (speed > frank.getMaxSpeed()) {
-    const scale = frank.getMaxSpeed() / speed;
+  const speed = Math.hypot(frank.vx, frank.vy);
+  const maxSpeed = frank.getMaxSpeed();
+  if (speed > maxSpeed) {
+    const scale = maxSpeed / speed;
     frank.vx *= scale;
     frank.vy *= scale;
   }
 
-  // === Try X movement ===
-  let blockedX = false;
-  const nextX = frank.x + frank.vx;
+  // === MOVE Frank ===
+  frank.x += frank.vx;
+  frank.y += frank.vy;
+
+  // === COLLISION ===
+  const collisions = [];
   for (const obj of galaxy.planets) {
-    const dx = nextX - obj.x;
-    const dy = frank.y - obj.y; // Y remains unchanged
-    const dist = Math.sqrt(dx * dx + dy * dy);
+    const dx = frank.x - obj.x;
+    const dy = frank.y - obj.y;
+    const dist = Math.hypot(dx, dy);
+    const minDist = frank.radius + obj.radius;
 
-    if (dist < frank.radius + obj.radius) {
-      blockedX = true;
+    if (dist < minDist) {
       collisions.push(obj);
-    }
-  }
 
-  if (!blockedX) frank.x = nextX;
-  else frank.vx = 0;
+      // Push Frank out of the planet
+      const nx = dx / dist;
+      const ny = dy / dist;
+      const overlap = minDist - dist;
+      frank.x += nx * overlap;
+      frank.y += ny * overlap;
 
-  // === Try Y movement ===
-  let blockedY = false;
-  const nextY = frank.y + frank.vy;
-  for (const obj of galaxy.planets) {
-    const dx = frank.x - obj.x; // X is updated from above
-    const dy = nextY - obj.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-
-    if (dist < frank.radius + obj.radius) {
-      blockedY = true;
-      collisions.push(obj);
+      // Cancel velocity into planet
+      const dot = frank.vx * nx + frank.vy * ny;
+      if (dot < 0) {
+        frank.vx -= dot * nx;
+        frank.vy -= dot * ny;
+      }
     }
   }
 
   if (collisions.length > 0) {
     updateFrankCrash(collisions);
-  }
-
-  if (!blockedY) frank.y = nextY;
-  else frank.vy = 0;
-
-  // === GRAVITY ===
-  for (const planet of galaxy.planets) {
-    const dx = planet.x - frank.x;
-    const dy = planet.y - frank.y;
-    const distSq = dx * dx + dy * dy;
-    const dist = Math.sqrt(distSq);
-
-    if (dist === 0) continue;
-
-    const gravityStrength = 0.03;
-    const falloff = Math.exp(-dist / 100);
-
-    const force = gravityStrength * falloff;
-
-    const fx = (dx / dist) * force;
-    const fy = (dy / dist) * force;
-
-    frank.vx += fx;
-    frank.vy += fy;
   }
 }
 

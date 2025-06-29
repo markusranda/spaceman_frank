@@ -14,7 +14,7 @@ export class Frank {
   radius = 0;
   letter = undefined;
   maxFuel = 2000;
-  fuel = 2000;
+  fuel = 10000;
   fuelConsumption = 0.5;
   lettersDelivered = 0;
   upgrades = {};
@@ -22,11 +22,11 @@ export class Frank {
   sonarAngle = 0;
   sonarLetters = new Set();
 
-  constructor(x, y) {
+  constructor() {
     this.sprite = sprites["frank"];
-    this.radius = this.sprite.width / 2;
-    this.x = x + this.sprite.width / 2;
-    this.y = y + this.sprite.height / 2;
+    this.radius = 50;
+    this.x = 0 - this.radius;
+    this.y = 0 - this.radius;
   }
 
   getMaxSpeed() {

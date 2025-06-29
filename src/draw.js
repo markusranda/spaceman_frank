@@ -17,13 +17,11 @@ import {
 export function drawFrank(ctx) {
   ctx.save();
   ctx.translate(frank.x - camera.x, frank.y - camera.y);
-  ctx.rotate(frank.angle + Math.PI / 2); // Rotate the canvas
-  ctx.drawImage(
-    frank.sprite,
-    -frank.sprite.width / 2,
-    -frank.sprite.height / 2
-  );
+  ctx.rotate(frank.angle + Math.PI / 2);
 
+  // Sprite is always twice as big as entity radius
+  const size = frank.radius * 2;
+  ctx.drawImage(frank.sprite, -size / 2, -size / 2, size, size);
   ctx.restore();
 }
 
@@ -37,8 +35,7 @@ export function drawTheSun(ctx) {
   gradient.addColorStop(1, "rgba(255, 150, 50, 0)"); // fully transparent edge
 
   ctx.save();
-  const disFromCenter = radius / 8;
-  ctx.translate(-camera.x + disFromCenter, -camera.y + disFromCenter);
+  ctx.translate(-camera.x, -camera.y);
   ctx.fillStyle = gradient;
   ctx.beginPath();
   ctx.arc(0, 0, radius, 0, Math.PI * 2);

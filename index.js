@@ -1,51 +1,36 @@
-import { drawBackgroundCanvasElement } from "./background.js";
-import { Frank } from "./frank.js";
-import { createLetter } from "./letter.js";
-import { createPlanet } from "./planet.js";
-import { createMailbox } from "./mailbox.js";
-import { Galaxy } from "./galaxy.js";
+import { loadSprites } from "./src/sprites.js";
+import { Frank } from "./src/frank.js";
+import { Galaxy } from "./src/galaxy.js";
 import {
+  createBackgroundCanvasElement,
   drawBackground,
   drawDamaged,
   drawFlame,
   drawFrank,
-  drawFuelUI,
-  drawLetters,
-  drawLettersUI,
+  drawTheSun,
   drawLevelCleared,
-  drawMailbox,
   drawCompass,
   drawParticles,
   drawPlanets,
-  drawUpgradeUI,
   drawUpgradeHUD,
   drawSonar,
-} from "./draw.js";
+  drawFuelUI,
+  drawFullnessUI,
+  drawStartGame,
+} from "./src/draw.js";
 import {
   updateCamera,
   updateFrank,
-  updateLetters,
-  updateMailbox,
   updateParticles,
   updatePlanets,
-  updateSonar,
   updateThrusterAudio,
   updateTimers,
-  updateUpgradeClicked,
-} from "./update.js";
-import { getRandomUpgrade, initPossibleUpgrades } from "./upgrades.js";
+} from "./src/update.js";
+import { loadAudios } from "./src/audio.js";
 
 const body = document.getElementById("rootElement");
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
-
-let backgroundCanvas;
-export function setBackgroundCanvas(canvas) {
-  backgroundCanvas = canvas;
-}
-export function getBackgroundCanvas() {
-  return backgroundCanvas;
-}
 
 export const worldX = body.clientWidth;
 export const worldY = body.clientHeight;
@@ -53,7 +38,7 @@ canvas.width = worldX;
 canvas.height = worldY;
 
 // State
-export const sprites = {};
+let backgroundCanvas = null;
 export let frank = undefined;
 export let galaxy = new Galaxy();
 export let mailbox = undefined;
@@ -77,7 +62,6 @@ export const DAMAGE_TIMER_MAX = 1000;
 
 let frameId = 0;
 let lastTime = 0;
-let lastDmgAudioIndex = 0;
 
 export const camera = {
   x: 0,
@@ -110,64 +94,44 @@ window.addEventListener("click", (e) => {
   windowState.lastClick = { x: e.offsetX, y: e.offsetY };
 });
 
+function hasEatenEnoughPlanets() {
+  return frank.fullness >= frank.getFullnessGoal();
+}
+
 function update(delta) {
-  if (galaxy.letters.length < 1 && !gameState.victoryState) evolveGalaxy();
+  if (hasEatenEnoughPlanets()) evolveGalaxy();
 
-  if (
-    frank.lettersDelivered !== 0 &&
-    frank.lettersDelivered % 10 === 0 &&
-    !gameState.upgradeState &&
-    !upgradeTracker[frank.lettersDelivered]
-  ) {
-    gameState.upgradeState = true;
-    upgradeTracker[frank.lettersDelivered] = true;
-    availableUpgrades = [
-      getRandomUpgrade(),
-      getRandomUpgrade(),
-      getRandomUpgrade(),
-    ];
-  }
-
-  if (!gameState.upgradeState) {
-    updateCamera();
-    updateThrusterAudio();
-    updateFrank();
-    updateLetters();
-    updateParticles();
-    if (frank.letter) updateMailbox();
-    updateTimers(delta);
-    updateSonar();
-    updatePlanets();
-  } else {
-    updateUpgradeClicked();
-  }
+  updateCamera();
+  updateThrusterAudio();
+  updateFrank();
+  updateParticles();
+  updateTimers(delta);
+  updatePlanets();
 }
 
 function draw() {
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, worldX, worldY);
 
-  drawBackground(ctx);
+  drawBackground(ctx, backgroundCanvas);
 
-  drawMailbox(ctx);
+  drawTheSun(ctx);
   drawSonar(ctx);
   drawFrank(ctx);
-  drawLetters(ctx);
   drawPlanets(ctx);
   drawFlame(ctx);
+  drawFuelUI(ctx);
+  drawFullnessUI(ctx);
 
   if (gameState.victoryState) {
     drawParticles(ctx);
     drawLevelCleared(ctx, canvas);
   }
-  drawFuelUI(ctx);
-  drawLettersUI(ctx);
   drawDamaged(ctx, canvas);
   drawCompass(ctx, canvas);
   drawUpgradeHUD(ctx, canvas);
 
   if (gameState.upgradeState) {
-    drawUpgradeUI(ctx, canvas);
   }
 }
 
@@ -185,21 +149,12 @@ function runGame() {
   // Reset state completely
   cancelAnimationFrame(frameId);
 
-  // Reset world
+  // Spawn
   frank = new Frank(0, 0);
-
-  // Spawn stuff
-  for (let i = 0; i < 4 + galaxy.evolutions; i++) {
-    const planet = createPlanet(1000, 1500);
-    if (planet) galaxy.planets.push(planet);
+  for (let i = 0; i < 10; i++) {
+    galaxy.spawnNextPlanetBelt(frank);
+    galaxy.currentEvolution++;
   }
-  for (let i = 0; i < 5; i++) {
-    const letter = createLetter(1000, 1500);
-    if (letter) galaxy.letters.push(letter);
-  }
-  if (galaxy.letters.length < 1)
-    throw Error("No letters were created, game failed to be created");
-  mailbox = createMailbox(worldX, worldY, galaxy.planets);
 
   // Run
   frameId = requestAnimationFrame(() => loop(0));
@@ -208,26 +163,8 @@ function runGame() {
 function doEvolveGalaxy() {
   gameState.victoryState = false;
   particles = [];
-  frank.fuel = frank.maxFuel;
-  galaxy.evolutions++;
-
-  // Spawn stuff
-  for (let i = 0; i < 4 + galaxy.evolutions; i++) {
-    const planet = createPlanet(
-      1500 + 500 * galaxy.evolutions,
-      1500 + 500 * galaxy.evolutions + 1
-    );
-    if (planet) galaxy.planets.push(planet);
-  }
-  for (let i = 0; i < 5; i++) {
-    const letter = createLetter(
-      1500 + 500 * galaxy.evolutions,
-      1500 + 500 * galaxy.evolutions + 1
-    );
-    if (letter) galaxy.letters.push(letter);
-  }
-  if (galaxy.letters.length < 1)
-    throw Error("No letters were created, game failed to be created");
+  galaxy.spawnNextPlanetBelt(frank);
+  galaxy.currentEvolution++;
 }
 
 function spawnVictoryParticles(count = 1000) {
@@ -251,6 +188,7 @@ function spawnVictoryParticles(count = 1000) {
 
 function evolveGalaxy() {
   gameState.victoryState = true;
+  frank.evolve(galaxy);
   spawnVictoryParticles();
 
   setTimeout(() => {
@@ -258,50 +196,26 @@ function evolveGalaxy() {
   }, 1500);
 }
 
-function loadImage(src) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.src = src;
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-  });
+async function init() {
+  await loadSprites();
+  await loadAudios();
+  runGame();
 }
 
-async function loadSprites() {
-  const spritePaths = {
-    frank: "sprites/frank.png",
-    letter: "sprites/letter.png",
-    mailbox: "sprites/mailbox.png",
-    max_speed: "sprites/max.png",
-    acceleration: "sprites/acceleration.png",
-    fuel_consumption: "sprites/fuel.png",
-    planet_1: "sprites/planet_1.png",
-    planet_2: "sprites/planet_2.png",
-    planet_3: "sprites/planet_3.png",
-  };
+window.addEventListener(
+  "DOMContentLoaded",
+  () => {
+    backgroundCanvas = createBackgroundCanvasElement();
+    canvas.onre;
+    setTimeout(() => {
+      ctx.fillStyle = "#111";
+      ctx.fillRect(0, 0, worldX, worldY);
+      drawBackground(ctx, backgroundCanvas);
+      drawStartGame(ctx, canvas);
+    }, 100);
 
-  const entries = Object.entries(spritePaths);
-  for (const [key, path] of entries) {
-    sprites[key] = await loadImage(path);
-  }
-}
-
-export function playDmgSound() {
-  const audioList = [new Audio("damage_1.mp3"), new Audio("damage_2.mp3")];
-  const index = (lastDmgAudioIndex + 1) % audioList.length;
-  const audio = audioList[index];
-  audio.volume = 0.3;
-  audio.play();
-  lastDmgAudioIndex = index;
-}
-
-export const thrusterAudio = new Audio("thruster_2.mp3");
-export const paperAudio = new Audio("paper.mp3");
-thrusterAudio.volume = 0.1;
-paperAudio.volume = 0.2;
-thrusterAudio.loop = true;
-
-await loadSprites();
-initPossibleUpgrades();
-drawBackgroundCanvasElement();
-runGame();
+    document.addEventListener("click", init, { once: true });
+    document.addEventListener("keydown", init, { once: true });
+  },
+  { once: true }
+);

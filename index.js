@@ -266,6 +266,12 @@ export const paperAudio = new Audio("assets/audio/paper.mp3");
 thrusterAudio.volume = 0.1;
 paperAudio.volume = 0.2;
 thrusterAudio.loop = true;
+export const thrusterAudioCtx = new (window.AudioContext ||
+  window.webkitAudioContext)();
+const source = thrusterAudioCtx.createMediaElementSource(thrusterAudio);
+export const thrusterGainNode = thrusterAudioCtx.createGain();
+thrusterGainNode.gain.value = 0; // start silent
+source.connect(thrusterGainNode).connect(thrusterAudioCtx.destination);
 
 await loadSprites();
 drawBackgroundCanvasElement();

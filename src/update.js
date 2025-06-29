@@ -10,6 +10,8 @@ import {
   particles,
   playDmgSound,
   thrusterAudio,
+  thrusterAudioCtx,
+  thrusterGainNode,
   timers,
   windowState,
 } from "../index.js";
@@ -199,21 +201,30 @@ export function updateParticles() {
 }
 
 export function updateThrusterAudio() {
-  // This action requires fuel
   if (frank.fuel <= 0) {
-    thrusterAudio.pause();
+    thrusterGainNode.gain.setTargetAtTime(
+      0,
+      thrusterAudioCtx.currentTime,
+      0.05
+    );
     return;
   }
 
   if (keys["w"]) {
-    const isPlaying =
-      !thrusterAudio.paused &&
-      !thrusterAudio.ended &&
-      thrusterAudio.currentTime > 0;
-    if (!isPlaying) thrusterAudio.play();
+    if (thrusterAudio.paused) {
+      thrusterAudio.play();
+    }
+    thrusterGainNode.gain.setTargetAtTime(
+      1,
+      thrusterAudioCtx.currentTime,
+      0.05
+    ); // fade in
   } else {
-    thrusterAudio.pause();
-    thrusterAudio.currentTime = 0;
+    thrusterGainNode.gain.setTargetAtTime(
+      0,
+      thrusterAudioCtx.currentTime,
+      0.05
+    ); // fade out
   }
 }
 

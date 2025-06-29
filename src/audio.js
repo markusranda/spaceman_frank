@@ -1,5 +1,5 @@
-// TODO Figure it out
 let lastDmgAudioIndex = 0;
+let lastEatAudioIndex = 0;
 
 // MAP {audio, gainNode, audioCtx}
 export const audios = {};
@@ -15,6 +15,12 @@ export async function loadAudios() {
       gain: 0.0,
       loop: true,
     },
+    eat_1: { src: "assets/audio/eat_1.mp3", volume: 0.1 },
+    eat_2: { src: "assets/audio/eat_2.mp3", volume: 0.1 },
+    eat_3: { src: "assets/audio/eat_3.mp3", volume: 0.1 },
+    eat_4: { src: "assets/audio/eat_4.mp3", volume: 0.1 },
+    eat_5: { src: "assets/audio/eat_5.mp3", volume: 0.1 },
+    eat_6: { src: "assets/audio/eat_6.mp3", volume: 0.1 },
   };
 
   const entries = Object.entries(configs);
@@ -68,4 +74,19 @@ export function playDmgSound() {
   audio.audio.volume = 0.3;
   audio.audio.play();
   lastDmgAudioIndex = index;
+}
+
+export function playEatSound() {
+  const audioList = [
+    audios["eat_1"],
+    audios["eat_2"],
+    audios["eat_3"],
+    audios["eat_4"],
+    audios["eat_5"],
+    audios["eat_6"],
+  ];
+  const index = (lastEatAudioIndex + 1) % audioList.length;
+  const audio = audioList[index];
+  audio.audio.play();
+  lastEatAudioIndex = index;
 }

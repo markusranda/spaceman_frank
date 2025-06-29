@@ -9,7 +9,7 @@ import {
   timers,
   windowState,
 } from "../index.js";
-import { audios, playDmgSound } from "./audio.js";
+import { audios, playDmgSound, playEatSound } from "./audio.js";
 
 function updateFrankFuel() {
   if (!keys["w"]) return;
@@ -48,6 +48,7 @@ function handlePlanetCollision(planets) {
       if (index !== -1) {
         galaxy.planets.splice(index, 1);
         frank.eatPlanet(planet);
+        playEatSound();
       }
     } else {
       if (impactSpeed > impactThreshold) {

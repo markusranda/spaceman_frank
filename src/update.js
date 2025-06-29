@@ -66,38 +66,49 @@ function updateFrankFuel() {
   else frank.fuel = newFuel;
 }
 
-function updateFrankCrash(collisions) {
+function handlePlanetCollision(planets) {
   const impactThreshold = 1.5;
   const fuelLossMultiplier = 10;
+  const maxEdibleRadius = frank.radius * 0.75;
 
   const alreadyChecked = new Set();
 
-  for (const obj of collisions) {
-    if (alreadyChecked.has(obj)) continue;
-    alreadyChecked.add(obj);
+  for (const planet of planets) {
+    if (alreadyChecked.has(planet)) continue;
+    alreadyChecked.add(planet);
 
-    // Use predicted position before the collision was blocked
     const nextX = frank.x + frank.vx;
     const nextY = frank.y + frank.vy;
 
-    const dx = nextX - obj.x;
-    const dy = nextY - obj.y;
+    const dx = nextX - planet.x;
+    const dy = nextY - planet.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
     if (dist === 0) continue;
 
     const nx = dx / dist;
     const ny = dy / dist;
 
-    // Project velocity onto normal
     const normalVelocity = frank.vx * nx + frank.vy * ny;
+    const impactSpeed = Math.abs(normalVelocity);
 
-    const impactSpeed = Math.abs(normalVelocity); // direction doesn't matter — magnitude does
+    if (planet.radius <= maxEdibleRadius) {
+      const index = galaxy.planets.indexOf(planet);
+      if (index !== -1) {
+        galaxy.planets.splice(index, 1);
+        console.log("Consumed planet with radius:", planet.radius);
+      }
+    } else {
+      if (impactSpeed > impactThreshold) {
+        const fuelLoss = impactSpeed * fuelLossMultiplier;
+        frank.fuel = Math.max(0, frank.fuel - fuelLoss);
+        timers.damagedTimer = DAMAGE_TIMER_MAX;
+        playDmgSound();
+      }
 
-    if (impactSpeed > impactThreshold) {
-      const fuelLoss = impactSpeed * fuelLossMultiplier;
-      frank.fuel = Math.max(0, frank.fuel - fuelLoss);
-      timers.damagedTimer = DAMAGE_TIMER_MAX;
-      playDmgSound();
+      if (normalVelocity < 0) {
+        frank.vx -= normalVelocity * nx;
+        frank.vy -= normalVelocity * ny;
+      }
     }
   }
 }
@@ -130,34 +141,20 @@ export function updateFrankMovement() {
   frank.y += frank.vy;
 
   // === COLLISION ===
-  const collisions = [];
-  for (const obj of galaxy.planets) {
-    const dx = frank.x - obj.x;
-    const dy = frank.y - obj.y;
+  const planetCollisions = [];
+  for (const planet of galaxy.planets) {
+    const dx = frank.x - planet.x;
+    const dy = frank.y - planet.y;
     const dist = Math.hypot(dx, dy);
-    const minDist = frank.radius + obj.radius;
+    const minDist = frank.radius + planet.radius;
 
     if (dist < minDist) {
-      collisions.push(obj);
-
-      // Push Frank out of the planet
-      const nx = dx / dist;
-      const ny = dy / dist;
-      const overlap = minDist - dist;
-      frank.x += nx * overlap;
-      frank.y += ny * overlap;
-
-      // Cancel velocity into planet
-      const dot = frank.vx * nx + frank.vy * ny;
-      if (dot < 0) {
-        frank.vx -= dot * nx;
-        frank.vy -= dot * ny;
-      }
+      planetCollisions.push(planet);
     }
   }
 
-  if (collisions.length > 0) {
-    updateFrankCrash(collisions);
+  if (planetCollisions.length > 0) {
+    handlePlanetCollision(planetCollisions);
   }
 }
 

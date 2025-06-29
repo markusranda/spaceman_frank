@@ -85,6 +85,8 @@ export function drawFlame(ctx) {
 
 export function drawPlanets(ctx) {
   for (const planet of galaxy.planets) {
+    if (!objWithinScreen(planet)) continue;
+
     const destX = planet.x - camera.x;
     const destY = planet.y - camera.y;
     const size = 2 * planet.radius;
@@ -419,4 +421,20 @@ export function drawCompass(ctx, canvas) {
   ctx.fill();
 
   ctx.restore(); // Restore the state so other drawings aren't rotated
+}
+
+function objWithinScreen(obj) {
+  const screenX = obj.x - camera.x;
+  const screenY = obj.y - camera.y;
+
+  if (
+    screenX + obj.radius < 0 ||
+    screenX - obj.radius > camera.width ||
+    screenY + obj.radius < 0 ||
+    screenY - obj.radius > camera.height
+  ) {
+    return false;
+  }
+
+  return true;
 }

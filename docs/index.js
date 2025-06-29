@@ -77,6 +77,10 @@ export const keys = {
   " ": false,
 };
 
+// FPS counter state
+let fpsFrameCount = 0;
+let fpsLastTime = performance.now();
+
 window.addEventListener("keydown", (e) => {
   if (e.key.toLowerCase() in keys) {
     keys[e.key.toLowerCase()] = true;
@@ -141,8 +145,18 @@ function loop(currentTime) {
   update(delta);
   draw();
 
+  // FPS tracking
+  fpsFrameCount++;
+  const fpsNow = performance.now();
+  if (fpsNow - fpsLastTime >= 1000) {
+    const fps = (fpsFrameCount / (fpsNow - fpsLastTime)) * 1000;
+    console.debug(`FPS: ${fps.toFixed(1)}`);
+    fpsFrameCount = 0;
+    fpsLastTime = fpsNow;
+  }
+
   lastTime = currentTime;
-  frameId = requestAnimationFrame((newTime) => loop(newTime));
+  frameId = requestAnimationFrame(loop);
 }
 
 function runGame() {

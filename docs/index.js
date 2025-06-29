@@ -143,13 +143,14 @@ function draw() {
     drawParticles(ctx);
     drawLevelCleared(ctx, canvas);
   }
-  drawDamaged(ctx, canvas);
   drawCompass(ctx, canvas);
   drawUpgradeHUD(ctx, canvas);
 
   if (gameState.upgradeState) {
     // Placeholder
   }
+
+  drawDamaged(ctx, canvas);
 }
 
 function loop(currentTime) {

@@ -12,8 +12,8 @@ export class Frank {
   friction = 0.9945;
   sprite = undefined;
   radius = 0;
-  maxFuel = 10000;
-  fuel = 10000;
+  maxFuel = 5000;
+  fuel = this.maxFuel;
   fuelConsumption = 0.5;
   upgrades = {};
   sonarRadius = 1500;

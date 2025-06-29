@@ -52,7 +52,9 @@ export function updateFrankMovement() {
   const collisions = {};
   collisions["planet"] = detectCollisions(galaxy.planets);
   collisions["enemy"] = detectCollisions(galaxy.enemies);
+  const projectiles = detectCollisions(galaxy.projectiles);
   handleEdibleCollisions(collisions);
+  handleProjectileCollisions(projectiles);
 }
 
 function detectCollisions(objects) {
@@ -79,7 +81,6 @@ function handleEdibleCollisions(objects) {
   const fuelLossMultiplier = 10;
 
   for (const [type, mapByIndex] of Object.entries(objects)) {
-    console.log(objects);
     for (const [index, obj] of Object.entries(mapByIndex)) {
       const dx = frank.x + frank.vx - obj.x;
       const dy = frank.y + frank.vy - obj.y;
@@ -94,7 +95,6 @@ function handleEdibleCollisions(objects) {
       const isEdible = obj.radius <= maxEdibleRadius;
 
       if (isEdible) {
-        console.log(isEdible);
         removeFromGalaxy(type, index);
         frank.eatEntity(obj);
         playEatSound();
@@ -113,6 +113,16 @@ function handleEdibleCollisions(objects) {
         }
       }
     }
+  }
+}
+
+function handleProjectileCollisions(projectiles) {
+  for (const [index, projectile] of Object.entries(projectiles)) {
+    frank.fuel -= projectile.damage;
+
+    timers.damagedTimer = DAMAGE_TIMER_MAX;
+
+    galaxy.projectiles.splice(index, 1);
   }
 }
 
@@ -175,27 +185,10 @@ export function updateProjectiles(delta) {
     projectile.x += Math.cos(projectile.angle) * speed;
     projectile.y += Math.sin(projectile.angle) * speed;
 
-    let collided = false;
-    let timedOut = false;
-
-    // Check for player collision
-    const dx = frank.x - projectile.x;
-    const dy = frank.y - projectile.y;
-    const dist = Math.hypot(dx, dy);
-    const minDist = frank.radius + projectile.radius;
-
-    if (dist < minDist) {
-      collided = true;
-    }
-
     if (projectile.ttl <= 0) {
-      timedOut = true;
+      galaxy.projectiles.splice(i, 1);
     } else {
       projectile.ttl -= delta;
-    }
-
-    if (collided || timedOut) {
-      galaxy.projectiles.splice(i, 1);
     }
   }
 }

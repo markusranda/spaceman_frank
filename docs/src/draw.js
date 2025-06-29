@@ -191,8 +191,10 @@ export function drawDamaged(ctx, canvas) {
   if (timers.damagedTimer > 0) {
     const maxAlpha = 0.4;
     const alpha = (timers.damagedTimer / DAMAGE_TIMER_MAX) * maxAlpha;
+    ctx.save();
     ctx.fillStyle = `rgba(168, 50, 64, ${alpha.toFixed(3)})`;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
   }
 }
 

@@ -406,6 +406,21 @@ export function drawStartGame(ctx, canvas) {
   ctx.restore();
 }
 
+export function drawLoadingIndicator(ctx, canvas) {
+  ctx.save();
+
+  ctx.fillStyle = "#111";
+  ctx.fillStyle = "white";
+  ctx.font = "32px 'Press Start 2P'";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.shadowColor = "gold";
+  ctx.shadowBlur = 15;
+  ctx.fillText("LOADING…", canvas.width / 2, canvas.height / 2);
+
+  ctx.restore();
+}
+
 let spinAngle = 0;
 export function drawCompass(ctx, canvas) {
   const origin = { x: 0, y: 0 };

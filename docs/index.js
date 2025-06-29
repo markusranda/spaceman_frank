@@ -19,6 +19,7 @@ import {
   drawFrankSizeUI,
   drawEnemies,
   drawProjectiles,
+  drawLoadingIndicator,
 } from "./src/draw.js";
 import {
   updateCamera,
@@ -225,19 +226,31 @@ function evolveGalaxy() {
 }
 
 async function init() {
-  await loadSprites();
-  await loadAudios();
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  drawBackground(ctx, backgroundCanvas);
+  drawLoadingIndicator(ctx, canvas);
+
+  const minWait = new Promise((resolve) => setTimeout(resolve, 500));
+  const assetLoading = Promise.all([loadSprites(), loadAudios()]);
+
+  try {
+    await Promise.all([minWait, assetLoading]);
+  } catch (e) {
+    console.error("Failed to load resources", e);
+    ctx.fillStyle = "red";
+    ctx.fillText("FAILED TO LOAD", canvas.width / 2, canvas.height / 2 + 40);
+    return;
+  }
+
   runGame();
 }
 
 backgroundCanvas = createBackgroundCanvasElement();
 canvas.onre;
-setTimeout(() => {
-  ctx.fillStyle = "#111";
-  ctx.fillRect(0, 0, worldX, worldY);
-  drawBackground(ctx, backgroundCanvas);
-  drawStartGame(ctx, canvas);
-}, 100);
+ctx.fillStyle = "#111";
+ctx.fillRect(0, 0, worldX, worldY);
+drawBackground(ctx, backgroundCanvas);
+drawStartGame(ctx, canvas);
 
 document.addEventListener("click", init, { once: true });
 document.addEventListener("keydown", init, { once: true });

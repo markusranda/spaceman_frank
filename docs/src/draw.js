@@ -17,7 +17,15 @@ export function drawFrank(ctx) {
   ctx.rotate(frank.angle + Math.PI / 2);
 
   // Sprite is always twice as big as entity radius
-  const size = frank.radius * 2;
+  let size = frank.radius * 2;
+
+  // Pulsate during evolve
+  if (gameState.victoryState) {
+    const t = performance.now() / 200;
+    const pulse = 1 + (galaxy.stepSize / frank.radius) * 0.2 * Math.sin(t);
+    size *= pulse;
+  }
+
   ctx.drawImage(frank.sprite, -size / 2, -size / 2, size, size);
   ctx.restore();
 }

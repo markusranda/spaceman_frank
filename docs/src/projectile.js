@@ -7,7 +7,7 @@ export class Projectile {
   angle = 0;
   ttl = TTL_MAX;
   speed = 10;
-  damage = 50;
+  damage = 100;
 
   constructor(x, y, angle) {
     this.x = x;

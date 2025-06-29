@@ -48,21 +48,6 @@ export function drawTheSun(ctx) {
   ctx.restore();
 }
 
-export function drawLetters(ctx) {
-  for (const letter of galaxy.letters) {
-    ctx.save();
-    ctx.translate(letter.x - camera.x, letter.y - camera.y);
-    ctx.rotate(letter.angle + Math.PI / 2); // Rotate the canvas
-    ctx.drawImage(
-      letter.sprite,
-      -letter.sprite.width / 2, // Offset to center
-      -letter.sprite.height / 2
-    );
-
-    ctx.restore();
-  }
-}
-
 export function drawFlame(ctx) {
   if (frank.fuel <= 0 || !keys.w) return;
 

@@ -41,7 +41,6 @@ canvas.height = worldY;
 let backgroundCanvas = null;
 export let frank = undefined;
 export let galaxy = new Galaxy();
-export let mailbox = undefined;
 export let particles = [];
 export let upgradeTracker = {};
 export let windowState = {
@@ -132,6 +131,7 @@ function draw() {
   drawUpgradeHUD(ctx, canvas);
 
   if (gameState.upgradeState) {
+    // Placeholder
   }
 }
 

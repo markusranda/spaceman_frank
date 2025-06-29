@@ -3,8 +3,6 @@ export const sprites = {};
 export async function loadSprites() {
   const spritePaths = {
     frank: "assets/sprites/frank.png",
-    letter: "assets/sprites/letter.png",
-    mailbox: "assets/sprites/mailbox.png",
     max_speed: "assets/sprites/max.png",
     acceleration: "assets/sprites/acceleration.png",
     fuel_consumption: "assets/sprites/fuel.png",

@@ -12,7 +12,7 @@ import {
   sprites,
   timers,
   windowState,
-} from "./index.js";
+} from "../index.js";
 
 export function drawFrank(ctx) {
   ctx.save();
@@ -24,6 +24,26 @@ export function drawFrank(ctx) {
     -frank.sprite.height / 2
   );
 
+  ctx.restore();
+}
+
+export function drawTheSun(ctx) {
+  const radius = 400;
+
+  const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
+  gradient.addColorStop(0, "rgba(255, 255, 255, 1)"); // blinding white center
+  gradient.addColorStop(0.3, "rgba(255, 255, 200, 0.8)"); // soft yellowish glow
+  gradient.addColorStop(0.6, "rgba(255, 200, 100, 0.4)"); // fading orange
+  gradient.addColorStop(1, "rgba(255, 150, 50, 0)"); // fully transparent edge
+
+  ctx.save();
+  const disFromCenter = radius / 8;
+  ctx.translate(-camera.x + disFromCenter, -camera.y + disFromCenter);
+  console.log(-camera.x, disFromCenter, -camera.y, disFromCenter);
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.arc(0, 0, radius, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 }
 

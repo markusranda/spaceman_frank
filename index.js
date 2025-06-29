@@ -1,26 +1,25 @@
-import { drawBackgroundCanvasElement } from "./background.js";
-import { Frank } from "./frank.js";
-import { createLetter } from "./letter.js";
-import { createPlanet } from "./planet.js";
-import { createMailbox } from "./mailbox.js";
-import { Galaxy } from "./galaxy.js";
+import { drawBackgroundCanvasElement } from "./src/background.js";
+import { Frank } from "./src/frank.js";
+import { createLetter } from "./src/letter.js";
+import { createPlanet } from "./src/planet.js";
+import { createMailbox } from "./src/mailbox.js";
+import { Galaxy } from "./src/galaxy.js";
 import {
   drawBackground,
   drawDamaged,
   drawFlame,
   drawFrank,
   drawFuelUI,
-  drawLetters,
+  drawTheSun,
   drawLettersUI,
   drawLevelCleared,
-  drawMailbox,
   drawCompass,
   drawParticles,
   drawPlanets,
   drawUpgradeUI,
   drawUpgradeHUD,
   drawSonar,
-} from "./draw.js";
+} from "./src/draw.js";
 import {
   updateCamera,
   updateFrank,
@@ -32,8 +31,8 @@ import {
   updateThrusterAudio,
   updateTimers,
   updateUpgradeClicked,
-} from "./update.js";
-import { getRandomUpgrade, initPossibleUpgrades } from "./upgrades.js";
+} from "./src/update.js";
+import { getRandomUpgrade, initPossibleUpgrades } from "./src/upgrades.js";
 
 const body = document.getElementById("rootElement");
 const canvas = document.getElementById("game");
@@ -149,10 +148,9 @@ function draw() {
 
   drawBackground(ctx);
 
-  drawMailbox(ctx);
+  drawTheSun(ctx);
   drawSonar(ctx);
   drawFrank(ctx);
-  drawLetters(ctx);
   drawPlanets(ctx);
   drawFlame(ctx);
 
@@ -269,15 +267,15 @@ function loadImage(src) {
 
 async function loadSprites() {
   const spritePaths = {
-    frank: "sprites/frank.png",
-    letter: "sprites/letter.png",
-    mailbox: "sprites/mailbox.png",
-    max_speed: "sprites/max.png",
-    acceleration: "sprites/acceleration.png",
-    fuel_consumption: "sprites/fuel.png",
-    planet_1: "sprites/planet_1.png",
-    planet_2: "sprites/planet_2.png",
-    planet_3: "sprites/planet_3.png",
+    frank: "assets/sprites/frank.png",
+    letter: "assets/sprites/letter.png",
+    mailbox: "assets/sprites/mailbox.png",
+    max_speed: "assets/sprites/max.png",
+    acceleration: "assets/sprites/acceleration.png",
+    fuel_consumption: "assets/sprites/fuel.png",
+    planet_1: "assets/sprites/planet_1.png",
+    planet_2: "assets/sprites/planet_2.png",
+    planet_3: "assets/sprites/planet_3.png",
   };
 
   const entries = Object.entries(spritePaths);
@@ -287,7 +285,10 @@ async function loadSprites() {
 }
 
 export function playDmgSound() {
-  const audioList = [new Audio("damage_1.mp3"), new Audio("damage_2.mp3")];
+  const audioList = [
+    new Audio("assets/audio/damage_1.mp3"),
+    new Audio("assets/audio/damage_2.mp3"),
+  ];
   const index = (lastDmgAudioIndex + 1) % audioList.length;
   const audio = audioList[index];
   audio.volume = 0.3;
@@ -295,8 +296,8 @@ export function playDmgSound() {
   lastDmgAudioIndex = index;
 }
 
-export const thrusterAudio = new Audio("thruster_2.mp3");
-export const paperAudio = new Audio("paper.mp3");
+export const thrusterAudio = new Audio("assets/audio/thruster_2.mp3");
+export const paperAudio = new Audio("assets/audio/paper.mp3");
 thrusterAudio.volume = 0.1;
 paperAudio.volume = 0.2;
 thrusterAudio.loop = true;

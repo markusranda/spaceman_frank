@@ -1,4 +1,4 @@
-import { frank } from "./index.js";
+import { frank } from "../index.js";
 
 export class Pulse {
   x = frank.x;

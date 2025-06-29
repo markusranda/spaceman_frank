@@ -1,4 +1,4 @@
-import { frank } from "./index.js";
+import { frank } from "../index.js";
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let isPingPlaying = false;

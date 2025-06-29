@@ -1,6 +1,6 @@
 import { checkCollision } from "./collision.js";
 import { getRandomCoordinateFarFrom } from "./coords.js";
-import { frank, galaxy, sprites } from "./index.js";
+import { frank, galaxy, sprites } from "../index.js";
 
 export class Planet {
   radius = 0;

@@ -1,4 +1,4 @@
-import { sprites } from "./index.js";
+import { sprites } from "../index.js";
 
 export class Upgrade {
   name = "";

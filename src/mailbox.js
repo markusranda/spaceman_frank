@@ -1,4 +1,4 @@
-import { frank, sprites } from "./index.js";
+import { frank, sprites } from "../index.js";
 
 export class Mailbox {
   x = 0;

@@ -1,4 +1,4 @@
-import { setBackgroundCanvas } from "./index.js";
+import { setBackgroundCanvas } from "../index.js";
 
 export function drawBackgroundCanvasElement() {
   const backgroundCanvas = document.createElement("canvas");

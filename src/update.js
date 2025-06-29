@@ -12,7 +12,7 @@ import {
   thrusterAudio,
   timers,
   windowState,
-} from "./index.js";
+} from "../index.js";
 import { playSpatialPing } from "./spatial_audio.js";
 
 export function updateMailbox() {

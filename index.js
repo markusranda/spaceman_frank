@@ -1,38 +1,29 @@
 import { drawBackgroundCanvasElement } from "./src/background.js";
 import { Frank } from "./src/frank.js";
-import { createLetter } from "./src/letter.js";
 import { createPlanet } from "./src/planet.js";
-import { createMailbox } from "./src/mailbox.js";
 import { Galaxy } from "./src/galaxy.js";
 import {
   drawBackground,
   drawDamaged,
   drawFlame,
   drawFrank,
-  drawFuelUI,
   drawTheSun,
-  drawLettersUI,
   drawLevelCleared,
   drawCompass,
   drawParticles,
   drawPlanets,
-  drawUpgradeUI,
   drawUpgradeHUD,
   drawSonar,
 } from "./src/draw.js";
 import {
   updateCamera,
   updateFrank,
-  updateLetters,
-  updateMailbox,
   updateParticles,
   updatePlanets,
   updateSonar,
   updateThrusterAudio,
   updateTimers,
-  updateUpgradeClicked,
 } from "./src/update.js";
-import { getRandomUpgrade, initPossibleUpgrades } from "./src/upgrades.js";
 
 const body = document.getElementById("rootElement");
 const canvas = document.getElementById("game");
@@ -109,37 +100,21 @@ window.addEventListener("click", (e) => {
   windowState.lastClick = { x: e.offsetX, y: e.offsetY };
 });
 
+function hasEatenEnoughRocks() {
+  // Check if Frank has eaten enough rocks
+  return false;
+}
+
 function update(delta) {
-  if (galaxy.letters.length < 1 && !gameState.victoryState) evolveGalaxy();
+  if (hasEatenEnoughRocks()) evolveGalaxy();
 
-  if (
-    frank.lettersDelivered !== 0 &&
-    frank.lettersDelivered % 10 === 0 &&
-    !gameState.upgradeState &&
-    !upgradeTracker[frank.lettersDelivered]
-  ) {
-    gameState.upgradeState = true;
-    upgradeTracker[frank.lettersDelivered] = true;
-    availableUpgrades = [
-      getRandomUpgrade(),
-      getRandomUpgrade(),
-      getRandomUpgrade(),
-    ];
-  }
-
-  if (!gameState.upgradeState) {
-    updateCamera();
-    updateThrusterAudio();
-    updateFrank();
-    updateLetters();
-    updateParticles();
-    if (frank.letter) updateMailbox();
-    updateTimers(delta);
-    updateSonar();
-    updatePlanets();
-  } else {
-    updateUpgradeClicked();
-  }
+  updateCamera();
+  updateThrusterAudio();
+  updateFrank();
+  updateParticles();
+  updateTimers(delta);
+  updateSonar();
+  updatePlanets();
 }
 
 function draw() {
@@ -158,14 +133,11 @@ function draw() {
     drawParticles(ctx);
     drawLevelCleared(ctx, canvas);
   }
-  drawFuelUI(ctx);
-  drawLettersUI(ctx);
   drawDamaged(ctx, canvas);
   drawCompass(ctx, canvas);
   drawUpgradeHUD(ctx, canvas);
 
   if (gameState.upgradeState) {
-    drawUpgradeUI(ctx, canvas);
   }
 }
 
@@ -191,13 +163,6 @@ function runGame() {
     const planet = createPlanet(1000, 1500);
     if (planet) galaxy.planets.push(planet);
   }
-  for (let i = 0; i < 5; i++) {
-    const letter = createLetter(1000, 1500);
-    if (letter) galaxy.letters.push(letter);
-  }
-  if (galaxy.letters.length < 1)
-    throw Error("No letters were created, game failed to be created");
-  mailbox = createMailbox(worldX, worldY, galaxy.planets);
 
   // Run
   frameId = requestAnimationFrame(() => loop(0));
@@ -303,6 +268,5 @@ paperAudio.volume = 0.2;
 thrusterAudio.loop = true;
 
 await loadSprites();
-initPossibleUpgrades();
 drawBackgroundCanvasElement();
 runGame();

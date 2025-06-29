@@ -6,10 +6,13 @@ import {
   gameState,
   keys,
   particles,
+  SPAWN_TIMER_MAX,
   timers,
   windowState,
 } from "../index.js";
 import { audios, playDmgSound, playEatSound } from "./audio.js";
+import { Enemy, MAX_ATTACK_TIMER } from "./enemy.js";
+import { Projectile } from "./projectile.js";
 
 function updateFrankFuel() {
   if (!keys["w"]) return;
@@ -114,6 +117,78 @@ export function updateFrankMovement() {
 export function updateFrank() {
   updateFrankFuel();
   updateFrankMovement();
+}
+
+export function updateSpawnEnemies() {
+  if (timers.spawnTimer <= 0 && galaxy.enemies.length < galaxy.enemyMaxCount) {
+    try {
+      galaxy.enemies.push(new Enemy(frank, galaxy));
+    } catch (e) {
+      console.error(e);
+    } finally {
+      timers.spawnTimer = SPAWN_TIMER_MAX;
+    }
+  }
+}
+
+export function updateEnemies(delta) {
+  const speed = 0.5; // adjust for how fast enemies should move
+
+  for (const enemy of galaxy.enemies) {
+    const dx = frank.x - enemy.x;
+    const dy = frank.y - enemy.y;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist === 0) continue;
+
+    const stepX = (dx / dist) * speed;
+    const stepY = (dy / dist) * speed;
+
+    enemy.x += stepX;
+    enemy.y += stepY;
+
+    if (enemy.attackTimer <= 0) {
+      const angle = Math.atan2(frank.y - enemy.y, frank.x - enemy.x);
+      galaxy.projectiles.push(new Projectile(enemy.x, enemy.y, angle));
+
+      enemy.attackTimer = MAX_ATTACK_TIMER;
+    }
+
+    enemy.attackTimer -= delta;
+  }
+}
+
+export function updateProjectiles(delta) {
+  for (let i = galaxy.projectiles.length - 1; i >= 0; i--) {
+    const projectile = galaxy.projectiles[i];
+    const speed = projectile.speed;
+    projectile.x += Math.cos(projectile.angle) * speed;
+    projectile.y += Math.sin(projectile.angle) * speed;
+
+    let collided = false;
+    let timedOut = false;
+
+    // Check for player collision
+    const dx = frank.x - projectile.x;
+    const dy = frank.y - projectile.y;
+    const dist = Math.hypot(dx, dy);
+    const minDist = frank.radius + projectile.radius;
+
+    console.log(frank.radius, projectile.radius);
+    if (dist < minDist) {
+      collided = true;
+    }
+
+    if (projectile.ttl <= 0) {
+      timedOut = true;
+    } else {
+      projectile.ttl -= delta;
+    }
+
+    if (collided || timedOut) {
+      galaxy.projectiles.splice(i, 1);
+    }
+  }
 }
 
 export function updateParticles() {

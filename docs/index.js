@@ -17,12 +17,17 @@ import {
   drawFullnessUI,
   drawStartGame,
   drawFrankSizeUI,
+  drawEnemies,
+  drawProjectiles,
 } from "./src/draw.js";
 import {
   updateCamera,
+  updateEnemies,
   updateFrank,
   updateParticles,
   updatePlanets,
+  updateProjectiles,
+  updateSpawnEnemies,
   updateThrusterAudio,
   updateTimers,
 } from "./src/update.js";
@@ -53,11 +58,14 @@ export let gameState = {
   sonarState: false,
 };
 export let availableUpgrades = [];
+
+// Timers
+export const SPAWN_TIMER_MAX = 5000;
+export const DAMAGE_TIMER_MAX = 1000;
 export const timers = {
   damagedTimer: 0,
+  spawnTimer: SPAWN_TIMER_MAX,
 };
-
-export const DAMAGE_TIMER_MAX = 1000;
 
 let frameId = 0;
 let lastTime = 0;
@@ -107,6 +115,9 @@ function update(delta) {
   updateCamera();
   updateThrusterAudio();
   updateFrank();
+  updateSpawnEnemies();
+  updateEnemies(delta);
+  updateProjectiles(delta);
   updateParticles();
   updateTimers(delta);
   updatePlanets();
@@ -120,6 +131,8 @@ function draw() {
 
   drawTheSun(ctx);
   drawFrank(ctx);
+  drawEnemies(ctx);
+  drawProjectiles(ctx);
   drawPlanets(ctx);
   drawFlame(ctx);
   drawFuelUI(ctx);

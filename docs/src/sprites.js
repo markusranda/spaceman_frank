@@ -9,6 +9,7 @@ export async function loadSprites() {
     planet_1: "assets/sprites/planet_1.png",
     planet_2: "assets/sprites/planet_2.png",
     planet_3: "assets/sprites/planet_3.png",
+    enemy_1: "assets/sprites/enemy_1.png",
   };
 
   const entries = Object.entries(spritePaths);

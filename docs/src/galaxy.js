@@ -3,6 +3,9 @@ import { Planet } from "./planet.js";
 
 export class Galaxy {
   planets = [];
+  enemies = [];
+  projectiles = [];
+  enemyMaxCount = 10;
   currentEvolution = 1;
   planetSpacing = 125;
   stepSize = 25;

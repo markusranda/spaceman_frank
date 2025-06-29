@@ -109,6 +109,57 @@ export function drawPlanets(ctx) {
   }
 }
 
+export function drawEnemies(ctx) {
+  for (const enemy of galaxy.enemies) {
+    if (!objWithinScreen(enemy)) continue;
+
+    const destX = enemy.x - camera.x;
+    const destY = enemy.y - camera.y;
+    const size = 2 * enemy.radius;
+
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.translate(destX, destY);
+    ctx.rotate(enemy.angle);
+    ctx.shadowColor = "rgba(200,200,200,0.3)";
+    ctx.shadowBlur = 40;
+    ctx.drawImage(
+      enemy.sprite,
+      -enemy.radius, // offset x to center
+      -enemy.radius, // offset y to center
+      size,
+      size
+    );
+
+    ctx.restore();
+  }
+}
+
+export function drawProjectiles(ctx) {
+  for (const projectile of galaxy.projectiles) {
+    if (!objWithinScreen(projectile)) continue;
+
+    const destX = projectile.x - camera.x;
+    const destY = projectile.y - camera.y;
+
+    ctx.save();
+    ctx.translate(destX, destY);
+
+    const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, projectile.radius);
+    gradient.addColorStop(0, "white");
+    gradient.addColorStop(0.2, "yellow");
+    gradient.addColorStop(0.6, "orange");
+    gradient.addColorStop(1, "red");
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(0, 0, projectile.radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+}
+
 export function drawLevelCleared(ctx, canvas) {
   ctx.save();
 

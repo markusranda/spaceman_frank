@@ -38,5 +38,18 @@
       height: 100%;
     }
   </style>
-  <script type="module" src="index.js"></script>
+  <script type="module">
+    async function waitForFont(font) {
+      try {
+        await document.fonts.load(`16px '${font}'`);
+        await document.fonts.ready; // optional, for extra safety
+        console.log(`Font '${font}' is loaded`);
+        await import("./index.js");
+      } catch (e) {
+        console.error("Font loading or index.js import failed", e);
+      }
+    }
+
+    waitForFont("Press Start 2P");
+  </script>
 </html>

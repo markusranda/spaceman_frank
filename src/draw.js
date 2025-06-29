@@ -170,7 +170,6 @@ export function drawFuelUI(ctx) {
 export function drawFullnessUI(ctx) {
   const width = 40;
   const height = 80;
-  console.log(frank.fullness, frank.getFullnessGoal());
   let fullnessHeight = height * (frank.fullness / frank.getFullnessGoal()) - 2;
   if (fullnessHeight < 0) fullnessHeight = 0;
 

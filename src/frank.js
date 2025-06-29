@@ -49,7 +49,7 @@ export class Frank {
   }
 
   getFullnessGoal() {
-    return 25;
+    return 10;
   }
 
   eatPlanet(planet) {
@@ -65,5 +65,11 @@ export class Frank {
       const levelDiff = Math.floor(Math.log2(this.radius / planet.radius));
       this.fullness += 1.0 / 2 ** levelDiff;
     }
+  }
+
+  evolve(galaxy) {
+    this.fullness = 0;
+    this.fuel = this.maxFuel;
+    this.radius += galaxy.stepSize;
   }
 }

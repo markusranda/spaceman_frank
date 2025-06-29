@@ -47,10 +47,6 @@ export class Galaxy {
 
       attempts++;
     }
-
-    console.log(
-      `Belt ${this.currentEvolution} placed ${placed} / ${maxPlanets} planets after ${attempts} attempts`
-    );
   }
 
   doesBeltPlanetCollide(p, planets) {

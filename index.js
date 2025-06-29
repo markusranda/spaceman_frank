@@ -101,13 +101,12 @@ window.addEventListener("click", (e) => {
   windowState.lastClick = { x: e.offsetX, y: e.offsetY };
 });
 
-function hasEatenEnoughRocks() {
-  // Check if Frank has eaten enough rocks
-  return false;
+function hasEatenEnoughPlanets() {
+  return frank.fullness >= frank.getFullnessGoal();
 }
 
 function update(delta) {
-  if (hasEatenEnoughRocks()) evolveGalaxy();
+  if (hasEatenEnoughPlanets()) evolveGalaxy();
 
   updateCamera();
   updateThrusterAudio();
@@ -197,6 +196,7 @@ function spawnVictoryParticles(count = 1000) {
 
 function evolveGalaxy() {
   gameState.victoryState = true;
+  frank.evolve(galaxy);
   spawnVictoryParticles();
 
   setTimeout(() => {

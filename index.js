@@ -156,7 +156,10 @@ function runGame() {
 
   // Spawn
   frank = new Frank(0, 0);
-  galaxy.spawnNextPlanetBelt(frank);
+  for (let i = 0; i < 10; i++) {
+    galaxy.spawnNextPlanetBelt(frank);
+    galaxy.currentEvolution++;
+  }
 
   // Run
   frameId = requestAnimationFrame(() => loop(0));
@@ -166,7 +169,7 @@ function doEvolveGalaxy() {
   gameState.victoryState = false;
   particles = [];
   galaxy.spawnNextPlanetBelt(frank);
-  galaxy.evolutions++;
+  galaxy.currentEvolution++;
 }
 
 function spawnVictoryParticles(count = 1000) {

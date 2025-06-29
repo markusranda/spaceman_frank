@@ -1,9 +1,11 @@
+import { frank } from "../index.js";
 import { Planet } from "./planet.js";
 
 export class Galaxy {
   planets = [];
-  evolutions = 1;
+  currentEvolution = 1;
   planetSpacing = 125;
+  stepSize = 25;
 
   constructor() {}
 
@@ -12,20 +14,17 @@ export class Galaxy {
     const centerY = 0;
 
     const basePlanetSize = frank.radius * 4;
-    const sizeStep = 50;
     const donutSpacing = basePlanetSize * 3;
-    const belt = this.evolutions;
 
-    const innerRadius = belt * donutSpacing + basePlanetSize;
+    const innerRadius = this.currentEvolution * donutSpacing + basePlanetSize;
     const outerRadius = innerRadius + donutSpacing;
 
-    const avgPlanetRadius = sizeStep * 2.5; // weighted guess
-    const planetArea =
-      Math.PI * Math.pow(avgPlanetRadius + this.planetSpacing, 2);
+    const estimatedPlanetArea = this.estimateAveragePlanetAreaForBelt();
     const beltArea = Math.PI * (outerRadius ** 2 - innerRadius ** 2);
     const densityFactor = 1.8;
-
-    const maxPlanets = Math.floor(beltArea / (planetArea * densityFactor));
+    const maxPlanets = Math.floor(
+      beltArea / (estimatedPlanetArea * densityFactor)
+    );
     const maxAttempts = maxPlanets * 10;
 
     let attempts = 0;
@@ -37,8 +36,7 @@ export class Galaxy {
       const planetX = centerX + Math.cos(angle) * radius;
       const planetY = centerY + Math.sin(angle) * radius;
 
-      const planetSizeSteps = Math.floor(Math.random() * 4) + 1;
-      const planetRadius = sizeStep * planetSizeSteps;
+      const planetRadius = this.getRandomPlanetRadiusForBelt();
 
       const candidate = new Planet(planetX, planetY, planetRadius);
 
@@ -51,10 +49,8 @@ export class Galaxy {
     }
 
     console.log(
-      `Belt ${belt} placed ${placed} / ${maxPlanets} planets after ${attempts} attempts`
+      `Belt ${this.currentEvolution} placed ${placed} / ${maxPlanets} planets after ${attempts} attempts`
     );
-
-    this.evolutions++;
   }
 
   doesBeltPlanetCollide(p, planets) {
@@ -67,5 +63,61 @@ export class Galaxy {
       if (dist < minDist) return true;
     }
     return false;
+  }
+
+  getRandomPlanetRadiusForBelt() {
+    const frankRadius =
+      frank.baseFrankRadius + this.currentEvolution === 1
+        ? 0
+        : this.currentEvolution * this.stepSize;
+
+    const maxEdible = frankRadius * 0.75;
+    const minEdible = frankRadius * 0.5;
+
+    const rand = Math.random();
+
+    if (rand < 0.2) {
+      // Small
+      return this.randomStepMultiple(
+        minEdible * 0.25,
+        minEdible,
+        this.stepSize
+      );
+    } else if (rand < 0.7) {
+      // Ideal
+      return this.randomStepMultiple(minEdible, maxEdible, this.stepSize);
+    } else {
+      // Too big
+      return this.randomStepMultiple(
+        maxEdible + this.stepSize,
+        maxEdible + 3 * this.stepSize,
+        this.stepSize
+      );
+    }
+  }
+
+  randomStepMultiple(min, max) {
+    const minSteps = Math.ceil(min / this.stepSize);
+    const maxSteps = Math.floor(max / this.stepSize);
+    const chosenSteps = this.randomIntInRange(minSteps, maxSteps);
+    return chosenSteps * this.stepSize;
+  }
+
+  randomIntInRange(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  estimateAveragePlanetAreaForBelt() {
+    const sampleCount = 100;
+    let totalArea = 0;
+
+    for (let i = 0; i < sampleCount; i++) {
+      const radius = this.getRandomPlanetRadiusForBelt();
+      const totalRadius = radius + this.planetSpacing;
+      const area = Math.PI * totalRadius * totalRadius;
+      totalArea += area;
+    }
+
+    return totalArea / sampleCount;
   }
 }

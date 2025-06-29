@@ -21,10 +21,11 @@ export class Frank {
   sonarRadius = 1500;
   sonarAngle = 0;
   sonarLetters = new Set();
+  baseFrankRadius = 50;
 
   constructor() {
     this.sprite = sprites["frank"];
-    this.radius = 50;
+    this.radius = this.baseFrankRadius;
     this.x = 0 - this.radius;
     this.y = 0 - this.radius;
   }

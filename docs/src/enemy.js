@@ -1,4 +1,5 @@
 import { sprites } from "./sprites.js";
+import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.0.2/dist/pixi.mjs";
 
 export const MAX_ATTACK_TIMER = 2000;
 
@@ -8,14 +9,18 @@ export class Enemy {
   radius = 25;
   speed = 2;
   type = "enemy";
-  sprite = sprites["enemy_1"];
+  sprite = null;
   attackTimer = MAX_ATTACK_TIMER;
   attackRange = 600;
+  dead = false;
 
   constructor(frank, galaxy) {
     const { x, y } = this.getValidSpawnCoords(frank, galaxy);
     this.x = x;
     this.y = y;
+    this.sprite = new PIXI.Sprite(sprites["enemy_1"]);
+    this.sprite.x = x;
+    this.sprite.y = y;
   }
 
   getValidSpawnCoords(frank, galaxy) {
@@ -40,5 +45,16 @@ export class Enemy {
     }
 
     throw Error(`Failed to find a valid position after ${maxAttempts}`);
+  }
+
+  setPosition(x, y) {
+    this.x = x;
+    this.y = y;
+    this.sprite.x = x;
+    this.sprite.y = y;
+  }
+
+  destroy() {
+    this.sprite.destroy({ children: true, texture: false, baseTexture: false });
   }
 }

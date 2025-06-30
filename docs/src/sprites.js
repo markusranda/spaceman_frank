@@ -1,3 +1,5 @@
+import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.0.2/dist/pixi.mjs";
+
 export const sprites = {};
 
 export async function loadSprites() {
@@ -10,6 +12,11 @@ export async function loadSprites() {
     planet_2: "assets/sprites/planet_2.png",
     planet_3: "assets/sprites/planet_3.png",
     enemy_1: "assets/sprites/enemy_1.png",
+    fireball: "assets/sprites/fireball.png",
+    confetti_1: "assets/sprites/confetti_1.png",
+    confetti_2: "assets/sprites/confetti_2.png",
+    confetti_3: "assets/sprites/confetti_3.png",
+    confetti_4: "assets/sprites/confetti_4.png",
   };
 
   const entries = Object.entries(spritePaths);
@@ -18,11 +25,6 @@ export async function loadSprites() {
   }
 }
 
-function loadImage(src) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.src = src;
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-  });
+async function loadImage(src) {
+  return await PIXI.Assets.load(src);
 }

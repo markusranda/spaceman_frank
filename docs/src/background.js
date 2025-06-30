@@ -27,18 +27,22 @@ export class Background {
   drawBeltsInTile(ctx, tx, ty) {
     ctx.save();
 
+    // Drawing debug information
     ctx.font = "bold 48px monospace";
     ctx.textAlign = "left";
     ctx.textBaseline = "bottom";
     ctx.fillStyle = "grey";
     ctx.fillRect(0, 0, this.tileSize, this.tileSize);
     ctx.fillStyle = "white";
-    ctx.fillText(`(${0}, ${0})`, 20, this.tileSize - 20);
+    ctx.fillText(`(${tx}, ${ty})`, 20, this.tileSize - 20);
     ctx.strokeStyle = "red";
     ctx.strokeRect(0, 0, this.tileSize, this.tileSize);
 
+    // Drawing things we want to see
     if (tx === 0 && ty === 0) {
       this.drawSun(ctx);
+    } else {
+      this.drawBeltSegments(ctx, tx, ty);
     }
 
     ctx.restore();
@@ -126,5 +130,58 @@ export class Background {
     ctx.fill();
 
     ctx.restore();
+  }
+
+  drawBeltSegments(ctx, tx, ty) {
+    const tileSize = this.tileSize;
+
+    // Tile center in world space
+    const tileCenterX = this.tileToWorld(tx);
+    const tileCenterY = this.tileToWorld(ty);
+
+    // Tile world bounds
+    const tileLeft = tileCenterX - tileSize / 2;
+    const tileRight = tileCenterX + tileSize / 2;
+    const tileTop = tileCenterY - tileSize / 2;
+    const tileBottom = tileCenterY + tileSize / 2;
+
+    // Distance from tile corner to (0,0)
+    const tileMaxDist = Math.hypot(
+      Math.max(Math.abs(tileLeft), Math.abs(tileRight)),
+      Math.max(Math.abs(tileTop), Math.abs(tileBottom))
+    );
+    const tileMinDist = Math.hypot(
+      Math.min(Math.abs(tileLeft), Math.abs(tileRight)),
+      Math.min(Math.abs(tileTop), Math.abs(tileBottom))
+    );
+
+    // Belt configuration
+    const minRadius = tileSize * 0.8;
+    const beltGap = tileSize * 0.6;
+    const thickness = 24;
+
+    // Compute which belt indices intersect this tile
+    const minIndex = Math.max(
+      0,
+      Math.floor((tileMinDist - minRadius - thickness) / beltGap)
+    );
+    const maxIndex = Math.ceil((tileMaxDist - minRadius + thickness) / beltGap);
+
+    const centerX = -tileLeft;
+    const centerY = -tileTop;
+
+    for (let i = minIndex; i <= maxIndex; i++) {
+      const radius = minRadius + i * beltGap;
+      const inner = radius - thickness / 2;
+      const outer = radius + thickness / 2;
+
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, outer, 0, Math.PI * 2, false);
+      ctx.arc(centerX, centerY, inner, 0, Math.PI * 2, true);
+      ctx.closePath();
+
+      ctx.fillStyle = `rgba(255, 255, 255, ${0.015 + i * 0.002})`;
+      ctx.fill();
+    }
   }
 }

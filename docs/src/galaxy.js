@@ -26,7 +26,7 @@ export class Galaxy {
       try {
         const enemy = new Enemy(frank, this);
         this.enemies.push(enemy);
-        container.addChild(enemy.sprite);
+        enemy.addTo(container);
       } catch (e) {
         console.error(e);
       } finally {

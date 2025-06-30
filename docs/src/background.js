@@ -156,7 +156,7 @@ export class Background {
 
     // Belt configuration
     const minRadius = 0;
-    const thickness = tileSize * 0.75;
+    const thickness = tileSize * 0.5;
     const beltGap = thickness;
 
     // Compute which belt indices intersect this tile
@@ -170,23 +170,21 @@ export class Background {
     const centerY = -tileTop;
 
     for (let i = minIndex; i <= maxIndex; i++) {
-      for (let i = minIndex; i <= maxIndex; i++) {
-        const radius = minRadius + i * beltGap;
+      const radius = minRadius + i * beltGap;
 
-        if (i === 0) {
-          // Fill inside the first belt to cover the center hole
-          ctx.beginPath();
-          ctx.arc(centerX, centerY, this.tileSize * 0.4, 0, Math.PI * 2);
-          ctx.fillStyle = this.getBeltColor(-1); // match first belt
-          ctx.fill();
-        }
-
+      if (i === 0) {
+        // Fill inside the first belt to cover the center hole
         ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-        ctx.strokeStyle = this.getBeltColor(i);
-        ctx.lineWidth = thickness;
-        ctx.stroke();
+        ctx.arc(centerX, centerY, this.tileSize * 0.4, 0, Math.PI * 2);
+        ctx.fillStyle = this.getBeltColor(-1); // match first belt
+        ctx.fill();
       }
+
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.strokeStyle = this.getBeltColor(i);
+      ctx.lineWidth = thickness;
+      ctx.stroke();
     }
   }
 

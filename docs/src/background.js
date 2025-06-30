@@ -62,68 +62,50 @@ export class Background {
   drawSun(ctx) {
     ctx.save();
 
-    const centerX = this.tileSize / 2;
-    const centerY = this.tileSize / 2;
-    const radius = this.tileSize * 0.25;
+    const size = this.tileSize;
+    const centerX = size / 2;
+    const centerY = size / 2;
 
-    // Fill base to blend gap before belts
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius + this.tileSize * 0.25, 0, Math.PI * 2);
-    ctx.fillStyle = this.getBeltColor(0); // match first belt color
-    ctx.fill();
+    // * 0.5 is absolute max
+    const radius = size * 0.5;
+    const outerRad = radius;
+    const midRad = radius * 0.85;
+    const coreRad = radius * 0.45;
 
-    // Outer glow — extremely subtle and wide
-    const outerGlow = ctx.createRadialGradient(
-      centerX,
-      centerY,
-      0,
-      centerX,
-      centerY,
-      radius * 4.5
-    );
-    outerGlow.addColorStop(0, "rgba(255, 255, 224, 0.07)");
-    outerGlow.addColorStop(0.5, "rgba(255, 255, 224, 0.03)");
+    // Move origin to tile center
+    ctx.translate(centerX, centerY);
+
+    // Outer glow — very wide, subtle
+    const outerGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, outerRad);
+    outerGlow.addColorStop(0, "rgba(255, 255, 224, 0.05)");
+    outerGlow.addColorStop(0.7, "rgba(255, 255, 224, 0.01)");
     outerGlow.addColorStop(1, "rgba(255, 255, 224, 0)");
 
     ctx.fillStyle = outerGlow;
     ctx.beginPath();
-    ctx.arc(centerX, centerY, radius * 4.5, 0, Math.PI * 2);
+    ctx.arc(0, 0, outerRad, 0, Math.PI * 2);
     ctx.fill();
 
-    // Mid glow — smooth fade, no harsh edge
-    const midGlow = ctx.createRadialGradient(
-      centerX,
-      centerY,
-      0,
-      centerX,
-      centerY,
-      radius * 2
-    );
-    midGlow.addColorStop(0, "rgba(255, 255, 240, 0.6)");
-    midGlow.addColorStop(0.6, "rgba(255, 255, 230, 0.25)");
+    // Mid glow — tight and warm
+    const midGlow = ctx.createRadialGradient(0, 0, 0, 0, 0, midRad);
+    midGlow.addColorStop(0, "rgba(255, 255, 240, 0.3)");
+    midGlow.addColorStop(0.8, "rgba(255, 255, 230, 0.1)");
     midGlow.addColorStop(1, "rgba(255, 255, 224, 0)");
 
     ctx.fillStyle = midGlow;
     ctx.beginPath();
-    ctx.arc(centerX, centerY, radius * 2, 0, Math.PI * 2);
+    ctx.arc(0, 0, midRad, 0, Math.PI * 2);
     ctx.fill();
 
-    // Core — smoother edge transition
-    const coreGradient = ctx.createRadialGradient(
-      centerX,
-      centerY,
-      0,
-      centerX,
-      centerY,
-      radius
-    );
-    coreGradient.addColorStop(0, "#ffffff");
-    coreGradient.addColorStop(0.8, "#fffff0");
-    coreGradient.addColorStop(1, "#ffffe0");
+    // Core — soft white-hot center, NO hard edges
+    const core = ctx.createRadialGradient(0, 0, 0, 0, 0, coreRad);
+    core.addColorStop(0, "#ffffff");
+    core.addColorStop(0.9, "#fffff0");
+    core.addColorStop(1, "#ffffe0");
 
-    ctx.fillStyle = coreGradient;
+    ctx.fillStyle = core;
     ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.arc(0, 0, coreRad, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.restore();
@@ -172,6 +154,14 @@ export class Background {
       for (let i = minIndex; i <= maxIndex; i++) {
         const radius = minRadius + i * beltGap;
 
+        if (i === 0) {
+          // Fill inside the first belt to cover the center hole
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, this.tileSize * 0.4, 0, Math.PI * 2);
+          ctx.fillStyle = this.getBeltColor(-1); // match first belt
+          ctx.fill();
+        }
+
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
         ctx.strokeStyle = this.getBeltColor(i);
@@ -188,16 +178,10 @@ export class Background {
   }
 
   getBeltColor(index) {
-    // Hue starts near yellow-white, shifts slowly toward bluish/purple
-    const startHue = 50; // warm yellow-white
-    const endHue = 260; // cool violet
-    const maxSteps = 10; // how far the shift spreads
-    const t = Math.min(index / maxSteps, 1); // normalized progress
+    const t = Math.max(0, Math.min(index / 80, 1));
+    const lightness = 15 - t * 20; // from 25% (carbon) to 5% (almost black)
+    const sat = 5; // nearly greyscale
 
-    const hue = startHue + (endHue - startHue) * t;
-    const lightness = 85 - t * 20; // from 85% to 65%
-    const saturation = 80; // keep it strong
-
-    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    return `hsl(0, ${sat}%, ${lightness}%)`;
   }
 }

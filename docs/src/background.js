@@ -27,22 +27,9 @@ export class Background {
   drawBeltsInTile(ctx, tx, ty) {
     ctx.save();
 
-    // Drawing debug information
-    ctx.font = "bold 48px monospace";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "bottom";
-    ctx.fillStyle = "grey";
-    ctx.fillRect(0, 0, this.tileSize, this.tileSize);
-    ctx.fillStyle = "white";
-    ctx.fillText(`(${tx}, ${ty})`, 20, this.tileSize - 20);
-    ctx.strokeStyle = "red";
-    ctx.strokeRect(0, 0, this.tileSize, this.tileSize);
-
-    // Drawing things we want to see
+    this.drawBeltSegments(ctx, tx, ty);
     if (tx === 0 && ty === 0) {
       this.drawSun(ctx);
-    } else {
-      this.drawBeltSegments(ctx, tx, ty);
     }
 
     ctx.restore();
@@ -56,6 +43,7 @@ export class Background {
     const startTileY = Math.floor((cam.y - cam.height / 2) / tileW) - buffer;
     const endTileY = Math.floor((cam.y + cam.height / 2) / tileW) + buffer;
 
+    const tilesBefore = Math.max(this.tiles.size);
     for (let tx = startTileX; tx <= endTileX; tx++) {
       for (let ty = startTileY; ty <= endTileY; ty++) {
         const canvas = this.getOrCreateTile(tx, ty);
@@ -66,6 +54,9 @@ export class Background {
         ctx.drawImage(canvas, drawX, drawY);
       }
     }
+
+    const newTiles = this.tiles.size - tilesBefore;
+    if (newTiles > 0) console.log(`New tiles: ${newTiles}`);
   }
 
   drawSun(ctx) {
@@ -74,6 +65,12 @@ export class Background {
     const centerX = this.tileSize / 2;
     const centerY = this.tileSize / 2;
     const radius = this.tileSize * 0.25;
+
+    // Fill base to blend gap before belts
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius + this.tileSize * 0.25, 0, Math.PI * 2);
+    ctx.fillStyle = this.getBeltColor(0); // match first belt color
+    ctx.fill();
 
     // Outer glow — extremely subtle and wide
     const outerGlow = ctx.createRadialGradient(
@@ -156,9 +153,9 @@ export class Background {
     );
 
     // Belt configuration
-    const minRadius = tileSize * 0.8;
-    const beltGap = tileSize * 0.6;
-    const thickness = 24;
+    const minRadius = 0;
+    const thickness = tileSize * 0.75;
+    const beltGap = thickness;
 
     // Compute which belt indices intersect this tile
     const minIndex = Math.max(
@@ -172,16 +169,35 @@ export class Background {
 
     for (let i = minIndex; i <= maxIndex; i++) {
       const radius = minRadius + i * beltGap;
-      const inner = radius - thickness / 2;
-      const outer = radius + thickness / 2;
+      for (let i = minIndex; i <= maxIndex; i++) {
+        const radius = minRadius + i * beltGap;
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.strokeStyle = this.getBeltColor(i);
+        ctx.lineWidth = thickness;
+        ctx.stroke();
+      }
 
       ctx.beginPath();
-      ctx.arc(centerX, centerY, outer, 0, Math.PI * 2, false);
-      ctx.arc(centerX, centerY, inner, 0, Math.PI * 2, true);
-      ctx.closePath();
-
-      ctx.fillStyle = `rgba(255, 255, 255, ${0.015 + i * 0.002})`;
-      ctx.fill();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.strokeStyle = this.getBeltColor(i);
+      ctx.lineWidth = thickness;
+      ctx.stroke();
     }
+  }
+
+  getBeltColor(index) {
+    // Hue starts near yellow-white, shifts slowly toward bluish/purple
+    const startHue = 50; // warm yellow-white
+    const endHue = 260; // cool violet
+    const maxSteps = 10; // how far the shift spreads
+    const t = Math.min(index / maxSteps, 1); // normalized progress
+
+    const hue = startHue + (endHue - startHue) * t;
+    const lightness = 85 - t * 20; // from 85% to 65%
+    const saturation = 80; // keep it strong
+
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   }
 }

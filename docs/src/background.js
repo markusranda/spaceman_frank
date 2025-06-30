@@ -31,6 +31,7 @@ export class Background {
     if (tx === 0 && ty === 0) {
       this.drawSun(ctx);
     }
+    this.drawStars(ctx);
 
     ctx.restore();
   }
@@ -109,6 +110,25 @@ export class Background {
     ctx.fill();
 
     ctx.restore();
+  }
+
+  drawStars(ctx) {
+    const tileSize = this.tileSize;
+    const count = 30;
+
+    for (let i = 0; i < count; i++) {
+      const x = Math.random() * tileSize;
+      const y = Math.random() * tileSize;
+      const radius = Math.random() * 2.0 + 0.3;
+      const alpha = Math.random() * 0.4 + 0.1;
+
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+      ctx.shadowColor = "rgba(200,200,200,0.3)";
+      ctx.shadowBlur = 4;
+      ctx.fill();
+    }
   }
 
   drawBeltSegments(ctx, tx, ty) {

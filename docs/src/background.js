@@ -3,6 +3,7 @@ export class Background {
     this.stepSize = stepSize;
     this.tileSize = 512;
     this.tiles = new Map(); // Keyed by `${tx},${ty}`
+    this.colorCache = new Map();
   }
 
   tileToWorld(coord) {
@@ -189,10 +190,12 @@ export class Background {
   }
 
   getBeltColor(index) {
+    if (this.colorCache.has(index)) return this.colorCache.get(index);
     const t = Math.max(0, Math.min(index / 80, 1));
-    const lightness = 15 - t * 20; // from 25% (carbon) to 5% (almost black)
-    const sat = 5; // nearly greyscale
-
-    return `hsl(0, ${sat}%, ${lightness}%)`;
+    const lightness = 15 - t * 20;
+    const sat = 5;
+    const color = `hsl(0, ${sat}%, ${lightness}%)`;
+    this.colorCache.set(index, color);
+    return color;
   }
 }

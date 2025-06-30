@@ -1,4 +1,4 @@
-import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.0.2/dist/pixi.mjs";
+import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.10.2/dist/pixi.min.mjs";
 import { DAMAGE_TIMER_MAX } from "./timers.js";
 import { GAME_STATES } from "./gamestate.js";
 
@@ -22,8 +22,7 @@ export class GameHud {
         fontSize: 32,
         fill: 0xffffff,
         align: "center",
-        stroke: 0x000000,
-        strokeThickness: 2,
+        stroke: { color: 0x000000, thickness: 2 },
       }),
     });
     this.levelClearedText.anchor.x = 0.5;
@@ -48,8 +47,7 @@ export class GameHud {
         fontSize: 32,
         fill: 0x00ff00,
         align: "center",
-        stroke: 0x000000,
-        strokeThickness: 2,
+        stroke: { color: 0x000000, thickness: 2 },
       }),
     });
     this.frankSizeText.anchor.set(0.5);

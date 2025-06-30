@@ -6,7 +6,7 @@ import {
   drawBackgroundMenu,
 } from "./src/draw.js";
 import { loadAudios } from "./src/audio.js";
-import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.0.2/dist/pixi.mjs";
+import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.10.2/dist/pixi.min.mjs";
 import { Game } from "./src/game.js";
 
 const body = document.getElementById("rootElement");

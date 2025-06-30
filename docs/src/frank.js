@@ -1,5 +1,5 @@
 import { sprites } from "./sprites.js";
-import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.0.2/dist/pixi.mjs";
+import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.10.2/dist/pixi.min.mjs";
 import { DAMAGE_TIMER_MAX } from "./timers.js";
 import { audios } from "./audio.js";
 

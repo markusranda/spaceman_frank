@@ -1,7 +1,7 @@
 import { Background } from "./background.js";
 import { Frank } from "./frank.js";
 import { Galaxy } from "./galaxy.js";
-import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.0.2/dist/pixi.mjs";
+import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.10.2/dist/pixi.min.mjs";
 import { VICTORY_TIMER_MAX, SPAWN_TIMER_MAX } from "./timers.js";
 import { GAME_STATES } from "./gamestate.js";
 import { Particle } from "./particle.js";
@@ -28,6 +28,8 @@ export class Game {
   gameState = GAME_STATES.NORMAL;
   particles = [];
   gameHud = null;
+  background = null;
+  pulseTime = 0;
 
   constructor(pixiApp) {
     this.pixiApp = pixiApp;
@@ -68,7 +70,7 @@ export class Game {
       this.pixiApp.renderer.width,
       this.pixiApp.renderer.height
     );
-    const background = new Background();
+    this.background = new Background();
     for (let i = 0; i < 10; i++) {
       const newPlanets = this.galaxy.spawnNextPlanetBelt(this.frank);
       // add planets to visuals
@@ -79,7 +81,7 @@ export class Game {
     }
 
     this.frank.addTo(this.cameraContainer);
-    background.addTo(this.backgroundContainer);
+    this.background.addTo(this.backgroundContainer);
 
     this.tick = this.tick.bind(this);
     requestAnimationFrame(this.tick);
@@ -115,6 +117,11 @@ export class Game {
     this.updateParticles();
     this.updatePlanets(this.galaxy);
     this.gameHud.update(this.frank, this.timers, this.gameState);
+    this.background.update(
+      this.backgroundContainer,
+      this.frank,
+      this.pixiApp.renderer.width
+    );
   }
 
   updateTimers(delta) {

@@ -6,9 +6,9 @@ export class Frank {
   vx = 0;
   vy = 0;
   angle = (3 * Math.PI) / 2;
-  acceleration = 0.05;
+  acceleration = 0.09;
   rotationSpeed = 0.05;
-  maxSpeed = 4;
+  maxSpeed = 15;
   friction = 0.9945;
   sprite = undefined;
   radius = 0;
@@ -25,8 +25,8 @@ export class Frank {
   constructor() {
     this.sprite = sprites["frank"];
     this.radius = this.baseFrankRadius;
-    this.x = 0 - this.radius;
-    this.y = 0 - this.radius;
+    this.x = 0;
+    this.y = 0;
   }
 
   getMaxSpeed() {

@@ -2,12 +2,10 @@ import { loadSprites } from "./src/sprites.js";
 import { Frank } from "./src/frank.js";
 import { Galaxy } from "./src/galaxy.js";
 import {
-  createBackgroundCanvasElement,
-  drawBackground,
+  createBackgroundCanvasElementMenu,
   drawDamaged,
   drawFlame,
   drawFrank,
-  drawTheSun,
   drawLevelCleared,
   drawCompass,
   drawParticles,
@@ -20,6 +18,7 @@ import {
   drawEnemies,
   drawProjectiles,
   drawLoadingIndicator,
+  drawBackgroundMenu,
 } from "./src/draw.js";
 import {
   updateCamera,
@@ -44,7 +43,7 @@ canvas.width = worldX;
 canvas.height = worldY;
 
 // State
-let backgroundCanvas = null;
+let backgroundCanvasMenu = null;
 export let frank = undefined;
 export let galaxy = new Galaxy();
 export let particles = [];
@@ -128,9 +127,7 @@ function draw() {
   ctx.fillStyle = "#111";
   ctx.fillRect(0, 0, worldX, worldY);
 
-  drawBackground(ctx, backgroundCanvas);
-
-  drawTheSun(ctx);
+  galaxy.background.draw(ctx, camera);
   drawFrank(ctx);
   drawFlame(ctx);
   drawProjectiles(ctx);
@@ -179,7 +176,7 @@ function runGame() {
   cancelAnimationFrame(frameId);
 
   // Spawn
-  frank = new Frank(0, 0);
+  frank = new Frank();
   for (let i = 0; i < 10; i++) {
     galaxy.spawnNextPlanetBelt(frank);
     galaxy.currentEvolution++;
@@ -230,7 +227,7 @@ async function init() {
   document.removeEventListener("keydown", init, { once: true });
 
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  drawBackground(ctx, backgroundCanvas);
+  drawBackgroundMenu(ctx, backgroundCanvasMenu);
   drawLoadingIndicator(ctx, canvas);
 
   const minWait = new Promise((resolve) => setTimeout(resolve, 500));
@@ -248,11 +245,10 @@ async function init() {
   runGame();
 }
 
-backgroundCanvas = createBackgroundCanvasElement();
-canvas.onre;
+backgroundCanvasMenu = createBackgroundCanvasElementMenu();
 ctx.fillStyle = "#111";
 ctx.fillRect(0, 0, worldX, worldY);
-drawBackground(ctx, backgroundCanvas);
+drawBackgroundMenu(ctx, backgroundCanvasMenu);
 drawStartGame(ctx, canvas);
 
 document.addEventListener("click", init, { once: true });

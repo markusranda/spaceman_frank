@@ -1,4 +1,5 @@
 import { frank } from "../index.js";
+import { Background } from "./background.js";
 import { Planet } from "./planet.js";
 
 export class Galaxy {
@@ -9,6 +10,7 @@ export class Galaxy {
   currentEvolution = 1;
   planetSpacing = 125;
   stepSize = 25;
+  background = new Background();
 
   constructor() {}
 

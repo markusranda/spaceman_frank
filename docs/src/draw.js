@@ -30,24 +30,6 @@ export function drawFrank(ctx) {
   ctx.restore();
 }
 
-export function drawTheSun(ctx) {
-  const radius = 400;
-
-  const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
-  gradient.addColorStop(0, "rgba(255, 255, 255, 1)"); // blinding white center
-  gradient.addColorStop(0.3, "rgba(255, 255, 200, 0.8)"); // soft yellowish glow
-  gradient.addColorStop(0.6, "rgba(255, 200, 100, 0.4)"); // fading orange
-  gradient.addColorStop(1, "rgba(255, 150, 50, 0)"); // fully transparent edge
-
-  ctx.save();
-  ctx.translate(-camera.x, -camera.y);
-  ctx.fillStyle = gradient;
-  ctx.beginPath();
-  ctx.arc(0, 0, radius, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-}
-
 export function drawFlame(ctx) {
   if (frank.fuel <= 0 || !keys.w) return;
 
@@ -345,7 +327,7 @@ function drawTextWithEllipsis(ctx, text, x, y, maxWidth) {
   ctx.fillText(truncatedText, x, y);
 }
 
-export function createBackgroundCanvasElement() {
+export function createBackgroundCanvasElementMenu() {
   const canvas = document.createElement("canvas");
   canvas.width = 2048;
   canvas.height = 2048;
@@ -365,22 +347,17 @@ export function createBackgroundCanvasElement() {
   return canvas;
 }
 
-export function drawBackground(ctx, backgroundCanvas) {
-  if (!ctx) throw Error("Can't draw background without canvas ctx");
-  if (!backgroundCanvas)
-    throw Error("Can't draw background without backgroundCanvas");
-
+export function drawBackgroundMenu(ctx, backgroundCanvas) {
   const parallax = 0.1;
-  const bgX = (-camera.x * parallax) % backgroundCanvas.width;
-  const bgY = (-camera.y * parallax) % backgroundCanvas.height;
+  const bgWidth = backgroundCanvas.width;
+  const bgHeight = backgroundCanvas.height;
+
+  const bgX = (-camera.x * parallax) % bgWidth;
+  const bgY = (-camera.y * parallax) % bgHeight;
 
   for (let x = -1; x <= 1; x++) {
     for (let y = -1; y <= 1; y++) {
-      ctx.drawImage(
-        backgroundCanvas,
-        bgX + x * backgroundCanvas.width,
-        bgY + y * backgroundCanvas.height
-      );
+      ctx.drawImage(backgroundCanvas, bgX + x * bgWidth, bgY + y * bgHeight);
     }
   }
 }

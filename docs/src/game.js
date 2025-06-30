@@ -175,17 +175,36 @@ export class Game {
   }
 
   updateCamera(camera, backgroundContainer, cameraContainer, frank) {
-    // Center on frank
-    camera.x = frank.x - camera.width / 2;
-    camera.y = frank.y - camera.height / 2;
+    // 1. Scale camera so that Frank *appears* the same size always
+    const baseRadius = 50; // Frank's original "design" size
+    const scale = baseRadius / frank.radius;
 
-    // Update world's containers
+    if (!cameraContainer.scale.x) cameraContainer.scale.set(1);
+    cameraContainer.scale.x += (scale - cameraContainer.scale.x) * 0.1;
+    cameraContainer.scale.y = cameraContainer.scale.x; // keep uniform
+
+    // 2. Background: fixed scale to improve aesthetics
+    backgroundContainer.scale.set(0.6); // tweak this manually
+
+    // 3. Adjust camera center accounting for scaling
+    const offsetX = camera.width / 2 / cameraContainer.scale.x;
+    const offsetY = camera.height / 2 / cameraContainer.scale.y;
+    camera.x = frank.x - offsetX;
+    camera.y = frank.y - offsetY;
+
+    // 4. Update world positions
+    cameraContainer.position.set(
+      -camera.x * cameraContainer.scale.x,
+      -camera.y * cameraContainer.scale.y
+    );
+
     const parallax = 0.2;
     backgroundContainer.position.set(
-      -camera.x * parallax + (camera.width / 2) * (1 - parallax),
-      -camera.y * parallax + (camera.height / 2) * (1 - parallax)
+      -camera.x * backgroundContainer.scale.x * parallax +
+        (camera.width / 2) * (1 - parallax),
+      -camera.y * backgroundContainer.scale.y * parallax +
+        (camera.height / 2) * (1 - parallax)
     );
-    cameraContainer.position.set(-camera.x, -camera.y);
   }
 
   updatePlanets(galaxy) {

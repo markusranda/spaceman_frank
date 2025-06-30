@@ -55,13 +55,6 @@ export class Background {
     }
   }
 
-  animateSun(timeObj) {
-    this.pulseTime += timeObj.deltaTime * 0.005;
-    const scale = 1 + Math.sin(this.pulseTime) * 0.03;
-    const safeScale = Math.max(0.95, Math.min(1.01, scale));
-    this.sun.scale.set(safeScale);
-  }
-
   createSun() {
     const sun = new PIXI.Container();
 

@@ -1,7 +1,7 @@
 export class Background {
   constructor(stepSize = 200) {
     this.stepSize = stepSize;
-    this.tileSize = 1024;
+    this.tileSize = 512;
     this.tiles = new Map(); // Keyed by `${tx},${ty}`
   }
 
@@ -170,7 +170,6 @@ export class Background {
     const centerY = -tileTop;
 
     for (let i = minIndex; i <= maxIndex; i++) {
-      const radius = minRadius + i * beltGap;
       for (let i = minIndex; i <= maxIndex; i++) {
         const radius = minRadius + i * beltGap;
 
@@ -188,12 +187,6 @@ export class Background {
         ctx.lineWidth = thickness;
         ctx.stroke();
       }
-
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-      ctx.strokeStyle = this.getBeltColor(i);
-      ctx.lineWidth = thickness;
-      ctx.stroke();
     }
   }
 

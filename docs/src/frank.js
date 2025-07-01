@@ -206,7 +206,7 @@ export class Frank {
   handleProjectileCollisions(projectiles, timers) {
     for (const projectile of projectiles) {
       this.fuel -= projectile.damage;
-      timers.damagedTimer = DAMAGE_TIMER_MAX;
+      timers.damageTimer = DAMAGE_TIMER_MAX;
       projectile.dead = true;
     }
   }
@@ -260,7 +260,7 @@ export class Frank {
 
     if (impactSpeed > impactThreshold) {
       this.fuel = Math.max(0, this.fuel - impactSpeed * fuelLossMultiplier);
-      timers.damagedTimer = DAMAGE_TIMER_MAX;
+      timers.damageTimer = DAMAGE_TIMER_MAX;
       this.playDmgSound();
     }
     if (normalVelocity < 0) {

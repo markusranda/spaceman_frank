@@ -4,7 +4,7 @@ import { GAME_STATES } from "./gamestate.js";
 
 export class GameHud {
   levelClearedText;
-  damagedOverlay;
+  damageOverlay;
   frankSizeText;
   fuelBarBg;
   fuelBarFill;
@@ -30,14 +30,12 @@ export class GameHud {
     this.levelClearedText.x = canvasWidth / 2;
     this.levelClearedText.y = 100;
     this.levelClearedText.visible = false;
-    this.uiContainer.addChild(this.levelClearedText);
 
-    // --- Damaged Overlay ---
-    this.damagedOverlay = new PIXI.Graphics();
-    this.damagedOverlay.rect(0, 0, canvasWidth, canvasHeight);
-    this.damagedOverlay.fill({ color: 0xa83240, alpha: 0 });
-    this.damagedOverlay.visible = false;
-    this.uiContainer.addChild(this.damagedOverlay);
+    // --- Damage Overlay ---
+    this.damageOverlay = new PIXI.Graphics();
+    this.damageOverlay.rect(0, 0, canvasWidth, canvasHeight);
+    this.damageOverlay.fill({ color: 0xa83240, alpha: 0.5 });
+    this.damageOverlay.visible = true;
 
     // --- Frank Size UI ---
     this.frankSizeText = new PIXI.Text({
@@ -53,7 +51,6 @@ export class GameHud {
     this.frankSizeText.anchor.set(0.5);
     this.frankSizeText.x = canvasWidth / 2;
     this.frankSizeText.y = 40;
-    this.uiContainer.addChild(this.frankSizeText);
 
     // --- Fuel UI ---
     const fuelWidth = 40;
@@ -64,10 +61,8 @@ export class GameHud {
     this.fuelBarBg = new PIXI.Graphics();
     this.fuelBarBg.rect(fuelPosX, fuelPosY, fuelWidth, fuelHeight);
     this.fuelBarBg.fill(0x808080);
-    this.uiContainer.addChild(this.fuelBarBg);
 
     this.fuelBarFill = new PIXI.Graphics();
-    this.uiContainer.addChild(this.fuelBarFill);
 
     // --- Fullness UI ---
     const fullnessWidth = 40;
@@ -83,15 +78,26 @@ export class GameHud {
       fullnessHeight
     );
     this.fullnessBarBg.fill(0x808080);
-    this.uiContainer.addChild(this.fullnessBarBg);
 
     this.fullnessBarFill = new PIXI.Graphics();
+
+    // HUD
+    this.uiContainer.addChild(this.fuelBarBg);
+    this.uiContainer.addChild(this.fuelBarFill);
+    this.uiContainer.addChild(this.fullnessBarBg);
     this.uiContainer.addChild(this.fullnessBarFill);
+
+    // HUD Messages
+    this.uiContainer.addChild(this.frankSizeText);
+    this.uiContainer.addChild(this.levelClearedText);
+
+    // Overlay over everything
+    this.uiContainer.addChild(this.damageOverlay);
   }
 
   update(frank, timers, gameState) {
     this.updateLevelCleared(gameState);
-    this.updateDamagedOverlay(timers);
+    this.updateDamageOverlay(timers);
     this.updateFrankSizeUI(frank);
     this.updateFuelUI(frank);
     this.updateFullnessUI(frank);
@@ -101,15 +107,15 @@ export class GameHud {
     this.levelClearedText.visible = gameState === GAME_STATES.VICTORY;
   }
 
-  updateDamagedOverlay(timers) {
-    if (timers.damagedTimer > 0) {
-      const maxAlpha = 0.4;
-      const alpha = (timers.damagedTimer / DAMAGE_TIMER_MAX) * maxAlpha;
-      this.damagedOverlay.alpha = alpha;
-      this.damagedOverlay.visible = true;
+  updateDamageOverlay(timers) {
+    if (timers.damageTimer > 0) {
+      const maxAlpha = 0.5;
+      const alpha = (timers.damageTimer / DAMAGE_TIMER_MAX) * maxAlpha;
+      this.damageOverlay.alpha = alpha;
+      this.damageOverlay.visible = true;
     } else {
-      this.damagedOverlay.visible = false;
-      this.damagedOverlay.alpha = 0;
+      this.damageOverlay.visible = false;
+      this.damageOverlay.alpha = 0;
     }
   }
 

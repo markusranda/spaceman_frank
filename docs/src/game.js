@@ -21,7 +21,7 @@ export class Game {
   cameraContainer = new PIXI.Container();
   uiContainer = new PIXI.Container();
   timers = {
-    damagedTimer: 0,
+    damageTimer: 0,
     spawnTimer: SPAWN_TIMER_MAX,
     victoryTimer: 0,
     debugEvolveTimer: 0,

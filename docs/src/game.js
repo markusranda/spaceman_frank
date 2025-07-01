@@ -14,7 +14,7 @@ export class Game {
     a: false,
     s: false,
     d: false,
-    " ": false,
+    å: false,
   };
   lastTime = 0;
   backgroundContainer = new PIXI.Container();
@@ -24,6 +24,7 @@ export class Game {
     damagedTimer: 0,
     spawnTimer: SPAWN_TIMER_MAX,
     victoryTimer: 0,
+    debugEvolveTimer: 0,
   };
   gameState = GAME_STATES.NORMAL;
   particles = [];
@@ -83,6 +84,9 @@ export class Game {
     this.frank.addTo(this.cameraContainer);
     this.background.addTo(this.backgroundContainer);
 
+    this.debugGraphics = new PIXI.Graphics();
+    this.pixiApp.stage.addChild(this.debugGraphics); // Assuming app is your PixiJS application
+
     this.tick = this.tick.bind(this);
     requestAnimationFrame(this.tick);
   }
@@ -103,6 +107,11 @@ export class Game {
   }
 
   update(delta) {
+    if (this.keys.å && this.timers.debugEvolveTimer <= 0) {
+      this.frank.fullness = this.frank.getFullnessGoal();
+      this.timers.debugEvolveTimer = 500;
+    }
+
     this.updateTimers(delta);
     this.updateGame();
     this.updateCamera(
@@ -175,36 +184,25 @@ export class Game {
   }
 
   updateCamera(camera, backgroundContainer, cameraContainer, frank) {
-    // 1. Scale camera so that Frank *appears* the same size always
-    const baseRadius = 50; // Frank's original "design" size
-    const scale = baseRadius / frank.radius;
-
+    // Calculate new scale based on Frank
+    const scale = frank.baseRadius / frank.radius;
     if (!cameraContainer.scale.x) cameraContainer.scale.set(1);
+
+    // Scale camera container
     cameraContainer.scale.x += (scale - cameraContainer.scale.x) * 0.1;
-    cameraContainer.scale.y = cameraContainer.scale.x; // keep uniform
+    cameraContainer.scale.y = cameraContainer.scale.x;
 
-    // 2. Background: fixed scale to improve aesthetics
-    backgroundContainer.scale.set(0.6); // tweak this manually
-
-    // 3. Adjust camera center accounting for scaling
+    // Update camera
     const offsetX = camera.width / 2 / cameraContainer.scale.x;
     const offsetY = camera.height / 2 / cameraContainer.scale.y;
     camera.x = frank.x - offsetX;
     camera.y = frank.y - offsetY;
 
-    // 4. Update world positions
-    cameraContainer.position.set(
-      -camera.x * cameraContainer.scale.x,
-      -camera.y * cameraContainer.scale.y
-    );
-
-    const parallax = 0.2;
-    backgroundContainer.position.set(
-      -camera.x * backgroundContainer.scale.x * parallax +
-        (camera.width / 2) * (1 - parallax),
-      -camera.y * backgroundContainer.scale.y * parallax +
-        (camera.height / 2) * (1 - parallax)
-    );
+    //  Update world positions
+    const cX = -camera.x * cameraContainer.scale.x;
+    const cY = -camera.y * cameraContainer.scale.y;
+    cameraContainer.position.set(cX, cY);
+    backgroundContainer.position.set(cX, cY);
   }
 
   updatePlanets(galaxy) {

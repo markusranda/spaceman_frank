@@ -148,6 +148,7 @@ export class Galaxy {
 
       attempts++;
     }
+    console.log(`added: ${newPlanets.length} planets after: ${attempts}`);
 
     return newPlanets;
   }
@@ -166,7 +167,7 @@ export class Galaxy {
 
   getRandomPlanetRadiusForBelt(frank) {
     const frankRadius =
-      frank.baseFrankRadius + this.currentEvolution === 1
+      frank.baseRadius + this.currentEvolution === 1
         ? 0
         : this.currentEvolution * this.stepSize;
 

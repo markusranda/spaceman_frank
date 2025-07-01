@@ -39,8 +39,8 @@ export class Background {
     const frankDistance = Math.sqrt(frank.x * frank.x + frank.y * frank.y);
     const neededRadius = frankDistance + buffer;
 
-    const spacing = frank.baseFrankRadius * this.beltSpacingFactor;
-    const base = frank.baseFrankRadius * 4;
+    const spacing = frank.baseRadius * this.beltSpacingFactor;
+    const base = frank.baseRadius * 4;
 
     while (this.maxVisualBeltRadius < neededRadius) {
       const beltIndex = this.visualBelts.length;

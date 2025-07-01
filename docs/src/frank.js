@@ -24,7 +24,7 @@ export class Frank {
   sonarRadius = 1500;
   sonarAngle = 0;
   sonarLetters = new Set();
-  baseFrankRadius = 50;
+  baseRadius = 50;
   fullness = 0;
   lastDmgAudioIndex = 0;
   lastEatAudioIndex = 0;
@@ -35,7 +35,7 @@ export class Frank {
     this.frankSprite = new PIXI.Sprite(texture);
     this.flameSprite = new PIXI.Graphics();
     this.frankSprite.anchor.set(0.5);
-    this.radius = this.baseFrankRadius;
+    this.radius = this.baseRadius;
     this.x = 0;
     this.y = 0;
   }

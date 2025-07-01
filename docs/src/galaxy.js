@@ -11,20 +11,24 @@ export class Galaxy {
   currentEvolution = 1;
   planetSpacing = 125;
   stepSize = 25;
+  camera = null;
 
-  constructor() {}
+  constructor(camera) {
+    if (!camera) throw Error("Can't create galaxy without camera");
+    this.camera = camera;
+  }
 
   update(delta, frank, timers, container) {
-    this.updateSpawnEnemies(frank, timers, container);
+    this.updateSpawnEnemies(timers, container);
     this.updateEnemies(delta, frank, container);
     this.updateProjectiles(delta);
     this.updatePlanets();
   }
 
-  updateSpawnEnemies(frank, timers, container) {
+  updateSpawnEnemies(timers, container) {
     if (timers.spawnTimer <= 0 && this.enemies.length < this.enemyMaxCount) {
       try {
-        const enemy = new Enemy(frank, this);
+        const enemy = new Enemy(this);
         this.enemies.push(enemy);
         enemy.addTo(container);
       } catch (e) {

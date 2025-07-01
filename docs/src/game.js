@@ -64,7 +64,7 @@ export class Game {
     this.pixiApp.stage.addChild(this.cameraContainer);
     this.pixiApp.stage.addChild(this.uiContainer);
 
-    this.galaxy = new Galaxy();
+    this.galaxy = new Galaxy(this.camera);
     this.frank = new Frank();
     this.gameHud = new GameHud(
       this.uiContainer,

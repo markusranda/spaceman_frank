@@ -14,10 +14,12 @@ export class Enemy {
   attackRange = 600;
   dead = false;
 
-  constructor(frank, galaxy) {
-    const { x, y } = this.getValidSpawnCoords(frank, galaxy);
+  constructor(galaxy) {
+    const { x, y } = this.getRandomEdgeSpawnCoords(galaxy);
     this.x = x;
     this.y = y;
+
+    console.log(x, y);
     this.sprite = new PIXI.Sprite(sprites["enemy_1"]);
     this.sprite.x = x;
     this.sprite.y = y;
@@ -35,28 +37,43 @@ export class Enemy {
     }
   }
 
-  getValidSpawnCoords(frank, galaxy) {
-    const maxAttempts = 1000;
-    const minDist = 600;
-    const maxDist = 1200;
+  getRandomEdgeSpawnCoords(galaxy) {
+    const camera = galaxy.camera;
+    const x0 = camera.x; // top-left x
+    const y0 = camera.y; // top-left y
+    const w = camera.width;
+    const h = camera.height;
 
-    for (let i = 0; i < maxAttempts; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const dist = minDist + Math.random() * (maxDist - minDist); // enforce min distance
-      const x = frank.x + Math.cos(angle) * dist;
-      const y = frank.y + Math.sin(angle) * dist;
+    const perimeter = 2 * (w + h);
+    const p = Math.random() * perimeter;
 
-      const collidesWithPlanet = galaxy.planets.some((planet) => {
-        const dx = x - planet.x;
-        const dy = y - planet.y;
-        const distance = Math.hypot(dx, dy);
-        return distance < planet.radius + this.radius + 10; // buffer
-      });
+    // Flatten the perimeter to a line, then wrap back to a point
+    let x, y;
 
-      if (!collidesWithPlanet) return { x, y };
+    if (p < w) {
+      // Top edge
+      x = this.getPointOffset(x0 + p, 0);
+      y = this.getPointOffset(y0, -1);
+    } else if (p < w + h) {
+      // Right edge
+      x = this.getPointOffset(x0 + w, 1);
+      y = this.getPointOffset(y0 + (p - w), 0);
+    } else if (p < 2 * w + h) {
+      // Bottom edge
+      x = this.getPointOffset(x0 + (2 * w + h - p), 0);
+      y = this.getPointOffset(y0 + h, 1);
+    } else {
+      // Left edge
+      x = this.getPointOffset(x0, -1);
+      y = this.getPointOffset(y0 + (perimeter - p), 0);
     }
 
-    throw Error(`Failed to find a valid position after ${maxAttempts}`);
+    return { x, y };
+  }
+
+  getPointOffset(px, dir) {
+    const spawnOffset = this.radius * 4;
+    return px + dir * spawnOffset;
   }
 
   setPosition(x, y) {

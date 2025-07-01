@@ -64,28 +64,22 @@ export class Game {
     this.pixiApp.stage.addChild(this.cameraContainer);
     this.pixiApp.stage.addChild(this.uiContainer);
 
+    // Setup entities
     this.galaxy = new Galaxy(this.camera);
     this.frank = new Frank();
+    this.galaxy.spawnNextPlanetBelt(this.frank, this.cameraContainer);
+
+    // Setup UI and background
     this.gameHud = new GameHud(
       this.uiContainer,
       this.pixiApp.renderer.width,
       this.pixiApp.renderer.height
     );
     this.background = new Background();
-    for (let i = 0; i < 10; i++) {
-      const newPlanets = this.galaxy.spawnNextPlanetBelt(this.frank);
-      // add planets to visuals
-      for (const planet of newPlanets) {
-        planet.addTo(this.cameraContainer);
-      }
-      this.galaxy.currentEvolution++;
-    }
 
+    // Add to containers
     this.frank.addTo(this.cameraContainer);
     this.background.addTo(this.backgroundContainer);
-
-    this.debugGraphics = new PIXI.Graphics();
-    this.pixiApp.stage.addChild(this.debugGraphics); // Assuming app is your PixiJS application
 
     this.tick = this.tick.bind(this);
     requestAnimationFrame(this.tick);
@@ -163,7 +157,7 @@ export class Game {
         particle.destroy();
       }
       this.particles = [];
-      this.galaxy.spawnNextPlanetBelt(this.frank);
+      this.galaxy.spawnNextPlanetBelt(this.frank, this.cameraContainer);
       this.galaxy.currentEvolution++;
     }
   }

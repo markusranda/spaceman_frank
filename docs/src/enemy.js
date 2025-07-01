@@ -6,7 +6,7 @@ export const MAX_ATTACK_TIMER = 2000;
 export class Enemy {
   x = 0;
   y = 0;
-  radius = 40;
+  radius = 0;
   speed = 2;
   type = "enemy";
   sprite = null;
@@ -14,12 +14,12 @@ export class Enemy {
   attackRange = 600;
   dead = false;
 
-  constructor(galaxy) {
+  constructor(galaxy, frank) {
     const { x, y } = this.getRandomEdgeSpawnCoords(galaxy);
     this.x = x;
     this.y = y;
+    this.radius = frank.radius * 0.75;
 
-    console.log(x, y);
     this.sprite = new PIXI.Sprite(sprites["enemy_1"]);
     this.sprite.x = x;
     this.sprite.y = y;

@@ -114,13 +114,12 @@ export class Background {
       sun.x += tileSize / 2;
       sun.y += tileSize / 2;
       tile.addChild(sun);
-    } else {
-      const starCount = 25 + Math.floor((radius / 2000) * 10);
-      for (let i = 0; i < starCount; i++) {
-        const star = this.createStar();
+    }
+    const starCount = 25 + Math.floor((radius / 2000) * 10);
+    for (let i = 0; i < starCount; i++) {
+      const star = this.createStar();
 
-        tile.addChild(star);
-      }
+      tile.addChild(star);
     }
 
     return tile;

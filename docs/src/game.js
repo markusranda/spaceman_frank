@@ -38,6 +38,7 @@ export class Game {
   constructor(pixiApp) {
     this.pixiApp = pixiApp;
     this.backgroundContainer.name = "background_container";
+    this.backgroundContainer.sortableChildren = true;
     this.cameraContainer.name = "camera_container";
     this.uiContainer.name = "ui_container";
     this.culler = new PIXI.Culler();
@@ -79,7 +80,7 @@ export class Game {
       this.pixiApp.renderer.width,
       this.pixiApp.renderer.height
     );
-    this.background = new Background();
+    this.background = new Background(this.backgroundContainer);
 
     // Add to containers
     document.body.appendChild(this.pixiApp.canvas);
@@ -116,6 +117,7 @@ export class Game {
       this.frank,
       this.pixiApp.renderer.width,
       this.pixiApp.renderer.height,
+      this.cameraContainer.scale,
       this.backgroundContainer
     );
     this.updateFPS(ticker);

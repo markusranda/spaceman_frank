@@ -1,6 +1,3 @@
-let lastDmgAudioIndex = 0;
-let lastEatAudioIndex = 0;
-
 // MAP {audio, gainNode, audioCtx}
 export const audios = {};
 
@@ -65,27 +62,4 @@ function loadAudio(src, options = {}) {
       { once: true }
     );
   });
-}
-
-export function playDmgSound() {
-  const audioList = [audios["damage_1"], audios["damage_2"]];
-  const index = (lastDmgAudioIndex + 1) % audioList.length;
-  const audio = audioList[index];
-  audio.audio.play();
-  lastDmgAudioIndex = index;
-}
-
-export function playEatSound() {
-  const audioList = [
-    audios["eat_1"],
-    audios["eat_2"],
-    audios["eat_3"],
-    audios["eat_4"],
-    audios["eat_5"],
-    audios["eat_6"],
-  ];
-  const index = (lastEatAudioIndex + 1) % audioList.length;
-  const audio = audioList[index];
-  audio.audio.play();
-  lastEatAudioIndex = index;
 }

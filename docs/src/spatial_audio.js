@@ -1,9 +1,7 @@
-import { frank } from "../index.js";
-
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let isPingPlaying = false;
 
-export function playSpatialPing(x, y, duration) {
+export function playSpatialPing(x, y, duration, frank) {
   if (isPingPlaying) return;
   isPingPlaying = true;
   const oscillator = audioCtx.createOscillator();

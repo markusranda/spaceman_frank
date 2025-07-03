@@ -19,6 +19,7 @@ export class Projectile {
     this.y = y;
     this.angle = angle;
     this.sprite = new PIXI.Sprite(sprites["fireball"]);
+    this.sprite.name = "projectile";
     this.sprite.x = x;
     this.sprite.y = y;
   }

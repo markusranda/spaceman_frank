@@ -28,7 +28,9 @@ export class Planet {
       sprites["planet_3"],
     ];
     const index = Math.floor(Math.random() * planetSprites.length);
-    return new PIXI.Sprite(planetSprites[index]);
+    const planet = new PIXI.Sprite(planetSprites[index]);
+    planet.name = "planet";
+    return planet;
   }
 
   addTo(container) {

@@ -2,7 +2,11 @@ import { Background } from "./background.js";
 import { Frank } from "./frank.js";
 import { Galaxy } from "./galaxy.js";
 import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.10.2/dist/pixi.min.mjs";
-import { VICTORY_TIMER_MAX, SPAWN_TIMER_MAX } from "./timers.js";
+import {
+  VICTORY_TIMER_MAX,
+  SPAWN_TIMER_MAX,
+  FPS_PRINT_TIMEOUT,
+} from "./timers.js";
 import { GAME_STATES } from "./gamestate.js";
 import { Particle } from "./particle.js";
 import { GameHud } from "./gamehud.js";
@@ -16,7 +20,6 @@ export class Game {
     d: false,
     å: false,
   };
-  lastTime = 0;
   backgroundContainer = new PIXI.Container();
   cameraContainer = new PIXI.Container();
   uiContainer = new PIXI.Container();
@@ -25,18 +28,24 @@ export class Game {
     spawnTimer: SPAWN_TIMER_MAX,
     victoryTimer: 0,
     debugEvolveTimer: 0,
+    fpsTimer: FPS_PRINT_TIMEOUT,
   };
   gameState = GAME_STATES.NORMAL;
   particles = [];
   gameHud = null;
   background = null;
-  pulseTime = 0;
 
   constructor(pixiApp) {
     this.pixiApp = pixiApp;
+    this.backgroundContainer.name = "background_container";
+    this.cameraContainer.name = "camera_container";
+    this.uiContainer.name = "ui_container";
+    this.culler = new PIXI.Culler();
   }
 
   run() {
+    this.cameraContainer.addChild(this.backgroundContainer);
+
     const body = document.getElementById("rootElement");
     const worldX = body.clientWidth;
     const worldY = body.clientHeight;
@@ -59,11 +68,6 @@ export class Game {
       }
     });
 
-    document.body.appendChild(this.pixiApp.canvas);
-    this.pixiApp.stage.addChild(this.backgroundContainer);
-    this.pixiApp.stage.addChild(this.cameraContainer);
-    this.pixiApp.stage.addChild(this.uiContainer);
-
     // Setup entities
     this.galaxy = new Galaxy(this.camera);
     this.frank = new Frank();
@@ -78,29 +82,23 @@ export class Game {
     this.background = new Background();
 
     // Add to containers
+    document.body.appendChild(this.pixiApp.canvas);
+    this.pixiApp.stage.addChild(this.cameraContainer);
+    this.pixiApp.stage.addChild(this.uiContainer);
+
     this.frank.addTo(this.cameraContainer);
-    this.background.addTo(this.backgroundContainer);
 
-    this.tick = this.tick.bind(this);
-    requestAnimationFrame(this.tick);
+    // Setup and run ticker
+    this.update = this.update.bind(this);
+    const ticker = new PIXI.Ticker();
+    ticker.add(this.update);
+    ticker.minFPS = 60;
+    ticker.maxFPS = 60;
+    ticker.start();
   }
 
-  tick(currentTime) {
-    const delta = currentTime - this.lastTime;
-
-    this.update(delta);
-
-    this.lastTime = currentTime;
-    requestAnimationFrame(this.tick);
-  }
-
-  getTickRate() {
-    return (
-      this.tickRate.reduce((sum, el) => (sum += el), 0) / this.tickRate.length
-    );
-  }
-
-  update(delta) {
+  update(ticker) {
+    const delta = ticker.deltaMS;
     if (this.keys.å && this.timers.debugEvolveTimer <= 0) {
       this.frank.fullness = this.frank.getFullnessGoal();
       this.timers.debugEvolveTimer = 500;
@@ -108,12 +106,6 @@ export class Game {
 
     this.updateTimers(delta);
     this.updateGame();
-    this.updateCamera(
-      this.camera,
-      this.backgroundContainer,
-      this.cameraContainer,
-      this.frank
-    );
     this.frank.update(this.keys, this.galaxy, this.timers);
     this.frank.updateVisuals(this.keys);
     this.galaxy.update(delta, this.frank, this.timers, this.cameraContainer);
@@ -121,10 +113,31 @@ export class Game {
     this.updatePlanets(this.galaxy);
     this.gameHud.update(this.frank, this.timers, this.gameState);
     this.background.update(
-      this.backgroundContainer,
       this.frank,
-      this.pixiApp.renderer.width
+      this.pixiApp.renderer.width,
+      this.pixiApp.renderer.height,
+      this.backgroundContainer
     );
+    this.updateFPS(ticker);
+
+    this.updateCamera();
+    this.updateCull();
+  }
+
+  updateCull() {
+    this.culler.cull(this.backgroundContainer, {
+      x: 0,
+      y: 0,
+      width: this.pixiApp.renderer.width,
+      height: this.pixiApp.renderer.height,
+    });
+  }
+
+  updateFPS(ticker) {
+    if (this.timers.fpsTimer <= 0) {
+      this.timers.fpsTimer = FPS_PRINT_TIMEOUT;
+      console.debug(`FPS: ${ticker.FPS}`);
+    }
   }
 
   updateTimers(delta) {
@@ -177,26 +190,26 @@ export class Game {
     }
   }
 
-  updateCamera(camera, backgroundContainer, cameraContainer, frank) {
+  updateCamera() {
     // Calculate new scale based on Frank
-    const scale = frank.baseRadius / frank.radius;
-    if (!cameraContainer.scale.x) cameraContainer.scale.set(1);
+    const scale = this.frank.baseRadius / this.frank.radius;
+    if (!this.cameraContainer.scale.x) this.cameraContainer.scale.set(1);
 
     // Scale camera container
-    cameraContainer.scale.x += (scale - cameraContainer.scale.x) * 0.1;
-    cameraContainer.scale.y = cameraContainer.scale.x;
+    this.cameraContainer.scale.x +=
+      (scale - this.cameraContainer.scale.x) * 0.1;
+    this.cameraContainer.scale.y = this.cameraContainer.scale.x;
 
     // Update camera
-    const offsetX = camera.width / 2 / cameraContainer.scale.x;
-    const offsetY = camera.height / 2 / cameraContainer.scale.y;
-    camera.x = frank.x - offsetX;
-    camera.y = frank.y - offsetY;
+    const offsetX = this.camera.width / 2 / this.cameraContainer.scale.x;
+    const offsetY = this.camera.height / 2 / this.cameraContainer.scale.y;
+    this.camera.x = this.frank.x - offsetX;
+    this.camera.y = this.frank.y - offsetY;
 
     //  Update world positions
-    const cX = -camera.x * cameraContainer.scale.x;
-    const cY = -camera.y * cameraContainer.scale.y;
-    cameraContainer.position.set(cX, cY);
-    backgroundContainer.position.set(cX, cY);
+    const cX = -this.camera.x * this.cameraContainer.scale.x;
+    const cY = -this.camera.y * this.cameraContainer.scale.y;
+    this.cameraContainer.position.set(cX, cY);
   }
 
   updatePlanets(galaxy) {

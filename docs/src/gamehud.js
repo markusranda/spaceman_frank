@@ -25,6 +25,7 @@ export class GameHud {
         stroke: { color: 0x000000, thickness: 2 },
       }),
     });
+    this.levelClearedText.name = "level_cleared_text";
     this.levelClearedText.anchor.x = 0.5;
     this.levelClearedText.anchor.y = 0.5;
     this.levelClearedText.x = canvasWidth / 2;
@@ -33,6 +34,7 @@ export class GameHud {
 
     // --- Damage Overlay ---
     this.damageOverlay = new PIXI.Graphics();
+    this.levelClearedText.name = "damage_overlay";
     this.damageOverlay.rect(0, 0, canvasWidth, canvasHeight);
     this.damageOverlay.fill({ color: 0xa83240, alpha: 0.5 });
     this.damageOverlay.visible = true;
@@ -48,6 +50,7 @@ export class GameHud {
         stroke: { color: 0x000000, thickness: 2 },
       }),
     });
+    this.frankSizeText.name = "frank_size_text";
     this.frankSizeText.anchor.set(0.5);
     this.frankSizeText.x = canvasWidth / 2;
     this.frankSizeText.y = 40;
@@ -59,10 +62,12 @@ export class GameHud {
     const fuelPosY = 20;
 
     this.fuelBarBg = new PIXI.Graphics();
+    this.fuelBarBg.name = "fuel_bar_bg";
     this.fuelBarBg.rect(fuelPosX, fuelPosY, fuelWidth, fuelHeight);
     this.fuelBarBg.fill(0x808080);
 
     this.fuelBarFill = new PIXI.Graphics();
+    this.fuelBarFill.name = "fuel_bar_fill";
 
     // --- Fullness UI ---
     const fullnessWidth = 40;
@@ -71,6 +76,7 @@ export class GameHud {
     const fullnessPosY = 120;
 
     this.fullnessBarBg = new PIXI.Graphics();
+    this.fullnessBarBg.name = "fullness_bar_bg";
     this.fullnessBarBg.rect(
       fullnessPosX,
       fullnessPosY,
@@ -80,6 +86,7 @@ export class GameHud {
     this.fullnessBarBg.fill(0x808080);
 
     this.fullnessBarFill = new PIXI.Graphics();
+    this.fullnessBarFill.name = "fullness_bar_fill";
 
     // HUD
     this.uiContainer.addChild(this.fuelBarBg);

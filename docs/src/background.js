@@ -1,57 +1,40 @@
 import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.10.2/dist/pixi.min.mjs";
 
 export class Background {
-  sun = null;
-  visualBelts = [];
-  maxVisualBeltRadius = 0;
-
-  beltThickness = 100;
-  beltColor = 0x5f5;
-  beltAlpha = 0.5;
-  beltSpacingFactor = 3;
-
-  pulseTime = 0;
+  tileSize = 1024;
+  tilesPerAxis = 512;
 
   constructor() {
-    this.sun = this.createSun();
-    this.sun.x = 0;
-    this.sun.y = 0;
-
-    // Blur
-    const blur = new PIXI.BlurFilter(99, 99);
-    this.sun.filters = [blur];
-
-    const glow = new PIXI.Graphics();
-    glow.beginFill(0xffd200, 0.2);
-    glow.drawCircle(0, 0, 100);
-    glow.endFill();
-    glow.blendMode = "hard-light";
-    this.sun.addChild(glow);
+    this.tileCount = this.tilesPerAxis * this.tilesPerAxis;
+    this.tiles = new Array(this.tileCount).fill(null);
+    this.tileBuffer = 2;
   }
 
-  addTo(backgroundLayer) {
-    backgroundLayer.addChild(this.sun);
-  }
+  update(frank, screenWidth, screenHeight, container) {
+    const { tileSize, tileBuffer } = this;
 
-  update(backgroundLayer, frank, screenWidth) {
-    const buffer = screenWidth * 1.5;
+    const viewHalfW = screenWidth / 2;
+    const viewHalfH = screenHeight / 2;
 
-    const frankDistance = Math.sqrt(frank.x * frank.x + frank.y * frank.y);
-    const neededRadius = frankDistance + buffer;
+    const minX = frank.x - viewHalfW - tileBuffer * tileSize;
+    const maxX = frank.x + viewHalfW + tileBuffer * tileSize;
+    const minY = frank.y - viewHalfH - tileBuffer * tileSize;
+    const maxY = frank.y + viewHalfH + tileBuffer * tileSize;
 
-    const spacing = frank.baseRadius * this.beltSpacingFactor;
-    const base = frank.baseRadius * 4;
+    const tileMinX = Math.floor(minX / tileSize);
+    const tileMaxX = Math.floor(maxX / tileSize);
+    const tileMinY = Math.floor(minY / tileSize);
+    const tileMaxY = Math.floor(maxY / tileSize);
 
-    while (this.maxVisualBeltRadius < neededRadius) {
-      const beltIndex = this.visualBelts.length;
+    for (let ty = tileMinY; ty <= tileMaxY; ty++) {
+      for (let tx = tileMinX; tx <= tileMaxX; tx++) {
+        const index = this.getTileIndex(tx, ty);
+        if (index === -1 || this.tiles[index]) continue;
 
-      const innerRadius = base + (beltIndex - 1) * spacing;
-      const outerRadius = base + beltIndex * spacing;
-
-      this.addVisualBelt(backgroundLayer, beltIndex, base, spacing);
-      this.generateStars(backgroundLayer, innerRadius, outerRadius, beltIndex);
-
-      this.maxVisualBeltRadius = outerRadius;
+        const tile = this.createTile(tx, ty);
+        this.tiles[index] = tile;
+        container.addChild(tile);
+      }
     }
   }
 
@@ -73,85 +56,91 @@ export class Background {
       sun.addChild(circle);
     }
 
+    // Blur
+    const blur = new PIXI.BlurFilter(99, 99);
+    sun.filters = [blur];
+
+    const glow = new PIXI.Graphics();
+    glow.beginFill(0xffd200, 0.2);
+    glow.drawCircle(0, 0, 100);
+    glow.endFill();
+    glow.blendMode = "hard-light";
+    sun.addChild(glow);
+
     return sun;
   }
 
-  addVisualBelt(backgroundLayer, beltIndex, baseRadius, spacing) {
-    const innerRadius = baseRadius + (beltIndex - 1) * spacing;
-    const outerRadius = baseRadius + beltIndex * spacing;
+  createStar() {
+    const sx = Math.random() * this.tileSize;
+    const sy = Math.random() * this.tileSize;
+    const size = 0.5 + Math.random() * 1.5;
+    const alpha = 0.2 + Math.random() * 0.6;
 
-    const t = beltIndex / 30;
-    const color = this.getColorForRadius(baseRadius);
-    const alpha = Math.max(0.3 - t * 0.2, 0.05);
+    const star = new PIXI.Graphics();
+    star.beginFill(0xffffff, alpha);
+    star.drawCircle(0, 0, size);
+    star.endFill();
+    star.x = sx;
+    star.y = sy;
 
-    const belt = new PIXI.Graphics();
-    belt.beginFill(color, alpha);
-
-    const segments = 100;
-    const angleStep = (Math.PI * 2) / segments;
-
-    belt.moveTo(Math.cos(0) * outerRadius, Math.sin(0) * outerRadius);
-    for (let i = 1; i <= segments; i++) {
-      const angle = i * angleStep;
-      belt.lineTo(Math.cos(angle) * outerRadius, Math.sin(angle) * outerRadius);
-    }
-    for (let i = segments; i >= 0; i--) {
-      const angle = i * angleStep;
-      belt.lineTo(Math.cos(angle) * innerRadius, Math.sin(angle) * innerRadius);
-    }
-
-    belt.endFill();
-
-    backgroundLayer.addChild(belt);
-    this.visualBelts.push(belt);
+    return star;
   }
 
-  generateStars(layer, innerRadius, outerRadius, beltIndex) {
-    const starCount = 30 + Math.floor(beltIndex * 2); // More stars per further belt
+  createTile(tileX, tileY) {
+    console.log(`Creating new tile at ${tileX}, ${tileY}`);
+    const { tileSize } = this;
+    const tile = new PIXI.Container();
+    tile.name = `tile_${tileX}_${tileY}`;
+    tile.cullable = true;
 
-    for (let i = 0; i < starCount; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const radius = innerRadius + Math.random() * (outerRadius - innerRadius);
+    const worldX = tileX * tileSize - tileSize / 2;
+    const worldY = tileY * tileSize - tileSize / 2;
 
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
+    tile.x = worldX;
+    tile.y = worldY;
 
-      const size = Math.random() * 2 + 0.5;
-      const alpha = 0.2 + Math.random() * 0.6;
+    // Fill tile with belt background tint
+    const radius = Math.sqrt(worldX ** 2 + worldY ** 2);
+    const beltColor = this.getColorForRadius(radius);
 
-      const star = new PIXI.Graphics();
-      star.beginFill(0xffffff, alpha);
-      star.drawCircle(0, 0, size);
-      star.endFill();
-      star.x = x;
-      star.y = y;
+    const bg = new PIXI.Graphics();
+    bg.beginFill(beltColor, 0.15);
+    bg.drawRect(0, 0, tileSize, tileSize);
+    bg.endFill();
+    tile.addChild(bg);
 
-      layer.addChild(star);
-    }
-  }
+    if (tileX === 0 && tileY === 0) {
+      const sun = this.createSun();
+      sun.x += tileSize / 2;
+      sun.y += tileSize / 2;
+      tile.addChild(sun);
+    } else {
+      const starCount = 25 + Math.floor((radius / 2000) * 10);
+      for (let i = 0; i < starCount; i++) {
+        const star = this.createStar();
 
-  destroy() {
-    if (this.sun && this.sun.parent) {
-      this.sun.parent.removeChild(this.sun);
-      this.sun.destroy({ children: true });
-      this.sun = null;
-    }
-    this.visualBelts.forEach((belt) => {
-      if (belt && belt.parent) {
-        belt.parent.removeChild(belt);
-        belt.destroy({ children: true });
+        tile.addChild(star);
       }
-    });
-    this.visualBelts = [];
+    }
+
+    return tile;
+  }
+
+  getTileIndex(tileX, tileY) {
+    const half = this.tilesPerAxis >> 1;
+    const x = tileX + half;
+    const y = tileY + half;
+    if (x < 0 || x >= this.tilesPerAxis || y < 0 || y >= this.tilesPerAxis)
+      return -1;
+    return y * this.tilesPerAxis + x;
   }
 
   getColorForRadius(radius) {
-    const maxRadius = 5000; // Beyond this: pure black
-    const t = Math.min(radius / maxRadius, 1); // Normalize to 0..1
-
-    const hue = 45; // Warm golden-yellow
+    const maxRadius = 5000;
+    const t = Math.min(radius / maxRadius, 1);
+    const hue = 45;
     const saturation = 100;
-    const lightness = 40 * (1 - t); // 90% lightness down to 0%
+    const lightness = 40 * (1 - t);
 
     return this.hslToHex(hue, saturation, lightness);
   }
@@ -160,7 +149,6 @@ export class Background {
     h /= 360;
     s /= 100;
     l /= 100;
-
     let r, g, b;
     if (s === 0) {
       r = g = b = l;
@@ -173,20 +161,26 @@ export class Background {
         if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
         return p;
       };
-
       const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
       const p = 2 * l - q;
-
       r = hue2rgb(p, q, h + 1 / 3);
       g = hue2rgb(p, q, h);
       b = hue2rgb(p, q, h - 1 / 3);
     }
-
     const toHex = (x) =>
       Math.round(x * 255)
         .toString(16)
         .padStart(2, "0");
+    return parseInt(`0x${toHex(r)}${toHex(g)}${toHex(b)}`, 16);
+  }
 
-    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  destroy() {
+    for (const tile of this.tiles) {
+      if (tile && tile.parent) {
+        tile.parent.removeChild(tile);
+        tile.destroy({ children: true });
+      }
+    }
+    this.tiles.fill(null);
   }
 }

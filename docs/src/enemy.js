@@ -7,7 +7,7 @@ export class Enemy {
   x = 0;
   y = 0;
   radius = 0;
-  speed = 2;
+  speed = 6;
   type = "enemy";
   sprite = null;
   attackTimer = MAX_ATTACK_TIMER;
@@ -21,6 +21,7 @@ export class Enemy {
     this.radius = frank.radius * 0.75;
 
     this.sprite = new PIXI.Sprite(sprites["enemy_1"]);
+    this.sprite.name = "enemy_1";
     this.sprite.x = x;
     this.sprite.y = y;
     this.sprite.width = this.radius * 2;

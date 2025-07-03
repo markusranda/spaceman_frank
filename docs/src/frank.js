@@ -9,9 +9,9 @@ export class Frank {
   vx = 0;
   vy = 0;
   angle = (3 * Math.PI) / 2;
-  acceleration = 0.09;
-  rotationSpeed = 0.05;
-  maxSpeed = 15;
+  acceleration = 0.25;
+  rotationSpeed = 0.08;
+  maxSpeed = 25;
   friction = 0.9945;
   container = undefined;
   frankSprite = undefined;
@@ -32,8 +32,11 @@ export class Frank {
   constructor() {
     const texture = sprites["frank"];
     this.container = new PIXI.Container();
+    this.container.name = "frank_container";
     this.frankSprite = new PIXI.Sprite(texture);
+    this.frankSprite.name = "frank_sprite";
     this.flameSprite = new PIXI.Graphics();
+    this.frankSprite.name = "frank_thruster";
     this.frankSprite.anchor.set(0.5);
     this.radius = this.baseRadius;
     this.x = 0;

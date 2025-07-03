@@ -28,7 +28,9 @@ export class Particle {
       sprites["confetti_1"],
     ];
     const index = Math.floor(Math.random() * particleSprites.length);
-    return new PIXI.Sprite(particleSprites[index]);
+    const particle = new PIXI.Sprite(particleSprites[index]);
+    particle.name = "particle";
+    return particle;
   }
 
   setPosition(x, y) {

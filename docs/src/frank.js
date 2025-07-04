@@ -21,9 +21,6 @@ export class Frank {
   fuel = this.maxFuel;
   fuelConsumption = 0.5;
   upgrades = {};
-  sonarRadius = 1500;
-  sonarAngle = 0;
-  sonarLetters = new Set();
   baseRadius = 50;
   fullness = 0;
   lastDmgAudioIndex = 0;

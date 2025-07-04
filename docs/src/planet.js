@@ -5,8 +5,8 @@ export class Planet {
   radius = 0;
   x = 0;
   y = 0;
-  color = "grey";
   sprite = undefined;
+  shadowContainer = undefined;
   angle = 0;
   type = "planet";
   dead = false;
@@ -16,9 +16,48 @@ export class Planet {
     this.y = y;
     this.radius = radius;
     this.sprite = this.getRandomPlanetSprite();
+    const spriteRadius = this.sprite.width / 2;
+    this.shadowContainer = this.createShadowSprite(spriteRadius);
+
     this.sprite.width = radius * 2;
     this.sprite.height = radius * 2;
-    this.angle = Math.random() * Math.PI * 2;
+
+    this.sprite.addChild(this.shadowContainer);
+
+    // Rotate towards sun
+    this.rotateSpriteTowardZero();
+  }
+
+  update() {}
+
+  rotateSpriteTowardZero() {
+    const dx = this.x;
+    const dy = this.y;
+    this.sprite.rotation = Math.atan2(dy, dx);
+  }
+
+  createShadowSprite(radius) {
+    const shadowContainer = new PIXI.Container();
+    shadowContainer.name = "shadow_container";
+
+    // Full black circle
+    const shadow1 = new PIXI.Graphics();
+    shadow1.beginFill(0x000000, 0.55);
+    shadow1.circle(radius, radius, radius + 1);
+    shadow1.endFill();
+
+    // The shape we'll use to subtract from the shadow
+    const cutter = new PIXI.Graphics();
+    cutter.beginFill(0xffffff);
+    cutter.circle(radius * 0.5, radius, radius + 1);
+    cutter.endFill();
+
+    shadowContainer.setMask({ mask: cutter, inverse: true });
+
+    shadowContainer.addChild(shadow1);
+    shadowContainer.addChild(cutter);
+
+    return shadowContainer;
   }
 
   getRandomPlanetSprite() {

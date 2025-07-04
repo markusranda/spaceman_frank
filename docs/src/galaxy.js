@@ -22,7 +22,7 @@ export class Galaxy {
     this.updateSpawnEnemies(timers, container, frank);
     this.updateEnemies(delta, frank, container);
     this.updateProjectiles(delta);
-    this.updatePlanets();
+    this.updatePlanets(delta);
   }
 
   updateSpawnEnemies(timers, container, frank) {
@@ -102,13 +102,15 @@ export class Galaxy {
     }
   }
 
-  updatePlanets() {
+  updatePlanets(delta) {
     for (let i = this.planets.length - 1; i >= 0; i--) {
       const planet = this.planets[i];
       if (planet.dead) {
         this.planets.splice(i, 1);
         planet.destroy();
       }
+
+      planet.update(delta);
     }
   }
 

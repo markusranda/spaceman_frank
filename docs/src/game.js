@@ -111,7 +111,6 @@ export class Game {
     this.frank.updateVisuals(this.keys);
     this.galaxy.update(delta, this.frank, this.timers, this.cameraContainer);
     this.updateParticles();
-    this.updatePlanets(this.galaxy);
     this.gameHud.update(this.frank, this.timers, this.gameState);
     this.background.update(
       this.frank,
@@ -212,12 +211,6 @@ export class Game {
     const cX = -this.camera.x * this.cameraContainer.scale.x;
     const cY = -this.camera.y * this.cameraContainer.scale.y;
     this.cameraContainer.position.set(cX, cY);
-  }
-
-  updatePlanets(galaxy) {
-    for (const planet of galaxy.planets) {
-      planet.angle += 0.0001;
-    }
   }
 
   spawnVictoryParticles(count = 1000) {

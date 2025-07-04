@@ -53,8 +53,8 @@ export class Galaxy {
       if (enemy.attackTimer <= 0 && attackRange >= dist) {
         const angle = Math.atan2(frank.y - enemy.y, frank.x - enemy.x);
         const projectile = new Projectile(
-          enemy.x,
-          enemy.y,
+          enemy.x + enemy.radius / 2,
+          enemy.y + enemy.radius / 2,
           angle,
           enemy.radius / 10
         );

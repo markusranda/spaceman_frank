@@ -14,14 +14,17 @@ export class Projectile {
   sprite = null;
   dead = false;
 
-  constructor(x, y, angle) {
+  constructor(x, y, angle, radius) {
     this.x = x;
     this.y = y;
     this.angle = angle;
+    this.radius = radius;
     this.sprite = new PIXI.Sprite(sprites["fireball"]);
     this.sprite.name = "projectile";
     this.sprite.x = x;
     this.sprite.y = y;
+    this.sprite.width = radius * 2;
+    this.sprite.height = radius * 2;
   }
 
   setPosition(x, y) {

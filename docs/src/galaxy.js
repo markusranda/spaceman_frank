@@ -51,7 +51,12 @@ export class Galaxy {
       const dist = this.moveEnemy(frank, enemy);
       if (enemy.attackTimer <= 0 && enemy.attackRange >= dist) {
         const angle = Math.atan2(frank.y - enemy.y, frank.x - enemy.x);
-        const projectile = new Projectile(enemy.x, enemy.y, angle);
+        const projectile = new Projectile(
+          enemy.x,
+          enemy.y,
+          angle,
+          enemy.radius / 10
+        );
         this.projectiles.push(projectile);
         projectile.sprite = container.addChild(projectile.sprite);
         enemy.attackTimer = MAX_ATTACK_TIMER;

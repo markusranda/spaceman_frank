@@ -205,7 +205,7 @@ export class Frank {
     collisions.push(...this.detectCollisions(galaxy.planets));
     collisions.push(...this.detectCollisions(galaxy.enemies));
     const projectiles = this.detectCollisions(galaxy.projectiles);
-    this.handleEdibleCollisions(collisions, timers, galaxy);
+    this.handleEdibleCollisions(collisions, timers, dt);
     this.handleProjectileCollisions(projectiles, timers, galaxy);
   }
 
@@ -241,7 +241,7 @@ export class Frank {
     return collisions;
   }
 
-  handleEdibleCollisions(objects, timers) {
+  handleEdibleCollisions(objects, timers, dt) {
     const maxEdibleRadius = this.radius * 0.75;
 
     for (const obj of objects) {
@@ -252,34 +252,50 @@ export class Frank {
         this.eatEntity(obj);
         this.playEatSound();
       } else {
-        this.handleCrash(obj, timers);
+        this.handleCrash(obj, timers, dt);
       }
     }
   }
 
-  handleCrash(obj, timers) {
-    const dx = this.x + this.vx - obj.x;
-    const dy = this.y + this.vy - obj.y;
+  handleCrash(obj, timers, dt) {
+    // Vector from obj to Frank
+    const dx = this.x - obj.x;
+    const dy = this.y - obj.y;
     const dist = Math.hypot(dx, dy);
     if (dist === 0) return;
 
+    // Unit direction away from object
     const nx = dx / dist;
     const ny = dy / dist;
 
-    const normalVelocity = this.vx * nx + this.vy * ny;
-    const impactSpeed = Math.abs(normalVelocity);
-    const impactThreshold = 1.5;
-    const fuelLossMultiplier = 10;
+    // === Damage check BEFORE we overwrite velocity ===
+    const relativeVx = this.vx;
+    const relativeVy = this.vy;
+    const impactSpeed = Math.abs(relativeVx * nx + relativeVy * ny);
+    const damageThreshold = this.maxSpeed * 0.5;
 
-    if (impactSpeed > impactThreshold) {
-      this.fuel = Math.max(0, this.fuel - impactSpeed * fuelLossMultiplier);
+    if (impactSpeed > damageThreshold) {
+      const fuelLoss = this.maxFuel / 16;
+      this.fuel = Math.max(0, this.fuel - fuelLoss);
       timers.damageTimer = DAMAGE_TIMER_MAX;
       this.playDmgSound();
     }
-    if (normalVelocity < 0) {
-      this.vx -= normalVelocity * nx;
-      this.vy -= normalVelocity * ny;
+
+    // === Apply knockback velocity ===
+    this.vx = nx * impactSpeed;
+    this.vy = ny * impactSpeed;
+
+    // === Push out of the object (prevent overlap) ===
+    const totalRadius = this.radius + obj.radius;
+    const overlap = totalRadius - dist;
+    if (overlap > 0) {
+      this.x += nx * overlap;
+      this.y += ny * overlap;
     }
+
+    // Optional: apply immediate position change based on new velocity (1 frame’s worth)
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
   }
 
   playDmgSound() {

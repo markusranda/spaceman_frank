@@ -23,9 +23,9 @@ export class Particle {
   getRandomSprite() {
     const particleSprites = [
       sprites["confetti_1"],
-      sprites["confetti_1"],
-      sprites["confetti_1"],
-      sprites["confetti_1"],
+      sprites["confetti_2"],
+      sprites["confetti_3"],
+      sprites["confetti_4"],
     ];
     const index = Math.floor(Math.random() * particleSprites.length);
     const particle = new PIXI.Sprite(particleSprites[index]);

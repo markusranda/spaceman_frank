@@ -99,36 +99,40 @@ export class Game {
   }
 
   update(ticker) {
-    const delta = ticker.deltaMS;
-    if (this.keys.å && this.timers.debugEvolveTimer <= 0) {
-      this.frank.fullness = this.frank.getFullnessGoal();
-      this.timers.debugEvolveTimer = 500;
+    try {
+      const delta = ticker.deltaMS;
+      if (this.keys.å && this.timers.debugEvolveTimer <= 0) {
+        this.frank.fullness = this.frank.getFullnessGoal();
+        this.timers.debugEvolveTimer = 500;
+      }
+
+      this.updateTimers(delta);
+      this.updateGame();
+      this.frank.update(delta, this.keys, this.galaxy, this.timers);
+      this.frank.updateVisuals(this.keys);
+      this.galaxy.update(
+        delta,
+        this.frank,
+        this.timers,
+        this.cameraContainer,
+        this.cameraContainer.scale.x
+      );
+      this.updateParticles();
+      this.gameHud.update(this.frank, this.timers, this.gameState);
+      this.background.update(
+        this.frank,
+        this.pixiApp.renderer.width,
+        this.pixiApp.renderer.height,
+        this.cameraContainer.scale,
+        this.backgroundContainer
+      );
+      this.updateFPS(ticker);
+
+      this.updateCamera();
+      this.updateCull();
+    } catch (e) {
+      console.error(`Tick update failed: ${e}`);
     }
-
-    this.updateTimers(delta);
-    this.updateGame();
-    this.frank.update(this.keys, this.galaxy, this.timers);
-    this.frank.updateVisuals(this.keys);
-    this.galaxy.update(
-      delta,
-      this.frank,
-      this.timers,
-      this.cameraContainer,
-      this.cameraContainer.scale.x
-    );
-    this.updateParticles();
-    this.gameHud.update(this.frank, this.timers, this.gameState);
-    this.background.update(
-      this.frank,
-      this.pixiApp.renderer.width,
-      this.pixiApp.renderer.height,
-      this.cameraContainer.scale,
-      this.backgroundContainer
-    );
-    this.updateFPS(ticker);
-
-    this.updateCamera();
-    this.updateCull();
   }
 
   updateCull() {

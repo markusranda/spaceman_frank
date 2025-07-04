@@ -6,6 +6,11 @@ export const MAX_ATTACK_TIMER = 2000;
 export class Enemy {
   x = 0;
   y = 0;
+  vx = 0;
+  vy = 0;
+  angle = (3 * Math.PI) / 2;
+  acceleration = 1250;
+  maxSpeed = 400;
   radius = 0;
   speed = 6;
   type = "enemy";

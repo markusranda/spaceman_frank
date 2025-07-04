@@ -9,9 +9,9 @@ export class Frank {
   vx = 0;
   vy = 0;
   angle = (3 * Math.PI) / 2;
-  acceleration = 0.25;
+  acceleration = 500;
   rotationSpeed = 0.08;
-  maxSpeed = 25;
+  maxSpeed = 750;
   friction = 0.9945;
   container = undefined;
   frankSprite = undefined;
@@ -166,13 +166,14 @@ export class Frank {
     }
   }
 
-  update(keys, galaxy, timers) {
+  update(delta, keys, galaxy, timers) {
     this.updateFrankFuel(keys);
-    this.updateFrankMovement(keys, galaxy, timers);
+    this.updateFrankMovement(delta, keys, galaxy, timers);
     this.updateThrusterAudio(keys);
   }
 
-  updateFrankMovement(keys, galaxy, timers) {
+  updateFrankMovement(delta, keys, galaxy, timers) {
+    const dt = delta / 1000;
     const hasFuel = this.fuel > 0;
 
     // === ROTATION ===
@@ -182,8 +183,8 @@ export class Frank {
     // === THRUST ===
     if (hasFuel && keys.w) {
       const accel = this.getAcceleration();
-      this.vx += Math.cos(this.angle) * accel;
-      this.vy += Math.sin(this.angle) * accel;
+      this.vx += Math.cos(this.angle) * accel * dt;
+      this.vy += Math.sin(this.angle) * accel * dt;
     }
 
     // === Clamp speed ===
@@ -196,8 +197,8 @@ export class Frank {
     }
 
     // === MOVE ===
-    this.x += this.vx;
-    this.y += this.vy;
+    this.x += this.vx * dt;
+    this.y += this.vy * dt;
 
     // === COLLISIONS ===
     const collisions = [];

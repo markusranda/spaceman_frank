@@ -26,15 +26,10 @@ export class Galaxy {
 
   updateSpawnEnemies(timers, container, frank) {
     if (timers.spawnTimer <= 0 && this.enemies.length < this.enemyMaxCount) {
-      try {
-        const enemy = new Enemy(this, frank);
-        this.enemies.push(enemy);
-        enemy.addTo(container);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        timers.spawnTimer = SPAWN_TIMER_MAX;
-      }
+      const enemy = new Enemy(this, frank);
+      this.enemies.push(enemy);
+      enemy.addTo(container);
+      timers.spawnTimer = SPAWN_TIMER_MAX;
     }
   }
 
@@ -47,7 +42,7 @@ export class Galaxy {
         continue;
       }
 
-      const dist = this.moveEnemy(frank, enemy, cameraScale);
+      const dist = this.moveEnemy(frank, enemy, cameraScale, delta);
       const attackRange = (enemy.attackRange * 1) / cameraScale;
       if (enemy.attackTimer <= 0 && attackRange >= dist) {
         const angle = Math.atan2(frank.y - enemy.y, frank.x - enemy.x);
@@ -66,25 +61,37 @@ export class Galaxy {
     }
   }
 
-  moveEnemy(frank, enemy, cameraScale) {
-    const sweetSpot = (400 * 1) / cameraScale;
+  moveEnemy(frank, enemy, cameraScale, deltaMS) {
+    const dt = deltaMS / 1000;
+    const sweetSpot = 500 / cameraScale;
+
     const dx = frank.x - enemy.x;
     const dy = frank.y - enemy.y;
     const dist = Math.hypot(dx, dy);
 
     if (dist === 0) return dist;
 
-    // Move toward or away from Frank to reach the sweet spot
-    let moveDir = 0;
-    if (dist > sweetSpot + 10) moveDir = 1; // too far, move closer
-    else if (dist < sweetSpot - 10) moveDir = -1; // too close, back off
-    // else: stay put
+    const dirX = dx / dist;
+    const dirY = dy / dist;
 
-    const stepX = (dx / dist) * enemy.speed * moveDir;
-    const stepY = (dy / dist) * enemy.speed * moveDir;
+    // Determine if chasing or retreating
+    const moveDir = dist > sweetSpot ? 1 : -1;
 
-    const x = enemy.x + stepX;
-    const y = enemy.y + stepY;
+    // Accelerate in that direction
+    enemy.vx += dirX * enemy.acceleration * moveDir * dt;
+    enemy.vy += dirY * enemy.acceleration * moveDir * dt;
+
+    // Clamp speed
+    const speed = Math.hypot(enemy.vx, enemy.vy);
+    if (speed > enemy.maxSpeed) {
+      const scale = enemy.maxSpeed / speed;
+      enemy.vx *= scale;
+      enemy.vy *= scale;
+    }
+
+    // Move enemy
+    const x = enemy.x + enemy.vx * dt;
+    const y = enemy.y + enemy.vy * dt;
     enemy.setPosition(x, y);
 
     return dist;

@@ -109,7 +109,13 @@ export class Game {
     this.updateGame();
     this.frank.update(this.keys, this.galaxy, this.timers);
     this.frank.updateVisuals(this.keys);
-    this.galaxy.update(delta, this.frank, this.timers, this.cameraContainer);
+    this.galaxy.update(
+      delta,
+      this.frank,
+      this.timers,
+      this.cameraContainer,
+      this.cameraContainer.scale.x
+    );
     this.updateParticles();
     this.gameHud.update(this.frank, this.timers, this.gameState);
     this.background.update(

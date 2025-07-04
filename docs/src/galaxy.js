@@ -18,9 +18,9 @@ export class Galaxy {
     this.camera = camera;
   }
 
-  update(delta, frank, timers, container) {
+  update(delta, frank, timers, container, cameraScale) {
     this.updateSpawnEnemies(timers, container, frank);
-    this.updateEnemies(delta, frank, container);
+    this.updateEnemies(delta, frank, container, cameraScale);
     this.updateProjectiles(delta);
     this.updatePlanets(delta);
   }
@@ -39,7 +39,7 @@ export class Galaxy {
     }
   }
 
-  updateEnemies(delta, frank, container) {
+  updateEnemies(delta, frank, container, cameraScale) {
     for (let i = this.enemies.length - 1; i >= 0; i--) {
       const enemy = this.enemies[i];
       if (enemy.dead) {
@@ -48,8 +48,9 @@ export class Galaxy {
         continue;
       }
 
-      const dist = this.moveEnemy(frank, enemy);
-      if (enemy.attackTimer <= 0 && enemy.attackRange >= dist) {
+      const dist = this.moveEnemy(frank, enemy, cameraScale);
+      const attackRange = (enemy.attackRange * 1) / cameraScale;
+      if (enemy.attackTimer <= 0 && attackRange >= dist) {
         const angle = Math.atan2(frank.y - enemy.y, frank.x - enemy.x);
         const projectile = new Projectile(
           enemy.x,
@@ -66,8 +67,8 @@ export class Galaxy {
     }
   }
 
-  moveEnemy(frank, enemy) {
-    const sweetSpot = 400;
+  moveEnemy(frank, enemy, cameraScale) {
+    const sweetSpot = (400 * 1) / cameraScale;
     const dx = frank.x - enemy.x;
     const dy = frank.y - enemy.y;
     const dist = Math.hypot(dx, dy);

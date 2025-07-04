@@ -17,6 +17,7 @@ export async function loadSprites() {
     confetti_2: "assets/sprites/confetti_2.png",
     confetti_3: "assets/sprites/confetti_3.png",
     confetti_4: "assets/sprites/confetti_4.png",
+    starfield_1: "assets/sprites/starfield_1.png",
   };
 
   const entries = Object.entries(spritePaths);

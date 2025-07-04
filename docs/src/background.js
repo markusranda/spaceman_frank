@@ -1,4 +1,5 @@
 import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.10.2/dist/pixi.min.mjs";
+import { sprites } from "./sprites.js";
 
 export class Background {
   tileSize = 512;
@@ -74,34 +75,24 @@ export class Background {
     return sun;
   }
 
-  createStar() {
-    const sx = Math.random() * this.tileSize;
-    const sy = Math.random() * this.tileSize;
-    const size = this.starMinSize + Math.random() * this.starMaxSize;
-    const alpha = 0.2 + Math.random() * 0.6;
-
-    const star = new PIXI.Graphics();
-    star.beginFill(0xffffff, alpha);
-    star.drawCircle(0, 0, size);
-    star.endFill();
-    star.x = sx;
-    star.y = sy;
-
-    return star;
-  }
-
   createTile(tileX, tileY) {
     const { tileSize } = this;
     const tile = new PIXI.Container();
     const worldX = tileX * tileSize;
     const worldY = tileY * tileSize;
 
-    const bg = new PIXI.Graphics()
-      .beginFill(0x131313)
-      .drawRect(0, 0, tileSize, tileSize)
-      .endFill();
-    bg.name = "bg";
-    tile.addChild(bg);
+    // Add background sprite
+    const sprite = new PIXI.Sprite(sprites["starfield_1"]);
+    sprite.label = "starfield";
+    sprite.anchor.set(0.5);
+    sprite.x = tileSize / 2;
+    sprite.y = tileSize / 2;
+
+    // Rotate it to decrease repetiveness
+    const rotationSteps = Math.floor(Math.random() * 4);
+    sprite.rotation = rotationSteps * (Math.PI / 2);
+
+    tile.addChild(sprite);
 
     tile.name = `tile_${tileX}_${tileY}`;
     tile.cullable = true;
@@ -113,20 +104,8 @@ export class Background {
       .endFill();
     tile.addChild(mask);
 
-    for (
-      let i = 0;
-      i < this.tileSize / (this.medianStarSize() + this.starMargin);
-      i++
-    ) {
-      const star = this.createStar();
-      tile.addChild(star);
-    }
     tile.mask = mask;
 
     return tile;
-  }
-
-  medianStarSize() {
-    return (this.starMaxSize - this.starMinSize) / 2 + this.starMinSize;
   }
 }

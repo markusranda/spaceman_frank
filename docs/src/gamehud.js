@@ -1,8 +1,9 @@
 import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.10.2/dist/pixi.min.mjs";
 import { DAMAGE_TIMER_MAX } from "./timers.js";
 import { GAME_STATES } from "./gamestate.js";
+import { MiniMapHUD } from "./minimapHud.js";
 
-export class GameHud {
+export class GameHUD {
   levelClearedText;
   damageOverlay;
   frankSizeText;
@@ -100,6 +101,8 @@ export class GameHud {
 
     // Overlay over everything
     this.uiContainer.addChild(this.damageOverlay);
+
+    this.minimapHUD = new MiniMapHUD(this.uiContainer, canvasWidth);
   }
 
   update(frank, timers, gameState) {
@@ -108,6 +111,7 @@ export class GameHud {
     this.updateFrankSizeUI(frank);
     this.updateFuelUI(frank);
     this.updateFullnessUI(frank);
+    this.minimapHUD.update(frank);
   }
 
   updateLevelCleared(gameState) {

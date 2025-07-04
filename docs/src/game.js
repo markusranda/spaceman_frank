@@ -9,7 +9,7 @@ import {
 } from "./timers.js";
 import { GAME_STATES } from "./gamestate.js";
 import { Particle } from "./particle.js";
-import { GameHud } from "./gamehud.js";
+import { GameHUD } from "./gamehud.js";
 
 export class Game {
   camera = null;
@@ -75,7 +75,7 @@ export class Game {
     this.galaxy.spawnNextPlanetBelt(this.frank, this.cameraContainer);
 
     // Setup UI and background
-    this.gameHud = new GameHud(
+    this.gameHud = new GameHUD(
       this.uiContainer,
       this.pixiApp.renderer.width,
       this.pixiApp.renderer.height

@@ -15,6 +15,8 @@ export class Background {
     sun.cullable = true;
     sun.zIndex = 999999;
     container.addChild(sun);
+
+    this.bgTexture = sprites["starfield_1"];
   }
 
   update(frank, screenWidth, screenHeight, screenScale, container) {
@@ -33,11 +35,20 @@ export class Background {
       for (let tx = tileMinX; tx <= tileMaxX; tx++) {
         // Add column if missing
         if (!this.tiles[tx]) this.tiles[tx] = [];
-        // Create new tile if it doesn't exist
-        if (!this.tiles[tx][ty]) {
+
+        // Look for existing tile
+        const tile = this.tiles[tx][ty];
+
+        if (!tile) {
           const tile = this.createTile(tx, ty);
           this.tiles[tx][ty] = tile;
           container.addChild(tile);
+        }
+
+        // Scale the sprite based on zoom
+        if (tile?._starfieldSprite) {
+          const scale = 1 / screenScale.x;
+          tile._starfieldSprite.scale.set(scale);
         }
       }
     }
@@ -77,33 +88,36 @@ export class Background {
 
   createTile(tileX, tileY) {
     const { tileSize } = this;
-    const tile = new PIXI.Container();
     const worldX = tileX * tileSize;
     const worldY = tileY * tileSize;
 
-    // Add background sprite
-    const sprite = new PIXI.Sprite(sprites["starfield_1"]);
-    sprite.label = "starfield";
-    sprite.anchor.set(0.5);
-    sprite.x = tileSize / 2;
-    sprite.y = tileSize / 2;
-
-    // Rotate it to decrease repetiveness
-    const rotationSteps = Math.floor(Math.random() * 4);
-    sprite.rotation = rotationSteps * (Math.PI / 2);
-
-    tile.addChild(sprite);
-
+    // Create container
+    const tile = new PIXI.Container();
     tile.name = `tile_${tileX}_${tileY}`;
     tile.cullable = true;
     tile.x = worldX;
     tile.y = worldY;
+
+    // Add background sprite
+    const sprite = new PIXI.Sprite(this.bgTexture);
+    sprite.label = "starfield";
+    sprite.anchor.set(0.5);
+    sprite.x = tileSize / 2;
+    sprite.y = tileSize / 2;
+    // Save sprite refernce on tile for laters
+    tile._starfieldSprite = sprite;
+
+    // Rotate it to decrease repetiveness
+    const rotationSteps = Math.floor(Math.random() * 4);
+    sprite.rotation = rotationSteps * (Math.PI / 2);
+    tile.addChild(sprite);
+
+    // Mask
     const mask = new PIXI.Graphics()
       .beginFill(0xffffff)
       .drawRect(0, 0, tileSize, tileSize)
       .endFill();
     tile.addChild(mask);
-
     tile.mask = mask;
 
     return tile;

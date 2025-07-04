@@ -23,6 +23,7 @@ export class Frank {
   upgrades = {};
   baseRadius = 50;
   fullness = 0;
+  level = 0;
   lastDmgAudioIndex = 0;
   lastEatAudioIndex = 0;
 
@@ -78,10 +79,21 @@ export class Frank {
     }
   }
 
-  evolve(galaxy) {
+  evolve() {
+    this.level++;
     this.fullness = 0;
     this.fuel = this.maxFuel;
-    this.radius += galaxy.stepSize;
+
+    const b = 147; // switch level
+    const a = 205; // base radius after soft cap
+
+    if (this.level < b) {
+      this.radius = 50 + 35 * Math.log(this.level + 1); // early growth
+    } else {
+      this.radius = a + 4 * Math.log(this.level + 1); // soft-capped curve
+    }
+
+    console.log(`Level ${this.level} → Radius: ${this.radius.toFixed(2)}`);
   }
 
   addTo(container) {

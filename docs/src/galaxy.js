@@ -10,7 +10,6 @@ export class Galaxy {
   enemyMaxCount = 10;
   currentEvolution = 1;
   planetSpacing = 125;
-  stepSize = 25;
   camera = null;
 
   constructor(camera) {

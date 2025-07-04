@@ -158,7 +158,7 @@ export class Game {
 
   evolveGalaxy() {
     this.gameState = GAME_STATES.VICTORY;
-    this.frank.evolve(this.galaxy);
+    this.frank.evolve();
     this.spawnVictoryParticles();
     this.timers.victoryTimer = VICTORY_TIMER_MAX;
   }

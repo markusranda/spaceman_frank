@@ -1,7 +1,7 @@
 import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.10.2/dist/pixi.min.mjs";
 import { DAMAGE_TIMER_MAX } from "./timers.js";
 import { GAME_STATES } from "./gamestate.js";
-import { MiniMapHUD } from "./minimapHud.js";
+import { MiniMapHUD } from "./minimapHUD.js";
 
 export class GameHUD {
   levelClearedText;

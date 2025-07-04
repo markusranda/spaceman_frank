@@ -15,46 +15,58 @@ export class Planet {
     this.x = x;
     this.y = y;
     this.radius = radius;
-    this.sprite = this.getRandomPlanetSprite();
-    const spriteRadius = this.sprite.width / 2;
-    this.shadowContainer = this.createShadowSprite(spriteRadius);
 
+    this.sprite = this.getRandomPlanetSprite();
+
+    // Set sprite pivot to center
+    const textureRadius = this.sprite.width / 2;
+    this.sprite.pivot.set(textureRadius, textureRadius);
+
+    // Set sprite size and position
     this.sprite.width = radius * 2;
     this.sprite.height = radius * 2;
+    this.sprite.position.set(this.x, this.y); // pivoted, so (x, y) is center
 
+    // Create shadow and add it
+    this.shadowContainer = this.createShadowSprite(textureRadius);
     this.sprite.addChild(this.shadowContainer);
 
-    // Rotate towards sun
-    this.rotateSpriteTowardZero();
+    // Rotate shadow to face sun
+    this.rotateShadowTowardSun();
   }
 
   update() {}
 
-  rotateSpriteTowardZero() {
+  rotateShadowTowardSun() {
+    // Angle from planet to origin
     const dx = this.x;
     const dy = this.y;
-    this.sprite.rotation = Math.atan2(dy, dx);
+    const angle = Math.atan2(dy, dx);
+
+    this.shadowContainer.rotation = angle;
   }
 
   createShadowSprite(radius) {
     const shadowContainer = new PIXI.Container();
     shadowContainer.name = "shadow_container";
 
-    // Full black circle
-    const shadow1 = new PIXI.Graphics();
-    shadow1.beginFill(0x000000, 0.55);
-    shadow1.circle(radius, radius, radius + 1);
-    shadow1.endFill();
+    // Align rotation around center
+    shadowContainer.pivot.set(radius, radius);
+    shadowContainer.position.set(radius, radius);
 
-    // The shape we'll use to subtract from the shadow
+    // Shadow
+    const shadow = new PIXI.Graphics();
+    shadow.beginFill(0x000000, 0.55);
+    shadow.circle(radius, radius, radius + 1);
+    shadow.endFill();
+
     const cutter = new PIXI.Graphics();
     cutter.beginFill(0xffffff);
     cutter.circle(radius * 0.5, radius, radius + 1);
     cutter.endFill();
 
     shadowContainer.setMask({ mask: cutter, inverse: true });
-
-    shadowContainer.addChild(shadow1);
+    shadowContainer.addChild(shadow);
     shadowContainer.addChild(cutter);
 
     return shadowContainer;
@@ -75,8 +87,6 @@ export class Planet {
   addTo(container) {
     if (!this.sprite.added) {
       container.addChild(this.sprite);
-      this.sprite.x = this.x - this.radius;
-      this.sprite.y = this.y - this.radius;
       this.sprite.added = true;
       this.sprite.cullable = true;
     }

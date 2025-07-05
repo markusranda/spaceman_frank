@@ -19,6 +19,7 @@ export class Game {
     s: false,
     d: false,
     å: false,
+    " ": false,
   };
   backgroundContainer = new PIXI.Container();
   cameraContainer = new PIXI.Container();
@@ -29,6 +30,8 @@ export class Game {
     victoryTimer: 0,
     debugEvolveTimer: 0,
     fpsTimer: FPS_PRINT_TIMEOUT,
+    multiheadTimer: 100,
+    chargeCooldownTimer: 0,
   };
   gameState = GAME_STATES.NORMAL;
   particles = [];
@@ -101,6 +104,8 @@ export class Game {
   update(ticker) {
     try {
       const delta = ticker.deltaMS;
+
+      // CHEATS
       if (this.keys.å && this.timers.debugEvolveTimer <= 0) {
         this.frank.fullness = this.frank.getFullnessGoal();
         this.timers.debugEvolveTimer = 500;
@@ -108,7 +113,13 @@ export class Game {
 
       this.updateTimers(delta);
       this.updateGame();
-      this.frank.update(delta, this.keys, this.galaxy, this.timers);
+      this.frank.update(
+        delta,
+        this.keys,
+        this.galaxy,
+        this.timers,
+        this.cameraContainer
+      );
       this.frank.updateVisuals(this.keys);
       this.galaxy.update(
         delta,

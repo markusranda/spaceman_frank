@@ -1,7 +1,13 @@
 import { sprites } from "./sprites.js";
 import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.10.2/dist/pixi.min.mjs";
-import { DAMAGE_TIMER_MAX } from "./timers.js";
+import {
+  DAMAGE_TIMER_MAX,
+  FRANK_CHARGE_COOLDOWN_TIMEOUT,
+  FRANK_CHARGE_TIMER_MAX,
+  FRANK_MULTI_HEAD_TIMEOUT,
+} from "./timers.js";
 import { audios } from "./audio.js";
+import { FRANK_STATE } from "./frankstate.js";
 
 export class Frank {
   x = 0;
@@ -9,10 +15,15 @@ export class Frank {
   vx = 0;
   vy = 0;
   angle = (3 * Math.PI) / 2;
-  acceleration = 500;
+  baseAcceleration = 500;
+  chargeAcceleration = 1500;
+  acceleration = this.baseAcceleration;
   rotationSpeed = 0.08;
-  maxSpeed = 750;
+  baseMaxSpeed = 750;
+  chargeMaxSpeed = 3000;
+  maxSpeed = this.baseMaxSpeed;
   friction = 0.9945;
+
   container = undefined;
   frankSprite = undefined;
   flameSprite = undefined;
@@ -26,6 +37,8 @@ export class Frank {
   level = 0;
   lastDmgAudioIndex = 0;
   lastEatAudioIndex = 0;
+  state = FRANK_STATE.NORMAL;
+  chargeTimer = 0;
 
   constructor() {
     const texture = sprites["frank"];
@@ -39,6 +52,7 @@ export class Frank {
     this.radius = this.baseRadius;
     this.x = 0;
     this.y = 0;
+    this.chargingAudioObj = audios["charging"];
   }
 
   getMaxSpeed() {
@@ -60,6 +74,105 @@ export class Frank {
 
   getFullnessGoal() {
     return 10;
+  }
+
+  update(delta, keys, galaxy, timers, containers) {
+    this.updateCharging(keys, delta, timers);
+    this.updateFrankFuel(keys);
+    this.updateFrankMovement(delta, keys, galaxy, timers);
+    this.updateThrusterAudio(keys);
+    this.updateSpawnAfterimage(containers, timers);
+  }
+
+  updateCharging(keys, delta, timers) {
+    const boostBtnPressed = keys[" "];
+    const { audio, gainNode, audioCtx } = this.chargingAudioObj;
+
+    // === CHARGING: Frank is flying like a damn torpedo ===
+    if (this.state === FRANK_STATE.CHARGING) {
+      if (this.chargeTimer > 0) {
+        this.chargeTimer = Math.min(
+          FRANK_CHARGE_TIMER_MAX,
+          this.chargeTimer - delta
+        );
+      } else {
+        this.enterState(FRANK_STATE.NORMAL);
+        this.acceleration = this.baseAcceleration;
+        this.maxSpeed = this.baseMaxSpeed;
+      }
+      return;
+    }
+
+    // === PRE_CHARGING: Charging up ===
+    if (this.state === FRANK_STATE.PRE_CHARGING) {
+      // Continue charging
+      this.chargeTimer = Math.min(
+        FRANK_CHARGE_TIMER_MAX,
+        this.chargeTimer + delta
+      );
+
+      const fullyCharged = this.chargeTimer >= FRANK_CHARGE_TIMER_MAX;
+
+      // === Handle tail replay ===
+      if (fullyCharged && boostBtnPressed) {
+        const now = performance.now();
+        this._lastTailReplay = this._lastTailReplay || 0;
+
+        if (now - this._lastTailReplay > 200) {
+          // every 200ms
+          this._lastTailReplay = now;
+          // Replay the tail
+          audio.currentTime = audio.duration * 0.9;
+          audio.play();
+        }
+      }
+
+      // Fully charged and still holding? Fire!
+      if (!boostBtnPressed && fullyCharged) {
+        this.enterState(FRANK_STATE.CHARGING);
+        this.acceleration = this.chargeAcceleration;
+        this.maxSpeed = this.chargeMaxSpeed;
+
+        const dirX = Math.cos(this.angle);
+        const dirY = Math.sin(this.angle);
+        this.vx = dirX * this.chargeMaxSpeed;
+        this.vy = dirY * this.chargeMaxSpeed;
+
+        timers.chargeCooldownTimer = FRANK_CHARGE_COOLDOWN_TIMEOUT;
+      } else if (!boostBtnPressed) {
+        // Cancel charge if player lets go early
+        this.enterState(FRANK_STATE.NORMAL);
+        this.chargeTimer = 0;
+        gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05); // fade out
+        return;
+      }
+
+      return;
+    }
+
+    // === NORMAL: Check if we should start charging ===
+    if (boostBtnPressed && timers.chargeCooldownTimer <= 0) {
+      this.enterState(FRANK_STATE.PRE_CHARGING);
+      this.chargeTimer = Math.min(
+        FRANK_CHARGE_TIMER_MAX,
+        this.chargeTimer + delta
+      );
+
+      // Start audio
+      gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+      gainNode.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05);
+      audio.currentTime = 0;
+      audio.play();
+
+      return;
+    }
+  }
+
+  enterState(newState) {
+    if (this.state !== newState) {
+      console.log(`STATE: ${this.state} → ${newState}`);
+      this.state = newState;
+    }
   }
 
   eatEntity(entity) {
@@ -164,12 +277,6 @@ export class Frank {
     } else {
       gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05); // fade out
     }
-  }
-
-  update(delta, keys, galaxy, timers) {
-    this.updateFrankFuel(keys);
-    this.updateFrankMovement(delta, keys, galaxy, timers);
-    this.updateThrusterAudio(keys);
   }
 
   updateFrankMovement(delta, keys, galaxy, timers) {
@@ -319,5 +426,51 @@ export class Frank {
     const audio = audioList[index];
     audio.audio.play();
     this.lastEatAudioIndex = index;
+  }
+
+  updateSpawnAfterimage(container, timers) {
+    if (this.state === FRANK_STATE.CHARGING) {
+      if (timers.multiheadTimer <= 0) {
+        const afterimage = new PIXI.Sprite(this.frankSprite.texture);
+
+        // Copy transform properties
+        afterimage.x = this.x;
+        afterimage.y = this.y;
+        afterimage.rotation = this.container.rotation;
+        afterimage.anchor.set(
+          this.frankSprite.anchor.x,
+          this.frankSprite.anchor.y
+        );
+        afterimage.scale.set(
+          this.frankSprite.scale.x,
+          this.frankSprite.scale.y
+        );
+
+        // Visuals
+        afterimage.alpha = 0.3;
+
+        // Optional: tint to give a ghostly or energy effect
+        afterimage.tint = 0x88ccff;
+
+        container.addChild(afterimage);
+
+        // Fade and remove
+        const fadeTime = 300; // ms
+        const fadeSteps = 10;
+        let step = 0;
+
+        const fadeInterval = setInterval(() => {
+          step++;
+          afterimage.alpha -= 0.3 / fadeSteps;
+          if (step >= fadeSteps) {
+            clearInterval(fadeInterval);
+            container.removeChild(afterimage);
+          }
+        }, fadeTime / fadeSteps);
+
+        // Reset timer
+        timers.multiheadTimer = FRANK_MULTI_HEAD_TIMEOUT;
+      }
+    }
   }
 }

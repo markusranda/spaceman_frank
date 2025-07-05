@@ -120,7 +120,6 @@ export class Game {
         this.timers,
         this.cameraContainer
       );
-      this.frank.updateVisuals(this.keys);
       this.galaxy.update(
         delta,
         this.frank,

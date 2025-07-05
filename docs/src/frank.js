@@ -16,7 +16,7 @@ export class Frank {
   vy = 0;
   angle = (3 * Math.PI) / 2;
   baseAcceleration = 500;
-  chargeAcceleration = 1500;
+  chargeAcceleration = 5000;
   acceleration = this.baseAcceleration;
   rotationSpeed = 0.08;
   baseMaxSpeed = 750;
@@ -82,6 +82,7 @@ export class Frank {
     this.updateFrankMovement(delta, keys, galaxy, timers);
     this.updateThrusterAudio(keys);
     this.updateSpawnAfterimage(containers, timers);
+    this.updateVisuals(keys);
   }
 
   updateCharging(keys, delta, timers) {
@@ -236,13 +237,27 @@ export class Frank {
     const g = this.flameSprite;
     g.clear();
 
-    if (this.fuel <= 0 || !keys.w) {
+    // No fuel, no flame
+    if (this.fuel <= 0) {
       g.visible = false;
       return;
     }
 
-    g.visible = true;
+    if (this.state === FRANK_STATE.CHARGING) {
+      g.visible = true;
+      this.drawFlame(g, 0x34cceb);
+    } else {
+      if (!keys.w) {
+        g.visible = false;
+        return;
+      }
 
+      g.visible = true;
+
+      this.drawFlame(g, 0xffff64);
+    }
+  }
+  drawFlame(g, color) {
     const flameBase = this.radius * 1.2;
     const flameLength = this.radius * 2 + Math.random() * 40;
 
@@ -255,7 +270,7 @@ export class Frank {
     g.quadraticCurveTo(0, baseY + flameLength * 0.5, flameBase / 2, baseY);
     g.closePath();
 
-    g.fill({ color: 0xffff64, alpha: 0.8 });
+    g.fill({ color: color, alpha: 0.8 });
     g.circle(0, baseY + flameLength * 0.2, flameBase * 0.1);
   }
 
@@ -269,7 +284,7 @@ export class Frank {
       return;
     }
 
-    if (keys["w"]) {
+    if (keys["w"] || this.state === FRANK_STATE.CHARGING) {
       if (audio.paused) {
         audio.play();
       }
@@ -288,7 +303,7 @@ export class Frank {
     if (keys.d) this.angle += this.rotationSpeed;
 
     // === THRUST ===
-    if (hasFuel && keys.w) {
+    if (hasFuel && (keys.w || this.state === FRANK_STATE.CHARGING)) {
       const accel = this.getAcceleration();
       this.vx += Math.cos(this.angle) * accel * dt;
       this.vy += Math.sin(this.angle) * accel * dt;

@@ -9,7 +9,7 @@ import {
 } from "./timers.js";
 import { GAME_STATES } from "./gamestate.js";
 import { Particle } from "./particle.js";
-import { GameHUD } from "./gameHUD.js";
+import { GameHUD } from "./game_hud.js";
 
 export class Game {
   camera = null;

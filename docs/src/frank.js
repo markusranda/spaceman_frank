@@ -284,13 +284,19 @@ export class Frank {
       return;
     }
 
-    if (keys["w"] || this.state === FRANK_STATE.CHARGING) {
+    let playAudio = false;
+
+    if (this.state === FRANK_STATE.CHARGING || keys["w"]) {
+      playAudio = true;
+      gainNode.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05); // Normal
+    } else {
+      gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05); // fade out
+    }
+
+    if (playAudio) {
       if (audio.paused) {
         audio.play();
       }
-      gainNode.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05); // fade in
-    } else {
-      gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05); // fade out
     }
   }
 

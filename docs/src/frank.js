@@ -28,7 +28,7 @@ export class Frank {
   frankSprite = undefined;
   flameSprite = undefined;
   radius = 0;
-  maxFuel = 5000;
+  maxFuel = 2500;
   fuel = this.maxFuel;
   fuelConsumption = 0.5;
   upgrades = {};

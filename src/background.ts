@@ -42,10 +42,11 @@ export class Background {
     const { tileSize } = this;
     const viewHalfW = screenWidth * (1 / screenScale.x);
     const viewHalfH = screenHeight * (1 / screenScale.x);
-    const minX = frank.x - viewHalfW - tileSize;
-    const maxX = frank.x + viewHalfW + tileSize;
-    const minY = frank.y - viewHalfH - tileSize;
-    const maxY = frank.y + viewHalfH + tileSize;
+    const bufferTiles = 2;
+    const minX = frank.x - viewHalfW - tileSize * bufferTiles;
+    const maxX = frank.x + viewHalfW + tileSize * bufferTiles;
+    const minY = frank.y - viewHalfH - tileSize * bufferTiles;
+    const maxY = frank.y + viewHalfH + tileSize * bufferTiles;
     const tileMinX = Math.floor(minX / tileSize);
     const tileMaxX = Math.floor(maxX / tileSize);
     const tileMinY = Math.floor(minY / tileSize);

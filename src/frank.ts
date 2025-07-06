@@ -36,7 +36,6 @@ export class Frank {
   maxFuel = 2500;
   fuel = this.maxFuel;
   fuelConsumption = 0.5;
-  upgrades = {};
   baseRadius = 50;
   fullness = 0;
   level = 0;

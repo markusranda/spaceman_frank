@@ -16,13 +16,20 @@ export class MiniMapHUD {
     container.addChild(this.mapContainer);
 
     // Background + border
+    this.bg.label = "minimap_bg";
     this.bg.rect(0, 0, this.width, this.height);
     this.bg.fill({ color: 0x000000, alpha: 0.4 });
     this.bg.setStrokeStyle({ width: 2, color: 0xffffff });
     this.bg.rect(0, 0, this.width, this.height);
     this.mapContainer.addChild(this.bg);
 
+    // Sun marker (orange)
+    this.sun.label = "minimap_sun";
+    this.drawSunPolygon(this.sun, 8, 6, 3);
+    this.mapContainer.addChild(this.sun);
+
     // Center marker (yellow)
+    this.center.label = "minimap_center";
     this.center.circle(0, 0, 5);
     this.center.fill(0xffff00);
     this.center.x = this.width / 2;
@@ -30,15 +37,12 @@ export class MiniMapHUD {
     this.mapContainer.addChild(this.center);
 
     // Player marker (blue)
+    this.player.label = "minimap_player";
     this.player.circle(0, 0, 4);
     this.player.fill(0x0000ff);
     this.mapContainer.addChild(this.player);
     this.player.x = this.width / 2;
     this.player.y = this.height / 2;
-
-    // Sun marker (orange)
-    this.drawSunPolygon(this.sun, 8, 6, 3);
-    this.mapContainer.addChild(this.sun);
 
     const margin = 40;
     this.mapContainer.x = canvasWidth - this.mapContainer.width - margin;
@@ -76,7 +80,6 @@ export class MiniMapHUD {
   ) {
     const step = Math.PI / points;
     gfx.clear();
-    gfx.fill(0xffaa00);
     gfx.moveTo(Math.cos(0) * outerRadius, Math.sin(0) * outerRadius);
 
     for (let i = 1; i < points * 2; i++) {
@@ -84,6 +87,8 @@ export class MiniMapHUD {
       const angle = i * step;
       gfx.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
     }
+
+    gfx.fill({ color: 0xffaa00, alpha: 1 });
 
     gfx.closePath();
   }

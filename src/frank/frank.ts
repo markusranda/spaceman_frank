@@ -51,13 +51,15 @@ export class Frank {
     return 10;
   }
 
-  setVelocity(acceleration: number, maxSpeed: number) {
+  setVelocity(acceleration: number, maxSpeed: number, immediate: boolean) {
     this.acceleration = acceleration;
     this.maxSpeed = maxSpeed;
-    const dirX = Math.cos(this.angle);
-    const dirY = Math.sin(this.angle);
-    this.vx = dirX * maxSpeed;
-    this.vy = dirY * maxSpeed;
+    if (immediate) {
+      const dirX = Math.cos(this.angle);
+      const dirY = Math.sin(this.angle);
+      this.vx = dirX * maxSpeed;
+      this.vy = dirY * maxSpeed;
+    }
   }
 
   update(
@@ -92,6 +94,9 @@ export class Frank {
       this.state,
       this.frankSprite,
       container,
+      this.x,
+      this.y,
+      this.angle,
       this.enterState.bind(this),
       this.setVelocity.bind(this)
     );
@@ -110,7 +115,6 @@ export class Frank {
   }
 
   enterState(newState: string) {
-    console.log(this.state);
     if (this.state !== newState) {
       this.state = newState;
     }
@@ -148,6 +152,20 @@ export class Frank {
     }
 
     console.log(`Level ${this.level} → Radius: ${this.radius.toFixed(2)}`);
+  }
+
+  shakeChargeEffect() {
+    const intensity =
+      this.charger.chargeUpTimer / this.charger.chargeUpDuration; // Scale with timer (assuming timer max is ~1000ms)
+    const maxShake = 8; // pixels
+    const shakeAmount = Math.min(maxShake, intensity * maxShake);
+
+    const angle = Math.random() * Math.PI * 2;
+    const offsetX = Math.cos(angle) * shakeAmount;
+    const offsetY = Math.sin(angle) * shakeAmount;
+
+    this.frankSprite.x = offsetX;
+    this.frankSprite.y = offsetY;
   }
 
   addTo(container: Container) {

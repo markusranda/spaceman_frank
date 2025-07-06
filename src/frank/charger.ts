@@ -9,11 +9,13 @@ import { audios } from "../audio";
 import { Container, Sprite } from "pixi.js";
 
 export class FrankCharger {
-  chargeTimer = 0;
   lastTailReplay = 0;
-  chargeDuration = 1500;
-  cooldownDuration = 5000;
+  chargeUpTimer = 0;
+  chargeUpDuration = 1500;
+  chargeTimer = 0;
+  chargeDuration = 1000;
   chargeCooldownTimer = 0;
+  cooldownDuration = 5000;
 
   chargingAudioObj = audios["charging"];
   multiheadTimer = 0;
@@ -21,7 +23,7 @@ export class FrankCharger {
   constructor() {}
 
   public getChargeTimer(): number {
-    return this.chargeTimer;
+    return this.chargeUpTimer;
   }
 
   public update(
@@ -30,8 +32,15 @@ export class FrankCharger {
     state: string,
     sprite: Sprite,
     container: Container,
+    x: number,
+    y: number,
+    angle: number,
     enterState: (val: string) => void,
-    setVelocity: (acceleration: number, maxSpeed: number) => void
+    setVelocity: (
+      acceleration: number,
+      maxSpeed: number,
+      immediate: boolean
+    ) => void
   ) {
     const boostBtnPressed = keys[" "];
     const { audio, gainNode, audioCtx } = this.chargingAudioObj;
@@ -40,14 +49,6 @@ export class FrankCharger {
       case FRANK_STATE.normal:
         if (boostBtnPressed && this.chargeCooldownTimer <= 0) {
           enterState(FRANK_STATE.preCharging);
-          this.chargeTimer = Math.min(
-            this.chargeDuration,
-            this.chargeTimer + delta
-          );
-          gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-          gainNode.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05);
-          audio.currentTime = 0;
-          audio.play();
         }
 
         this.chargeCooldownTimer = Math.max(
@@ -57,10 +58,10 @@ export class FrankCharger {
         break;
 
       case FRANK_STATE.preCharging: {
-        const fullyCharged = this.chargeTimer >= this.chargeDuration;
-        this.chargeTimer = Math.min(
-          this.chargeDuration,
-          this.chargeTimer + delta
+        const fullyCharged = this.chargeUpTimer >= this.chargeUpDuration;
+        this.chargeUpTimer = Math.min(
+          this.chargeUpDuration,
+          this.chargeUpTimer + delta
         );
 
         if (!fullyCharged && boostBtnPressed) {
@@ -77,43 +78,55 @@ export class FrankCharger {
 
         if (!boostBtnPressed && fullyCharged) {
           enterState(FRANK_STATE.charging);
-          setVelocity(FRANK_ACCELERATION_CHARGING, FRANK_MAX_SPEED_CHARGING);
+          this.chargeTimer = this.chargeDuration;
+          this.chargeUpTimer = 0;
+          setVelocity(
+            FRANK_ACCELERATION_CHARGING,
+            FRANK_MAX_SPEED_CHARGING,
+            true
+          );
 
           this.chargeCooldownTimer = this.cooldownDuration;
         } else if (!boostBtnPressed) {
           enterState(FRANK_STATE.normal);
-          this.chargeTimer = 0;
+          this.chargeUpTimer = 0;
           audio.currentTime = 0;
           audio.pause();
           gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
         }
 
-        this.updateSpawnAfterimage(sprite, container);
         break;
       }
 
       case FRANK_STATE.charging:
         if (this.chargeTimer > 0) {
-          this.chargeTimer = Math.min(
-            this.chargeDuration,
-            this.chargeTimer - delta
-          );
+          this.chargeTimer = Math.max(0, this.chargeTimer - delta);
         } else {
           enterState(FRANK_STATE.normal);
-          setVelocity(FRANK_ACCELERATION_BASE, FRANK_MAX_SPEED_BASE);
+          setVelocity(FRANK_ACCELERATION_BASE, FRANK_MAX_SPEED_BASE, false);
         }
+
+        this.updateSpawnAfterimage(x, y, sprite, container, angle);
         break;
     }
+
+    this.multiheadTimer = Math.max(0, this.multiheadTimer - delta);
   }
 
-  updateSpawnAfterimage(frankSprite: Sprite, container: Container) {
+  updateSpawnAfterimage(
+    x: number,
+    y: number,
+    frankSprite: Sprite,
+    container: Container,
+    angle: number
+  ) {
     if (this.multiheadTimer <= 0) {
       const afterimage = new Sprite(frankSprite.texture);
 
       // Copy transform properties
-      afterimage.x = frankSprite.x;
-      afterimage.y = frankSprite.y;
-      afterimage.rotation = frankSprite.rotation;
+      afterimage.x = x;
+      afterimage.y = y;
+      afterimage.rotation = angle + Math.PI / 2;
       afterimage.anchor.set(frankSprite.anchor.x, frankSprite.anchor.y);
       afterimage.scale.set(frankSprite.scale.x, frankSprite.scale.y);
 

@@ -46,7 +46,7 @@ export class ChargeHUD {
       if (!this.visible) this.setVisible(true);
 
       const percentage =
-        frank.charger.chargeTimer / frank.charger.chargeDuration;
+        frank.charger.chargeUpTimer / frank.charger.chargeUpDuration;
       const width = this.barWidth * percentage;
 
       // Clear previous graphics

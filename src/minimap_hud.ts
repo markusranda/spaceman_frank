@@ -1,45 +1,42 @@
-import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.10.2/dist/pixi.min.mjs";
+import { Container, Graphics } from "pixi.js";
+import { Frank } from "./frank";
 
 export class MiniMapHUD {
-  constructor(container, canvasWidth) {
-    this.width = 150;
-    this.height = 150;
-    this.scale = 0.005; // Slower movement for objects
+  width = 150;
+  height = 150;
+  scale = 0.005; // Slower movement for objects
+  radius = this.width / 2;
+  mapContainer = new Container();
+  bg = new Graphics();
+  center = new Graphics();
+  player = new Graphics();
+  sun = new Graphics();
 
-    this.radius = this.width / 2;
-
-    this.mapContainer = new PIXI.Container();
+  constructor(container: Container, canvasWidth: number) {
     container.addChild(this.mapContainer);
 
     // Background + border
-    this.bg = new PIXI.Graphics();
-    this.bg.beginFill(0x000000, 0.4);
-    this.bg.drawRect(0, 0, this.width, this.height);
-    this.bg.endFill();
-    this.bg.lineStyle(2, 0xffffff);
-    this.bg.drawRect(0, 0, this.width, this.height);
+    this.bg.rect(0, 0, this.width, this.height);
+    this.bg.fill({ color: 0x000000, alpha: 0.4 });
+    this.bg.setStrokeStyle({ width: 2, color: 0xffffff });
+    this.bg.rect(0, 0, this.width, this.height);
     this.mapContainer.addChild(this.bg);
 
     // Center marker (yellow)
-    this.center = new PIXI.Graphics();
-    this.center.beginFill(0xffff00);
-    this.center.drawCircle(0, 0, 5);
-    this.center.endFill();
+    this.center.circle(0, 0, 5);
+    this.center.fill(0xffff00);
     this.center.x = this.width / 2;
     this.center.y = this.height / 2;
     this.mapContainer.addChild(this.center);
 
     // Player marker (blue)
-    this.player = new PIXI.Graphics();
-    this.player.beginFill(0x0000ff);
-    this.player.drawCircle(0, 0, 4);
-    this.player.endFill();
+    this.player.circle(0, 0, 4);
+    this.player.fill(0x0000ff);
     this.mapContainer.addChild(this.player);
     this.player.x = this.width / 2;
     this.player.y = this.height / 2;
 
     // Sun marker (orange)
-    this.sun = new PIXI.Graphics();
     this.drawSunPolygon(this.sun, 8, 6, 3);
     this.mapContainer.addChild(this.sun);
 
@@ -48,7 +45,7 @@ export class MiniMapHUD {
     this.mapContainer.y = margin;
   }
 
-  update(frank) {
+  update(frank: Frank) {
     if (!frank || frank.x === undefined || frank.y === undefined)
       throw Error("Can't update minimap without my dear Frank");
 
@@ -71,10 +68,15 @@ export class MiniMapHUD {
     this.sun.y = centerY + dy;
   }
 
-  drawSunPolygon(gfx, points, outerRadius, innerRadius) {
+  drawSunPolygon(
+    gfx: Graphics,
+    points: number,
+    outerRadius: number,
+    innerRadius: number
+  ) {
     const step = Math.PI / points;
     gfx.clear();
-    gfx.beginFill(0xffaa00);
+    gfx.fill(0xffaa00);
     gfx.moveTo(Math.cos(0) * outerRadius, Math.sin(0) * outerRadius);
 
     for (let i = 1; i < points * 2; i++) {
@@ -84,6 +86,5 @@ export class MiniMapHUD {
     }
 
     gfx.closePath();
-    gfx.endFill();
   }
 }

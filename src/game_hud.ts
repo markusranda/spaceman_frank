@@ -1,33 +1,39 @@
-import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.10.2/dist/pixi.min.mjs";
-import { DAMAGE_TIMER_MAX } from "./timers.js";
-import { GAME_STATES } from "./gamestate.js";
-import { MiniMapHUD } from "./minimap_hud.js";
-import { ChargeHUD } from "./charge_hud.js";
+import { Container, Graphics, Text, TextStyle } from "pixi.js";
+import { DAMAGE_TIMER_MAX } from "./timers";
+import { GAME_STATES } from "./gamestate";
+import { MiniMapHUD } from "./minimap_hud";
+import { ChargeHUD } from "./charge_hud";
+import { Frank } from "./frank";
+import { SpaceTimers } from "./space_timers";
 
 export class GameHUD {
-  levelClearedText;
-  damageOverlay;
-  frankSizeText;
-  fuelBarBg;
-  fuelBarFill;
-  fullnessBarBg;
-  fullnessBarFill;
+  levelClearedText = new Text();
+  damageOverlay = new Graphics();
+  frankSizeText = new Text();
+  fuelBarBg = new Graphics();
+  fuelBarFill = new Graphics();
+  fullnessBarBg = new Graphics();
+  fullnessBarFill = new Graphics();
+  minimapHUD: MiniMapHUD | null = null;
+  chargeHUD: ChargeHUD | null = null;
 
-  constructor(uiContainer, canvasWidth, canvasHeight) {
-    this.uiContainer = uiContainer;
-
+  constructor(
+    uiContainer: Container,
+    canvasWidth: number,
+    canvasHeight: number
+  ) {
     // --- Level Cleared Text ---
-    this.levelClearedText = new PIXI.Text({
+    this.levelClearedText = new Text({
       text: "FRANK GROWS HUNGRIER",
-      style: new PIXI.TextStyle({
+      style: new TextStyle({
         fontFamily: "'Press Start 2P'",
         fontSize: 32,
         fill: 0xffffff,
         align: "center",
-        stroke: { color: 0x000000, thickness: 2 },
+        stroke: { color: 0x000000 },
       }),
     });
-    this.levelClearedText.name = "level_cleared_text";
+    this.levelClearedText.label = "level_cleared_text";
     this.levelClearedText.anchor.x = 0.5;
     this.levelClearedText.anchor.y = 0.5;
     this.levelClearedText.x = canvasWidth / 2;
@@ -35,24 +41,24 @@ export class GameHUD {
     this.levelClearedText.visible = false;
 
     // --- Damage Overlay ---
-    this.damageOverlay = new PIXI.Graphics();
-    this.levelClearedText.name = "damage_overlay";
+    this.damageOverlay = new Graphics();
+    this.levelClearedText.label = "damage_overlay";
     this.damageOverlay.rect(0, 0, canvasWidth, canvasHeight);
     this.damageOverlay.fill({ color: 0xa83240, alpha: 0.5 });
     this.damageOverlay.visible = true;
 
     // --- Frank Size UI ---
-    this.frankSizeText = new PIXI.Text({
+    this.frankSizeText = new Text({
       text: "0m",
-      style: new PIXI.TextStyle({
+      style: new TextStyle({
         fontFamily: "'Press Start 2P'",
         fontSize: 32,
         fill: 0x00ff00,
         align: "center",
-        stroke: { color: 0x000000, thickness: 2 },
+        stroke: { color: 0x000000 },
       }),
     });
-    this.frankSizeText.name = "frank_size_text";
+    this.frankSizeText.label = "frank_size_text";
     this.frankSizeText.anchor.set(0.5);
     this.frankSizeText.x = canvasWidth / 2;
     this.frankSizeText.y = 40;
@@ -63,13 +69,13 @@ export class GameHUD {
     const fuelPosX = 20;
     const fuelPosY = 20;
 
-    this.fuelBarBg = new PIXI.Graphics();
-    this.fuelBarBg.name = "fuel_bar_bg";
+    this.fuelBarBg = new Graphics();
+    this.fuelBarBg.label = "fuel_bar_bg";
     this.fuelBarBg.rect(fuelPosX, fuelPosY, fuelWidth, fuelHeight);
     this.fuelBarBg.fill(0x808080);
 
-    this.fuelBarFill = new PIXI.Graphics();
-    this.fuelBarFill.name = "fuel_bar_fill";
+    this.fuelBarFill = new Graphics();
+    this.fuelBarFill.label = "fuel_bar_fill";
 
     // --- Fullness UI ---
     const fullnessWidth = 40;
@@ -77,8 +83,8 @@ export class GameHUD {
     const fullnessPosX = 20;
     const fullnessPosY = 120;
 
-    this.fullnessBarBg = new PIXI.Graphics();
-    this.fullnessBarBg.name = "fullness_bar_bg";
+    this.fullnessBarBg = new Graphics();
+    this.fullnessBarBg.label = "fullness_bar_bg";
     this.fullnessBarBg.rect(
       fullnessPosX,
       fullnessPosY,
@@ -87,27 +93,32 @@ export class GameHUD {
     );
     this.fullnessBarBg.fill(0x808080);
 
-    this.fullnessBarFill = new PIXI.Graphics();
-    this.fullnessBarFill.name = "fullness_bar_fill";
+    this.fullnessBarFill = new Graphics();
+    this.fullnessBarFill.label = "fullness_bar_fill";
 
     // HUD
-    this.uiContainer.addChild(this.fuelBarBg);
-    this.uiContainer.addChild(this.fuelBarFill);
-    this.uiContainer.addChild(this.fullnessBarBg);
-    this.uiContainer.addChild(this.fullnessBarFill);
+    uiContainer.addChild(this.fuelBarBg);
+    uiContainer.addChild(this.fuelBarFill);
+    uiContainer.addChild(this.fullnessBarBg);
+    uiContainer.addChild(this.fullnessBarFill);
 
     // HUD Messages
-    this.uiContainer.addChild(this.frankSizeText);
-    this.uiContainer.addChild(this.levelClearedText);
+    uiContainer.addChild(this.frankSizeText);
+    uiContainer.addChild(this.levelClearedText);
 
     // Overlay over everything
-    this.uiContainer.addChild(this.damageOverlay);
+    uiContainer.addChild(this.damageOverlay);
 
-    this.minimapHUD = new MiniMapHUD(this.uiContainer, canvasWidth);
-    this.chargeHUD = new ChargeHUD(this.uiContainer, canvasWidth, canvasHeight);
+    this.minimapHUD = new MiniMapHUD(uiContainer, canvasWidth);
+    this.chargeHUD = new ChargeHUD(uiContainer, canvasWidth, canvasHeight);
   }
 
-  update(frank, timers, gameState) {
+  update(frank: Frank, timers: SpaceTimers, gameState: number) {
+    if (!this.minimapHUD)
+      throw Error("Can't update game hud without minimap hud");
+    if (!this.chargeHUD)
+      throw Error("Can't update game hud without charge hud");
+
     this.updateLevelCleared(gameState);
     this.updateDamageOverlay(timers);
     this.updateFrankSizeUI(frank);
@@ -117,11 +128,11 @@ export class GameHUD {
     this.chargeHUD.update(frank);
   }
 
-  updateLevelCleared(gameState) {
+  updateLevelCleared(gameState: number) {
     this.levelClearedText.visible = gameState === GAME_STATES.VICTORY;
   }
 
-  updateDamageOverlay(timers) {
+  updateDamageOverlay(timers: SpaceTimers) {
     if (timers.damageTimer > 0) {
       const maxAlpha = 0.5;
       const alpha = (timers.damageTimer / DAMAGE_TIMER_MAX) * maxAlpha;
@@ -133,11 +144,11 @@ export class GameHUD {
     }
   }
 
-  updateFrankSizeUI(frank) {
+  updateFrankSizeUI(frank: Frank) {
     this.frankSizeText.text = `${Math.floor(frank.radius)}m`;
   }
 
-  updateFuelUI(frank) {
+  updateFuelUI(frank: Frank) {
     const fuelWidth = 40;
     const fuelHeight = 80;
     const fuelPosX = 20;
@@ -155,7 +166,7 @@ export class GameHUD {
     this.fuelBarFill.fill(0x00ff00);
   }
 
-  updateFullnessUI(frank) {
+  updateFullnessUI(frank: Frank) {
     const fullnessWidth = 40;
     const fullnessHeight = 80;
     const fullnessPosX = 20;

@@ -1,19 +1,21 @@
-import { Background } from "./background.js";
-import { Frank } from "./frank.js";
-import { Galaxy } from "./galaxy.js";
-import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.10.2/dist/pixi.min.mjs";
+import { Background } from "./background";
+import { Frank } from "./frank";
+import { Galaxy } from "./galaxy";
+import { Application, Container, Culler, Ticker } from "pixi.js";
 import {
   VICTORY_TIMER_MAX,
   SPAWN_TIMER_MAX,
   FPS_PRINT_TIMEOUT,
-} from "./timers.js";
-import { GAME_STATES } from "./gamestate.js";
-import { Particle } from "./particle.js";
-import { GameHUD } from "./game_hud.js";
+} from "./timers";
+import { GAME_STATES } from "./gamestate";
+import { Particle } from "./particle";
+import { GameHUD } from "./game_hud";
+import { SpaceCamera } from "./models/space_camera";
+import { SpaceTimers } from "./space_timers";
 
 export class Game {
-  camera = null;
-  keys = {
+  camera: SpaceCamera | null = null;
+  keys: Record<string, boolean> = {
     w: false,
     a: false,
     s: false,
@@ -21,36 +23,34 @@ export class Game {
     å: false,
     " ": false,
   };
-  backgroundContainer = new PIXI.Container();
-  cameraContainer = new PIXI.Container();
-  uiContainer = new PIXI.Container();
-  timers = {
-    damageTimer: 0,
-    spawnTimer: SPAWN_TIMER_MAX,
-    victoryTimer: 0,
-    debugEvolveTimer: 0,
-    fpsTimer: FPS_PRINT_TIMEOUT,
-    multiheadTimer: 100,
-    chargeCooldownTimer: 0,
-  };
+  backgroundContainer = new Container();
+  cameraContainer = new Container();
+  uiContainer = new Container();
+  timers = new SpaceTimers();
   gameState = GAME_STATES.NORMAL;
   particles = [];
-  gameHud = null;
-  background = null;
+  pixiApp: Application | null = null;
+  culler = new Culler();
+  galaxy: Galaxy | null = null;
+  frank: Frank | null = null;
 
-  constructor(pixiApp) {
+  // UI
+  background: Background | null = null;
+  gameHud: GameHUD | null = null;
+
+  constructor(pixiApp: Application) {
     this.pixiApp = pixiApp;
-    this.backgroundContainer.name = "background_container";
+    this.backgroundContainer.label = "background_container";
     this.backgroundContainer.sortableChildren = true;
-    this.cameraContainer.name = "camera_container";
-    this.uiContainer.name = "ui_container";
-    this.culler = new PIXI.Culler();
-  }
+    this.cameraContainer.label = "camera_container";
+    this.uiContainer.label = "ui_container";
 
-  run() {
+    if (!this.pixiApp) throw Error("Can't run without pixiApp");
+
     this.cameraContainer.addChild(this.backgroundContainer);
 
     const body = document.getElementById("rootElement");
+    if (!body) throw Error("Can't run game without body element");
     const worldX = body.clientWidth;
     const worldY = body.clientHeight;
     this.camera = {
@@ -62,7 +62,8 @@ export class Game {
 
     window.addEventListener("keydown", (e) => {
       if (e.key.toLowerCase() in this.keys) {
-        this.keys[e.key.toLowerCase()] = true;
+        const key = e.key.toLowerCase();
+        this.keys[key] = true;
       }
     });
 
@@ -94,14 +95,14 @@ export class Game {
 
     // Setup and run ticker
     this.update = this.update.bind(this);
-    const ticker = new PIXI.Ticker();
+    const ticker = new Ticker();
     ticker.add(this.update);
     ticker.minFPS = 60;
     ticker.maxFPS = 60;
     ticker.start();
   }
 
-  update(ticker) {
+  update(ticker: Ticker) {
     try {
       const delta = ticker.deltaMS;
 

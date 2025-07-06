@@ -3,6 +3,7 @@ export function createBackgroundCanvasElementMenu() {
   canvas.width = 2048;
   canvas.height = 2048;
   const bgCtx = canvas.getContext("2d");
+  if (!bgCtx) throw Error("Can't draw anything without bgCtx");
 
   for (let i = 0; i < 1000; i++) {
     const x = Math.random() * canvas.width;
@@ -18,7 +19,10 @@ export function createBackgroundCanvasElementMenu() {
   return canvas;
 }
 
-export function drawBackgroundMenu(ctx, backgroundCanvas) {
+export function drawBackgroundMenu(
+  ctx: CanvasRenderingContext2D,
+  backgroundCanvas: HTMLCanvasElement
+) {
   const bgWidth = backgroundCanvas.width;
   const bgHeight = backgroundCanvas.height;
 
@@ -32,7 +36,10 @@ export function drawBackgroundMenu(ctx, backgroundCanvas) {
   }
 }
 
-export function drawStartGame(ctx, canvas) {
+export function drawStartGame(
+  ctx: CanvasRenderingContext2D,
+  canvas: HTMLCanvasElement
+) {
   ctx.save();
 
   ctx.font = "32px 'Press Start 2P'";
@@ -53,7 +60,10 @@ export function drawStartGame(ctx, canvas) {
   ctx.restore();
 }
 
-export function drawLoadingIndicator(ctx, canvas) {
+export function drawLoadingIndicator(
+  ctx: CanvasRenderingContext2D,
+  canvas: HTMLCanvasElement
+) {
   ctx.save();
 
   ctx.fillStyle = "#111";

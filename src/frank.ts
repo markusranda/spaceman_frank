@@ -1,13 +1,18 @@
-import { sprites } from "./sprites.js";
-import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.10.2/dist/pixi.min.mjs";
+import { sprites } from "./sprites";
+import { Container, Graphics, Sprite } from "pixi.js";
 import {
   DAMAGE_TIMER_MAX,
   FRANK_CHARGE_COOLDOWN_TIMEOUT,
   FRANK_CHARGE_TIMER_MAX,
   FRANK_MULTI_HEAD_TIMEOUT,
-} from "./timers.js";
-import { audios } from "./audio.js";
-import { FRANK_STATE } from "./frankstate.js";
+} from "./timers";
+import { audios } from "./audio";
+import { FRANK_STATE } from "./frankstate";
+import { SpaceAudio } from "./models/space_audio";
+import { Galaxy } from "./galaxy";
+import { SpaceTimers } from "./space_timers";
+import { Entity } from "./entity";
+import { Projectile } from "./projectile";
 
 export class Frank {
   x = 0;
@@ -24,9 +29,9 @@ export class Frank {
   maxSpeed = this.baseMaxSpeed;
   friction = 0.9945;
 
-  container = undefined;
-  frankSprite = undefined;
-  flameSprite = undefined;
+  container = new Container();
+  frankSprite = new Sprite();
+  flameSprite = new Graphics();
   radius = 0;
   maxFuel = 2500;
   fuel = this.maxFuel;
@@ -39,15 +44,14 @@ export class Frank {
   lastEatAudioIndex = 0;
   state = FRANK_STATE.NORMAL;
   chargeTimer = 0;
+  chargingAudioObj: SpaceAudio | null = null;
+  lastTailReplay = 0;
 
   constructor() {
-    const texture = sprites["frank"];
-    this.container = new PIXI.Container();
-    this.container.name = "frank_container";
-    this.frankSprite = new PIXI.Sprite(texture);
-    this.frankSprite.name = "frank_sprite";
-    this.flameSprite = new PIXI.Graphics();
-    this.frankSprite.name = "frank_thruster";
+    this.container.label = "frank_container";
+    this.frankSprite.texture = sprites["frank"];
+    this.frankSprite.label = "frank_sprite";
+    this.frankSprite.label = "frank_thruster";
     this.frankSprite.anchor.set(0.5);
     this.radius = this.baseRadius;
     this.x = 0;
@@ -55,37 +59,32 @@ export class Frank {
     this.chargingAudioObj = audios["charging"];
   }
 
-  getMaxSpeed() {
-    const upgrades = this.upgrades["max_speed"]?.level ?? 0;
-    const factor = 1 + 0.2 * upgrades;
-    return this.maxSpeed * factor;
-  }
-
-  getAcceleration() {
-    const upgrades = this.upgrades["acceleration"]?.level ?? 0;
-    const factor = 1 + 0.15 * upgrades;
-    return this.acceleration * factor;
-  }
-  getFuelConsumption() {
-    const upgrades = this.upgrades["fuel_consumption"]?.level ?? 0;
-    const factor = Math.pow(0.95, upgrades);
-    return this.fuelConsumption * factor;
-  }
-
   getFullnessGoal() {
     return 10;
   }
 
-  update(delta, keys, galaxy, timers, containers) {
+  update(
+    delta: number,
+    keys: Record<string, boolean>,
+    galaxy: Galaxy,
+    timers: SpaceTimers,
+    container: Container
+  ) {
     this.updateCharging(keys, delta, timers);
     this.updateFrankFuel(keys);
     this.updateFrankMovement(delta, keys, galaxy, timers);
     this.updateThrusterAudio(keys);
-    this.updateSpawnAfterimage(containers, timers);
+    this.updateSpawnAfterimage(container, timers);
     this.updateVisuals(keys);
   }
 
-  updateCharging(keys, delta, timers) {
+  updateCharging(
+    keys: Record<string, boolean>,
+    delta: number,
+    timers: SpaceTimers
+  ) {
+    if (!this.chargingAudioObj)
+      throw Error("Can't update charging without audio object");
     const boostBtnPressed = keys[" "];
     const { audio, gainNode, audioCtx } = this.chargingAudioObj;
 
@@ -117,11 +116,11 @@ export class Frank {
       // === Handle tail replay ===
       if (fullyCharged && boostBtnPressed) {
         const now = performance.now();
-        this._lastTailReplay = this._lastTailReplay || 0;
+        this.lastTailReplay = this.lastTailReplay || 0;
 
-        if (now - this._lastTailReplay > 200) {
+        if (now - this.lastTailReplay > 200) {
           // every 200ms
-          this._lastTailReplay = now;
+          this.lastTailReplay = now;
           // Replay the tail
           audio.currentTime = audio.duration * 0.9;
           audio.play();
@@ -169,14 +168,14 @@ export class Frank {
     }
   }
 
-  enterState(newState) {
+  enterState(newState: number) {
     if (this.state !== newState) {
       console.log(`STATE: ${this.state} → ${newState}`);
       this.state = newState;
     }
   }
 
-  eatEntity(entity) {
+  eatEntity(entity: Entity) {
     if (!entity.radius)
       throw Error(`Can't eat something without radius: ${entity}`);
     const maxEdible = this.radius * 0.75;
@@ -210,19 +209,15 @@ export class Frank {
     console.log(`Level ${this.level} → Radius: ${this.radius.toFixed(2)}`);
   }
 
-  addTo(container) {
-    if (!this.frankSprite.added) {
-      this.container.addChild(this.frankSprite);
-      this.container.addChild(this.flameSprite);
-      this.frankSprite.anchor.set(0.5);
-      this.frankSprite.added = true;
-      this.flameSprite.added = true;
+  addTo(container: Container) {
+    this.container.addChild(this.frankSprite);
+    this.container.addChild(this.flameSprite);
+    this.frankSprite.anchor.set(0.5);
 
-      container.addChild(this.container);
-    }
+    container.addChild(this.container);
   }
 
-  updateVisuals(keys) {
+  updateVisuals(keys: Record<string, boolean>) {
     this.container.x = this.x;
     this.container.y = this.y;
     this.container.rotation = this.angle + Math.PI / 2;
@@ -233,7 +228,7 @@ export class Frank {
     this.updateThrusterVisuals(keys);
   }
 
-  updateThrusterVisuals(keys) {
+  updateThrusterVisuals(keys: Record<string, boolean>) {
     const g = this.flameSprite;
     g.clear();
 
@@ -257,7 +252,7 @@ export class Frank {
       this.drawFlame(g, 0xffff64);
     }
   }
-  drawFlame(g, color) {
+  drawFlame(g: Graphics, color: number) {
     const flameBase = this.radius * 1.2;
     const flameLength = this.radius * 2 + Math.random() * 40;
 
@@ -274,7 +269,7 @@ export class Frank {
     g.circle(0, baseY + flameLength * 0.2, flameBase * 0.1);
   }
 
-  updateThrusterAudio(keys) {
+  updateThrusterAudio(keys: Record<string, boolean>) {
     const { gainNode, audio, audioCtx } = audios["thruster"];
     if (!gainNode || !audio || !audioCtx)
       throw Error("Failed to find audio for thruster");
@@ -300,7 +295,12 @@ export class Frank {
     }
   }
 
-  updateFrankMovement(delta, keys, galaxy, timers) {
+  updateFrankMovement(
+    delta: number,
+    keys: Record<string, boolean>,
+    galaxy: Galaxy,
+    timers: SpaceTimers
+  ) {
     const dt = delta / 1000;
     const hasFuel = this.fuel > 0;
 
@@ -310,16 +310,14 @@ export class Frank {
 
     // === THRUST ===
     if (hasFuel && (keys.w || this.state === FRANK_STATE.CHARGING)) {
-      const accel = this.getAcceleration();
-      this.vx += Math.cos(this.angle) * accel * dt;
-      this.vy += Math.sin(this.angle) * accel * dt;
+      this.vx += Math.cos(this.angle) * this.acceleration * dt;
+      this.vy += Math.sin(this.angle) * this.acceleration * dt;
     }
 
     // === Clamp speed ===
     const speed = Math.hypot(this.vx, this.vy);
-    const maxSpeed = this.getMaxSpeed();
-    if (speed > maxSpeed) {
-      const scale = maxSpeed / speed;
+    if (speed > this.maxSpeed) {
+      const scale = this.maxSpeed / speed;
       this.vx *= scale;
       this.vy *= scale;
     }
@@ -329,22 +327,22 @@ export class Frank {
     this.y += this.vy * dt;
 
     // === COLLISIONS ===
-    const collisions = [];
+    const collisions: Entity[] = [];
     collisions.push(...this.detectCollisions(galaxy.planets));
     collisions.push(...this.detectCollisions(galaxy.enemies));
     const projectiles = this.detectCollisions(galaxy.projectiles);
     this.handleEdibleCollisions(collisions, timers, dt);
-    this.handleProjectileCollisions(projectiles, timers, galaxy);
+    this.handleProjectileCollisions(projectiles, timers);
   }
 
-  updateFrankFuel(keys) {
+  updateFrankFuel(keys: Record<string, boolean>) {
     if (!keys["w"]) return;
-    let newFuel = this.fuel - this.getFuelConsumption();
+    let newFuel = this.fuel - this.fuelConsumption;
     if (newFuel < 0) this.fuel = 0;
     else this.fuel = newFuel;
   }
 
-  handleProjectileCollisions(projectiles, timers) {
+  handleProjectileCollisions(projectiles: Projectile[], timers: SpaceTimers) {
     for (const projectile of projectiles) {
       this.fuel -= projectile.damage;
       timers.damageTimer = DAMAGE_TIMER_MAX;
@@ -352,8 +350,8 @@ export class Frank {
     }
   }
 
-  detectCollisions(objects) {
-    const collisions = [];
+  detectCollisions<T extends Entity>(objects: T[]) {
+    const collisions: T[] = [];
 
     for (let i = 0; i < objects.length; i++) {
       const obj = objects[i];
@@ -369,7 +367,7 @@ export class Frank {
     return collisions;
   }
 
-  handleEdibleCollisions(objects, timers, dt) {
+  handleEdibleCollisions(objects: Entity[], timers: SpaceTimers, dt: number) {
     const maxEdibleRadius = this.radius * 0.75;
 
     for (const obj of objects) {
@@ -385,7 +383,7 @@ export class Frank {
     }
   }
 
-  handleCrash(obj, timers, dt) {
+  handleCrash(obj: Entity, timers: SpaceTimers, dt: number) {
     // Vector from obj to Frank
     const dx = this.x - obj.x;
     const dy = this.y - obj.y;
@@ -449,10 +447,10 @@ export class Frank {
     this.lastEatAudioIndex = index;
   }
 
-  updateSpawnAfterimage(container, timers) {
+  updateSpawnAfterimage(container: Container, timers: SpaceTimers) {
     if (this.state === FRANK_STATE.CHARGING) {
       if (timers.multiheadTimer <= 0) {
-        const afterimage = new PIXI.Sprite(this.frankSprite.texture);
+        const afterimage = new Sprite(this.frankSprite.texture);
 
         // Copy transform properties
         afterimage.x = this.x;

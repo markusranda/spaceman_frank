@@ -1,6 +1,6 @@
 export function getRandomCoordinateFarFrom(
-  x,
-  y,
+  x: number,
+  y: number,
   minDistance = 400,
   maxDistance = 1000
 ) {
@@ -13,7 +13,7 @@ export function getRandomCoordinateFarFrom(
   return { x: newX, y: newY };
 }
 
-export function getDistance(x1, y1, x2, y2) {
+export function getDistance(x1: number, y1: number, x2: number, y2: number) {
   const dx = x2 - x1;
   const dy = y2 - y1;
   return Math.sqrt(dx * dx + dy * dy);

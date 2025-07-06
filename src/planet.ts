@@ -1,17 +1,20 @@
-import { sprites } from "./sprites.js";
-import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.10.2/dist/pixi.min.mjs";
+import { Entity } from "./entity";
+import { sprites } from "./sprites";
+import { Container, Graphics, Sprite } from "pixi.js";
 
-export class Planet {
+export class Planet extends Entity {
   radius = 0;
   x = 0;
   y = 0;
-  sprite = undefined;
-  shadowContainer = undefined;
+  sprite = new Sprite();
+  shadowContainer = new Container();
   angle = 0;
   type = "planet";
   dead = false;
 
-  constructor(x, y, radius) {
+  constructor(x: number, y: number, radius: number) {
+    super();
+    this.sprite.cullable = true;
     this.x = x;
     this.y = y;
     this.radius = radius;
@@ -28,14 +31,12 @@ export class Planet {
     this.sprite.position.set(this.x, this.y); // pivoted, so (x, y) is center
 
     // Create shadow and add it
-    this.shadowContainer = this.createShadowSprite(textureRadius);
+    this.populateShadowContainer(textureRadius);
     this.sprite.addChild(this.shadowContainer);
 
     // Rotate shadow to face sun
     this.rotateShadowTowardSun();
   }
-
-  update() {}
 
   rotateShadowTowardSun() {
     // Angle from planet to origin
@@ -46,24 +47,22 @@ export class Planet {
     this.shadowContainer.rotation = angle;
   }
 
-  createShadowSprite(radius) {
-    const shadowContainer = new PIXI.Container();
-    shadowContainer.name = "shadow_container";
+  populateShadowContainer(radius: number) {
+    const shadowContainer = this.shadowContainer;
+    shadowContainer.label = "shadow_container";
 
     // Align rotation around center
     shadowContainer.pivot.set(radius, radius);
     shadowContainer.position.set(radius, radius);
 
     // Shadow
-    const shadow = new PIXI.Graphics();
-    shadow.beginFill(0x000000, 0.55);
+    const shadow = new Graphics();
     shadow.circle(radius, radius, radius + 1);
-    shadow.endFill();
+    shadow.fill({ color: 0x000000, alpha: 0.55 });
 
-    const cutter = new PIXI.Graphics();
-    cutter.beginFill(0xffffff);
+    const cutter = new Graphics();
     cutter.circle(radius * 0.5, radius, radius + 1);
-    cutter.endFill();
+    cutter.fill({ color: 0xffffff });
 
     shadowContainer.setMask({ mask: cutter, inverse: true });
     shadowContainer.addChild(shadow);
@@ -79,20 +78,8 @@ export class Planet {
       sprites["planet_3"],
     ];
     const index = Math.floor(Math.random() * planetSprites.length);
-    const planet = new PIXI.Sprite(planetSprites[index]);
-    planet.name = "planet";
+    const planet = new Sprite(planetSprites[index]);
+    planet.label = "planet";
     return planet;
-  }
-
-  addTo(container) {
-    if (!this.sprite.added) {
-      container.addChild(this.sprite);
-      this.sprite.added = true;
-      this.sprite.cullable = true;
-    }
-  }
-
-  destroy() {
-    this.sprite.destroy({ children: true, texture: false, baseTexture: false });
   }
 }

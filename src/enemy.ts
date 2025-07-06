@@ -1,9 +1,12 @@
-import { sprites } from "./sprites.js";
-import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.10.2/dist/pixi.min.mjs";
+import { Entity } from "./entity";
+import { Frank } from "./frank";
+import { Galaxy } from "./galaxy";
+import { sprites } from "./sprites";
+import { Container, Sprite } from "pixi.js";
 
 export const MAX_ATTACK_TIMER = 2000;
 
-export class Enemy {
+export class Enemy extends Entity {
   x = 0;
   y = 0;
   vx = 0;
@@ -14,20 +17,21 @@ export class Enemy {
   radius = 0;
   speed = 6;
   type = "enemy";
-  sprite = null;
+  sprite = new Sprite();
   attackTimer = MAX_ATTACK_TIMER;
   attackRange = 600;
   dead = false;
   debugCircle = null;
 
-  constructor(galaxy, frank) {
+  constructor(galaxy: Galaxy, frank: Frank) {
+    super();
     const { x, y } = this.getRandomEdgeSpawnCoords(galaxy);
     this.x = x;
     this.y = y;
     this.radius = frank.radius * 0.75;
 
-    this.sprite = new PIXI.Sprite(sprites["enemy_1"]);
-    this.sprite.name = "enemy_1";
+    this.sprite.texture = sprites["enemy_1"];
+    this.sprite.label = "enemy_1";
     this.sprite.width = this.radius * 2;
     this.sprite.height = this.radius * 2;
 
@@ -37,23 +41,24 @@ export class Enemy {
     this.sprite.y = y;
   }
 
-  addTo(container) {
-    if (!this.sprite.added) {
+  addTo(container: Container) {
+    if (this.sprite) {
       container.addChild(this.sprite);
-      this.sprite.added = true;
       this.sprite.cullable = true;
     }
   }
 
-  setPosition(x, y) {
+  setPosition(x: number, y: number) {
     this.x = x;
     this.y = y;
     this.sprite.x = x;
     this.sprite.y = y;
   }
 
-  getRandomEdgeSpawnCoords(galaxy) {
+  getRandomEdgeSpawnCoords(galaxy: Galaxy) {
     const camera = galaxy.camera;
+    if (!camera)
+      throw Error("Can't get randomEdgeSpawnCoords without galaxy.camera");
     const x0 = camera.x;
     const y0 = camera.y;
     const w = camera.width;
@@ -81,12 +86,12 @@ export class Enemy {
     return { x, y };
   }
 
-  getPointOffset(px, dir) {
+  getPointOffset(px: number, dir: number) {
     const spawnOffset = this.radius * 4;
     return px + dir * spawnOffset;
   }
 
   destroy() {
-    this.sprite.destroy({ children: true, texture: false, baseTexture: false });
+    this.sprite.destroy({ children: true, texture: false });
   }
 }

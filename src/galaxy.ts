@@ -1,30 +1,40 @@
-import { Enemy, MAX_ATTACK_TIMER } from "./enemy.js";
-import { Planet } from "./planet.js";
-import { SPAWN_TIMER_MAX } from "./timers.js";
-import { Projectile } from "./projectile.js";
+import { Enemy, MAX_ATTACK_TIMER } from "./enemy";
+import { Planet } from "./planet";
+import { SPAWN_TIMER_MAX } from "./timers";
+import { Projectile } from "./projectile";
+import { SpaceCamera } from "./models/space_camera";
+import { Frank } from "./frank";
+import { SpaceTimers } from "./space_timers";
+import { Container, ObservablePoint } from "pixi.js";
 
 export class Galaxy {
-  planets = [];
-  enemies = [];
-  projectiles = [];
+  planets: Planet[] = [];
+  enemies: Enemy[] = [];
+  projectiles: Projectile[] = [];
   enemyMaxCount = 10;
   currentEvolution = 1;
   planetSpacing = 125;
-  camera = null;
+  camera: SpaceCamera | null = null;
 
-  constructor(camera) {
+  constructor(camera: SpaceCamera) {
     if (!camera) throw Error("Can't create galaxy without camera");
     this.camera = camera;
   }
 
-  update(delta, frank, timers, container, cameraScale) {
+  update(
+    delta: number,
+    frank: Frank,
+    timers: SpaceTimers,
+    container: Container,
+    cameraScale: ObservablePoint
+  ) {
     this.updateSpawnEnemies(timers, container, frank);
     this.updateEnemies(delta, frank, container, cameraScale);
     this.updateProjectiles(delta);
-    this.updatePlanets(delta);
+    this.updatePlanets();
   }
 
-  updateSpawnEnemies(timers, container, frank) {
+  updateSpawnEnemies(timers: SpaceTimers, container: Container, frank: Frank) {
     if (timers.spawnTimer <= 0 && this.enemies.length < this.enemyMaxCount) {
       const enemy = new Enemy(this, frank);
       this.enemies.push(enemy);
@@ -33,7 +43,12 @@ export class Galaxy {
     }
   }
 
-  updateEnemies(delta, frank, container, cameraScale) {
+  updateEnemies(
+    delta: number,
+    frank: Frank,
+    container: Container,
+    cameraScale: ObservablePoint
+  ) {
     for (let i = this.enemies.length - 1; i >= 0; i--) {
       const enemy = this.enemies[i];
       if (enemy.dead) {
@@ -43,7 +58,7 @@ export class Galaxy {
       }
 
       const dist = this.moveEnemy(frank, enemy, cameraScale, delta);
-      const attackRange = (enemy.attackRange * 1) / cameraScale;
+      const attackRange = (enemy.attackRange * 1) / cameraScale.x;
       if (enemy.attackTimer <= 0 && attackRange >= dist) {
         const angle = Math.atan2(frank.y - enemy.y, frank.x - enemy.x);
         const projectile = new Projectile(
@@ -53,7 +68,7 @@ export class Galaxy {
           enemy.radius / 10
         );
         this.projectiles.push(projectile);
-        projectile.sprite = container.addChild(projectile.sprite);
+        container.addChild(projectile.sprite);
         enemy.attackTimer = MAX_ATTACK_TIMER;
       }
 
@@ -61,9 +76,14 @@ export class Galaxy {
     }
   }
 
-  moveEnemy(frank, enemy, cameraScale, deltaMS) {
+  moveEnemy(
+    frank: Frank,
+    enemy: Enemy,
+    cameraScale: ObservablePoint,
+    deltaMS: number
+  ) {
     const dt = deltaMS / 1000;
-    const sweetSpot = 500 / cameraScale;
+    const sweetSpot = 500 / cameraScale.x;
 
     const dx = frank.x - enemy.x;
     const dy = frank.y - enemy.y;
@@ -97,7 +117,7 @@ export class Galaxy {
     return dist;
   }
 
-  updateProjectiles(delta) {
+  updateProjectiles(delta: number) {
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
       const projectile = this.projectiles[i];
       projectile.ttl -= delta;
@@ -114,19 +134,17 @@ export class Galaxy {
     }
   }
 
-  updatePlanets(delta) {
+  updatePlanets() {
     for (let i = this.planets.length - 1; i >= 0; i--) {
       const planet = this.planets[i];
       if (planet.dead) {
         this.planets.splice(i, 1);
         planet.destroy();
       }
-
-      planet.update(delta);
     }
   }
 
-  spawnNextPlanetBelt(frank, container) {
+  spawnNextPlanetBelt(frank: Frank, container: Container) {
     const centerX = 0;
     const centerY = 0;
 

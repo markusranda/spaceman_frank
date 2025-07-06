@@ -1,14 +1,27 @@
-import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.10.2/dist/pixi.min.mjs";
-import { sprites } from "./sprites.js";
+import {
+  BlurFilter,
+  Container,
+  Graphics,
+  ObservablePoint,
+  Sprite,
+  Texture,
+} from "pixi.js";
+import { sprites } from "./sprites";
+import { Frank } from "./frank";
+
+interface SpaceTile extends Container {
+  _starfieldSprite: Sprite;
+}
 
 export class Background {
   tileSize = 512;
-  tiles = [];
+  tiles: SpaceTile[][] = [];
   starMinSize = 1;
   starMaxSize = 1.5;
   starMargin = 15;
+  bgTexture: Texture | null = null;
 
-  constructor(container) {
+  constructor(container: Container) {
     const sun = this.createSun();
     sun.x = 0;
     sun.y = 0;
@@ -19,7 +32,13 @@ export class Background {
     this.bgTexture = sprites["starfield_1"];
   }
 
-  update(frank, screenWidth, screenHeight, screenScale, container) {
+  update(
+    frank: Frank,
+    screenWidth: number,
+    screenHeight: number,
+    screenScale: ObservablePoint,
+    container: Container
+  ) {
     const { tileSize } = this;
     const viewHalfW = screenWidth * (1 / screenScale.x);
     const viewHalfH = screenHeight * (1 / screenScale.x);
@@ -55,7 +74,7 @@ export class Background {
   }
 
   createSun() {
-    const sun = new PIXI.Container();
+    const sun = new Container();
 
     const layers = [
       { radius: 65, color: "#fff", alpha: 0.4 },
@@ -65,41 +84,46 @@ export class Background {
     ];
 
     for (const layer of layers) {
-      const circle = new PIXI.Graphics();
-      circle.beginFill(layer.color, layer.alpha);
-      circle.drawCircle(0, 0, layer.radius);
-      circle.endFill();
+      const circle = new Graphics();
+      circle.circle(0, 0, layer.radius);
+      circle.fill({ color: layer.color, alpha: layer.alpha });
       sun.addChild(circle);
     }
 
     // Blur
-    const blur = new PIXI.BlurFilter(99, 99);
+    const blur = new BlurFilter();
+    blur.strength = 99;
+    blur.quality = 99;
     sun.filters = [blur];
 
-    const glow = new PIXI.Graphics();
-    glow.beginFill(0xffd200, 0.2);
-    glow.drawCircle(0, 0, 100);
-    glow.endFill();
+    const glow = new Graphics();
+    glow.circle(0, 0, 100);
+    glow.fill({ color: 0xffd200, alpha: 0.2 });
     glow.blendMode = "hard-light";
     sun.addChild(glow);
 
     return sun;
   }
 
-  createTile(tileX, tileY) {
+  createTile(tileX: number, tileY: number) {
+    if (!this.bgTexture)
+      throw Error(
+        "Can't create a new SpaceTile without the background texture"
+      );
+
     const { tileSize } = this;
     const worldX = tileX * tileSize;
     const worldY = tileY * tileSize;
 
     // Create container
-    const tile = new PIXI.Container();
-    tile.name = `tile_${tileX}_${tileY}`;
+    const tile: SpaceTile = new Container() as SpaceTile;
+    tile.label = `tile_${tileX}_${tileY}`;
     tile.cullable = true;
     tile.x = worldX;
     tile.y = worldY;
 
     // Add background sprite
-    const sprite = new PIXI.Sprite(this.bgTexture);
+    const sprite = new Sprite(this.bgTexture);
     sprite.label = "starfield";
     sprite.anchor.set(0.5);
     sprite.x = tileSize / 2;
@@ -113,10 +137,7 @@ export class Background {
     tile.addChild(sprite);
 
     // Mask
-    const mask = new PIXI.Graphics()
-      .beginFill(0xffffff)
-      .drawRect(0, 0, tileSize, tileSize)
-      .endFill();
+    const mask = new Graphics().rect(0, 0, tileSize, tileSize).fill(0xffffff);
     tile.addChild(mask);
     tile.mask = mask;
 

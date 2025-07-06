@@ -1,5 +1,5 @@
-import { sprites } from "./sprites.js";
-import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.10.2/dist/pixi.min.mjs";
+import { sprites } from "./sprites";
+import { Sprite } from "pixi.js";
 
 export class Particle {
   x = 0;
@@ -7,12 +7,13 @@ export class Particle {
   vx = 0;
   vy = 0;
   ttl = 0;
-  sprite = null;
+  sprite = new Sprite();
 
-  constructor(x, y, vx, vy, ttl) {
+  constructor(x: number, y: number, vx: number, vy: number, ttl: number) {
     this.x = x;
     this.y = y;
-    this.sprite = this.getRandomSprite();
+    this.sprite.texture = this.getRandomSprite();
+    this.sprite.label = "particle";
     this.sprite.x = x;
     this.sprite.y = y;
     this.vx = vx;
@@ -28,12 +29,10 @@ export class Particle {
       sprites["confetti_4"],
     ];
     const index = Math.floor(Math.random() * particleSprites.length);
-    const particle = new PIXI.Sprite(particleSprites[index]);
-    particle.name = "particle";
-    return particle;
+    return particleSprites[index];
   }
 
-  setPosition(x, y) {
+  setPosition(x: number, y: number) {
     this.x = x;
     this.y = y;
     this.sprite.x = x;
@@ -41,6 +40,6 @@ export class Particle {
   }
 
   destroy() {
-    this.sprite.destroy({ children: true, texture: false, baseTexture: false });
+    this.sprite.destroy({ children: true, texture: false });
   }
 }

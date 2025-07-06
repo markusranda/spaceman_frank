@@ -1,6 +1,6 @@
-import * as PIXI from "https://cdn.jsdelivr.net/npm/pixi.js@8.10.2/dist/pixi.min.mjs";
+import PIXI, { Assets } from "pixi.js";
 
-export const sprites = {};
+export const sprites: Record<string, PIXI.Texture> = {};
 
 export async function loadSprites() {
   const spritePaths = {
@@ -22,10 +22,6 @@ export async function loadSprites() {
 
   const entries = Object.entries(spritePaths);
   for (const [key, path] of entries) {
-    sprites[key] = await loadImage(path);
+    sprites[key] = await Assets.load<PIXI.Texture>(path);
   }
-}
-
-async function loadImage(src) {
-  return await PIXI.Assets.load(src);
 }

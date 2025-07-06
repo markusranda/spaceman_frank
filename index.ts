@@ -30,7 +30,8 @@ drawStartGame(ctx, legacyCanvas);
 async function loadPixi() {
   const pixiApp = new Application();
   await pixiApp.init({ resizeTo: window });
-
+  // @ts-expect-error special pixi stuff
+  globalThis.__PIXI_APP__ = pixiApp;
   return pixiApp;
 }
 
@@ -43,7 +44,6 @@ async function init() {
   document.removeEventListener("keydown", init);
 
   ctx.fillRect(0, 0, legacyCanvas.width, legacyCanvas.height);
-  drawBackgroundMenu(ctx, backgroundCanvasMenu);
   drawLoadingIndicator(ctx, legacyCanvas);
 
   const minWait = new Promise((resolve) => setTimeout(resolve, 500));

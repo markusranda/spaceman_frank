@@ -74,7 +74,7 @@ export class Frank {
         else this.jetpack.setThrusting(false);
         break;
       case FRANK_STATE.preCharging:
-        this.jetpack.setColor(0x34cceb);
+        this.jetpack.setColor(0xffff64);
         if (keys["w"]) this.jetpack.setThrusting(true);
         else this.jetpack.setThrusting(false);
         break;

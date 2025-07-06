@@ -1,19 +1,18 @@
 import { sprites } from "../sprites";
 import { Container, Sprite } from "pixi.js";
-import {
-  DAMAGE_TIMER_MAX,
-  FRANK_CHARGE_COOLDOWN_TIMEOUT,
-  FRANK_CHARGE_TIMER_MAX,
-  FRANK_MULTI_HEAD_TIMEOUT,
-} from "../timers";
+import { DAMAGE_TIMER_MAX } from "../timers";
 import { audios } from "../audio";
-import { FRANK_STATE } from "./state";
-import { SpaceAudio } from "../models/space_audio";
+import {
+  FRANK_ACCELERATION_BASE,
+  FRANK_MAX_SPEED_BASE,
+  FRANK_STATE,
+} from "./const";
 import { Galaxy } from "../galaxy";
 import { SpaceTimers } from "../space_timers";
 import { Entity } from "../entity";
 import { Projectile } from "../projectile";
 import { FrankJetpack } from "./jetpack";
+import { FrankCharger } from "./charger";
 
 export class Frank {
   x = 0;
@@ -21,13 +20,9 @@ export class Frank {
   vx = 0;
   vy = 0;
   angle = (3 * Math.PI) / 2;
-  baseAcceleration = 500;
-  chargeAcceleration = 5000;
-  acceleration = this.baseAcceleration;
+  acceleration = FRANK_ACCELERATION_BASE;
   rotationSpeed = 0.08;
-  baseMaxSpeed = 750;
-  chargeMaxSpeed = 3000;
-  maxSpeed = this.baseMaxSpeed;
+  maxSpeed = FRANK_MAX_SPEED_BASE;
   friction = 0.9945;
 
   container = new Container();
@@ -39,10 +34,8 @@ export class Frank {
   lastDmgAudioIndex = 0;
   lastEatAudioIndex = 0;
   state = FRANK_STATE.normal;
-  chargeTimer = 0;
-  chargingAudioObj: SpaceAudio | null = null;
-  lastTailReplay = 0;
   jetpack = new FrankJetpack();
+  charger = new FrankCharger();
 
   constructor() {
     this.container.label = "frank_container";
@@ -52,11 +45,19 @@ export class Frank {
     this.radius = this.baseRadius;
     this.x = 0;
     this.y = 0;
-    this.chargingAudioObj = audios["charging"];
   }
 
   getFullnessGoal() {
     return 10;
+  }
+
+  setVelocity(acceleration: number, maxSpeed: number) {
+    this.acceleration = acceleration;
+    this.maxSpeed = maxSpeed;
+    const dirX = Math.cos(this.angle);
+    const dirY = Math.sin(this.angle);
+    this.vx = dirX * maxSpeed;
+    this.vy = dirY * maxSpeed;
   }
 
   update(
@@ -68,129 +69,33 @@ export class Frank {
   ) {
     switch (this.state) {
       case FRANK_STATE.normal:
-        this.updateNormalState(keys, timers, delta);
+        this.jetpack.setColor(0xffff64);
+        if (keys["w"]) this.jetpack.setThrusting(true);
+        else this.jetpack.setThrusting(false);
         break;
       case FRANK_STATE.preCharging:
-        this.updatePreChargingState(delta, keys, timers);
+        this.jetpack.setColor(0x34cceb);
+        if (keys["w"]) this.jetpack.setThrusting(true);
+        else this.jetpack.setThrusting(false);
         break;
       case FRANK_STATE.charging:
-        this.updateChargingState(delta, container, timers);
+        this.jetpack.setColor(0x34cceb);
+        this.jetpack.setThrusting(true);
         break;
       default:
         console.error(`Unknown state: ${this.state}`);
     }
 
-    this.updateCommon(keys, delta, galaxy, timers);
-  }
-
-  updateNormalState(
-    keys: Record<string, boolean>,
-    timers: SpaceTimers,
-    delta: number
-  ) {
-    this.jetpack.setColor(0xffff64);
-    const pressingForward = keys.w;
-    this.jetpack.setThrusting(pressingForward);
-
-    // Charge effect
-    const boostBtnPressed = keys[" "];
-    if (boostBtnPressed && timers.chargeCooldownTimer <= 0) {
-      this.enterState(FRANK_STATE.preCharging);
-      this.chargeTimer = Math.min(
-        FRANK_CHARGE_TIMER_MAX,
-        this.chargeTimer + delta
-      );
-
-      return;
-    }
-  }
-
-  updatePreChargingState(
-    delta: number,
-    keys: Record<string, boolean>,
-    timers: SpaceTimers
-  ) {
-    if (!this.chargingAudioObj)
-      throw Error("Can't update preCharging state without chargingAudioObj");
-    const { audio, gainNode, audioCtx } = this.chargingAudioObj;
-    const boostBtnPressed = keys[" "];
-
-    // Check pressing
-    const pressingForward = keys.w;
-    this.jetpack.setThrusting(pressingForward);
-
-    // Continue charging
-    this.chargeTimer = Math.min(
-      FRANK_CHARGE_TIMER_MAX,
-      this.chargeTimer + delta
+    this.charger.update(
+      delta,
+      keys,
+      this.state,
+      this.frankSprite,
+      container,
+      this.enterState.bind(this),
+      this.setVelocity.bind(this)
     );
-    const fullyCharged = this.chargeTimer >= FRANK_CHARGE_TIMER_MAX;
-
-    // === Handle tail replay ===
-    if (!fullyCharged && boostBtnPressed) {
-      gainNode.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05);
-      audio.play();
-    } else if (boostBtnPressed) {
-      const now = performance.now();
-      this.lastTailReplay = this.lastTailReplay || 0;
-
-      if (now - this.lastTailReplay > 200) {
-        // every 200ms
-        this.lastTailReplay = now;
-        // Replay the tail
-        audio.currentTime = audio.duration * 0.9;
-        audio.play();
-      }
-    }
-
-    // Fully charged and still holding? Fire!
-    if (!boostBtnPressed && fullyCharged) {
-      this.enterState(FRANK_STATE.charging);
-      this.acceleration = this.chargeAcceleration;
-      this.maxSpeed = this.chargeMaxSpeed;
-
-      const dirX = Math.cos(this.angle);
-      const dirY = Math.sin(this.angle);
-      this.vx = dirX * this.chargeMaxSpeed;
-      this.vy = dirY * this.chargeMaxSpeed;
-
-      timers.chargeCooldownTimer = FRANK_CHARGE_COOLDOWN_TIMEOUT;
-    } else if (!boostBtnPressed) {
-      gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05); // fade out
-
-      // Cancel charge if player lets go early
-      this.enterState(FRANK_STATE.normal);
-      this.chargeTimer = 0;
-      audio.currentTime = 0;
-      audio.pause();
-      return;
-    }
-
-    return;
-  }
-
-  updateChargingState(
-    delta: number,
-    container: Container,
-    timers: SpaceTimers
-  ) {
-    this.jetpack.setThrusting(true);
-    this.jetpack.setColor(0x34cceb);
-
-    // Charge timer
-    if (this.chargeTimer > 0) {
-      this.chargeTimer = Math.min(
-        FRANK_CHARGE_TIMER_MAX,
-        this.chargeTimer - delta
-      );
-    } else {
-      this.enterState(FRANK_STATE.normal);
-      this.acceleration = this.baseAcceleration;
-      this.maxSpeed = this.baseMaxSpeed;
-    }
-
-    // Spawn after image
-    this.updateSpawnAfterimage(container, timers);
+    this.updateCommon(keys, delta, galaxy, timers);
   }
 
   updateCommon(
@@ -205,6 +110,7 @@ export class Frank {
   }
 
   enterState(newState: string) {
+    console.log(this.state);
     if (this.state !== newState) {
       this.state = newState;
     }
@@ -405,46 +311,5 @@ export class Frank {
     const audio = audioList[index];
     audio.audio.play();
     this.lastEatAudioIndex = index;
-  }
-
-  updateSpawnAfterimage(container: Container, timers: SpaceTimers) {
-    if (timers.multiheadTimer <= 0) {
-      const afterimage = new Sprite(this.frankSprite.texture);
-
-      // Copy transform properties
-      afterimage.x = this.x;
-      afterimage.y = this.y;
-      afterimage.rotation = this.container.rotation;
-      afterimage.anchor.set(
-        this.frankSprite.anchor.x,
-        this.frankSprite.anchor.y
-      );
-      afterimage.scale.set(this.frankSprite.scale.x, this.frankSprite.scale.y);
-
-      // Visuals
-      afterimage.alpha = 0.3;
-
-      // Optional: tint to give a ghostly or energy effect
-      afterimage.tint = 0x88ccff;
-
-      container.addChild(afterimage);
-
-      // Fade and remove
-      const fadeTime = 300; // ms
-      const fadeSteps = 10;
-      let step = 0;
-
-      const fadeInterval = setInterval(() => {
-        step++;
-        afterimage.alpha -= 0.3 / fadeSteps;
-        if (step >= fadeSteps) {
-          clearInterval(fadeInterval);
-          container.removeChild(afterimage);
-        }
-      }, fadeTime / fadeSteps);
-
-      // Reset timer
-      timers.multiheadTimer = FRANK_MULTI_HEAD_TIMEOUT;
-    }
   }
 }

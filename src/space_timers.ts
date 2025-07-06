@@ -6,8 +6,15 @@ export class SpaceTimers {
   victoryTimer = 0;
   debugEvolveTimer = 0;
   fpsTimer = FPS_PRINT_TIMEOUT;
-  multiheadTimer = 100;
-  chargeCooldownTimer = 0;
 
   constructor() {}
+
+  tick(delta: number) {
+    (Object.keys(this) as (keyof this)[]).forEach((key) => {
+      const val = this[key];
+      if (typeof val === "number") {
+        this[key] = Math.max(0, val - delta) as any;
+      }
+    });
+  }
 }

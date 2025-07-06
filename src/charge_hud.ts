@@ -1,6 +1,5 @@
 import { Container, Graphics } from "pixi.js";
-import { FRANK_STATE } from "./frank/state";
-import { FRANK_CHARGE_TIMER_MAX } from "./timers";
+import { FRANK_STATE } from "./frank/const";
 import { Frank } from "./frank/frank";
 
 export class ChargeHUD {
@@ -46,7 +45,8 @@ export class ChargeHUD {
     if (frank.state === FRANK_STATE.preCharging) {
       if (!this.visible) this.setVisible(true);
 
-      const percentage = frank.chargeTimer / FRANK_CHARGE_TIMER_MAX;
+      const percentage =
+        frank.charger.chargeTimer / frank.charger.chargeDuration;
       const width = this.barWidth * percentage;
 
       // Clear previous graphics

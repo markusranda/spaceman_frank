@@ -2,11 +2,7 @@ import { Background } from "./background";
 import { Frank } from "./frank/frank";
 import { Galaxy } from "./galaxy";
 import { Application, Container, Culler, Ticker } from "pixi.js";
-import {
-  VICTORY_TIMER_MAX,
-  SPAWN_TIMER_MAX,
-  FPS_PRINT_TIMEOUT,
-} from "./timers";
+import { VICTORY_TIMER_MAX, FPS_PRINT_TIMEOUT } from "./timers";
 import { GAME_STATES } from "./gamestate";
 import { Particle } from "./particle";
 import { GameHUD } from "./game_hud";
@@ -27,15 +23,15 @@ export class Game {
   cameraContainer = new Container();
   uiContainer = new Container();
   timers = new SpaceTimers();
-  gameState = GAME_STATES.normal;
-  particles = [];
+  gameState = GAME_STATES.NORMAL;
+  particles: Particle[] = [];
   pixiApp: Application | null = null;
   culler = new Culler();
   galaxy: Galaxy | null = null;
-  frank: Frank | null = null;
+  frank = new Frank();
 
   // UI
-  background: Background | null = null;
+  background = new Background(this.backgroundContainer);
   gameHud: GameHUD | null = null;
 
   constructor(pixiApp: Application) {
@@ -44,8 +40,6 @@ export class Game {
     this.backgroundContainer.sortableChildren = true;
     this.cameraContainer.label = "camera_container";
     this.uiContainer.label = "ui_container";
-
-    if (!this.pixiApp) throw Error("Can't run without pixiApp");
 
     this.cameraContainer.addChild(this.backgroundContainer);
 
@@ -75,7 +69,6 @@ export class Game {
 
     // Setup entities
     this.galaxy = new Galaxy(this.camera);
-    this.frank = new Frank();
     this.galaxy.spawnNextPlanetBelt(this.frank, this.cameraContainer);
 
     // Setup UI and background
@@ -84,7 +77,6 @@ export class Game {
       this.pixiApp.renderer.width,
       this.pixiApp.renderer.height
     );
-    this.background = new Background(this.backgroundContainer);
 
     // Add to containers
     document.body.appendChild(this.pixiApp.canvas);
@@ -104,6 +96,10 @@ export class Game {
 
   update(ticker: Ticker) {
     try {
+      if (!this.galaxy) throw Error("Can't run game without galaxy");
+      if (!this.gameHud) throw Error("Can't run game without gameHud");
+      if (!this.pixiApp) throw Error("Can't run game without pixiApp");
+
       const delta = ticker.deltaMS;
 
       // CHEATS
@@ -112,7 +108,7 @@ export class Game {
         this.timers.debugEvolveTimer = 500;
       }
 
-      this.updateTimers(delta);
+      this.timers.tick(delta);
       this.updateGame();
       this.frank.update(
         delta,
@@ -126,7 +122,7 @@ export class Game {
         this.frank,
         this.timers,
         this.cameraContainer,
-        this.cameraContainer.scale.x
+        this.cameraContainer.scale
       );
       this.updateParticles();
       this.gameHud.update(this.frank, this.timers, this.gameState);
@@ -142,11 +138,14 @@ export class Game {
       this.updateCamera();
       this.updateCull();
     } catch (e) {
-      console.error(`Tick update failed: ${e}`);
+      const error = e as Error;
+      console.error(`Tick update failed: ${error}`);
+      console.error(error.stack);
     }
   }
 
   updateCull() {
+    if (!this.pixiApp) throw Error("can't cull without pixiApp");
     this.culler.cull(this.backgroundContainer, {
       x: 0,
       y: 0,
@@ -155,19 +154,10 @@ export class Game {
     });
   }
 
-  updateFPS(ticker) {
+  updateFPS(ticker: Ticker) {
     if (this.timers.fpsTimer <= 0) {
       this.timers.fpsTimer = FPS_PRINT_TIMEOUT;
       console.debug(`FPS: ${ticker.FPS}`);
-    }
-  }
-
-  updateTimers(delta) {
-    for (const [key, val] of Object.entries(this.timers)) {
-      if (val !== undefined && val > 0) {
-        const newValue = val - delta;
-        this.timers[key] = newValue > 0 ? newValue : 0;
-      }
     }
   }
 
@@ -179,6 +169,7 @@ export class Game {
   }
 
   updateGame() {
+    if (!this.galaxy) throw Error("Can't update game without galaxy");
     const hasEatenEnoughPlanets =
       this.frank.fullness >= this.frank.getFullnessGoal();
     if (hasEatenEnoughPlanets) this.evolveGalaxy();
@@ -187,7 +178,7 @@ export class Game {
       this.gameState === GAME_STATES.VICTORY &&
       this.timers.victoryTimer <= 0
     ) {
-      this.gameState = GAME_STATES.normal;
+      this.gameState = GAME_STATES.NORMAL;
       for (const particle of this.particles) {
         particle.destroy();
       }
@@ -213,6 +204,7 @@ export class Game {
   }
 
   updateCamera() {
+    if (!this.camera) throw Error("Can't update camera without camera");
     // Calculate new scale based on Frank
     const scale = this.frank.baseRadius / this.frank.radius;
     if (!this.cameraContainer.scale.x) this.cameraContainer.scale.set(1);
@@ -235,6 +227,8 @@ export class Game {
   }
 
   spawnVictoryParticles(count = 1000) {
+    if (!this.pixiApp)
+      throw Error("Can't update spawnvictorypoints without pixiapp");
     const arcStart = 0; // Start angle (e.g. 10 o'clock)
     const arcEnd = 2 * Math.PI; // End angle (e.g. 2 o'clock)
 

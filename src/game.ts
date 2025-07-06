@@ -147,10 +147,17 @@ export class Game {
   updateCull() {
     if (!this.pixiApp) throw Error("can't cull without pixiApp");
     this.culler.cull(this.backgroundContainer, {
-      x: 0,
-      y: 0,
-      width: this.pixiApp.renderer.width,
-      height: this.pixiApp.renderer.height,
+      x: -this.background.tileSize,
+      y: -this.background.tileSize,
+      width: 2 * this.pixiApp.renderer.width,
+      height: 2 * this.pixiApp.renderer.height,
+    });
+
+    this.culler.cull(this.cameraContainer, {
+      x: -this.background.tileSize,
+      y: -this.background.tileSize,
+      width: 2 * this.pixiApp.renderer.width,
+      height: 2 * this.pixiApp.renderer.height,
     });
   }
 

@@ -110,6 +110,7 @@ export class Frank {
     timers: SpaceTimers
   ) {
     this.updateFrankMovement(delta, keys, galaxy, timers);
+    this.shakeChargeEffect();
     this.updateVisuals();
     this.jetpack.update(this.radius);
   }

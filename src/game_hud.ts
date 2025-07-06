@@ -3,7 +3,7 @@ import { DAMAGE_TIMER_MAX } from "./timers";
 import { GAME_STATES } from "./gamestate";
 import { MiniMapHUD } from "./minimap_hud";
 import { ChargeHUD } from "./charge_hud";
-import { Frank } from "./frank";
+import { Frank } from "./frank/frank";
 import { SpaceTimers } from "./space_timers";
 
 export class GameHUD {

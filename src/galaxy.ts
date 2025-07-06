@@ -3,7 +3,7 @@ import { Planet } from "./planet";
 import { SPAWN_TIMER_MAX } from "./timers";
 import { Projectile } from "./projectile";
 import { SpaceCamera } from "./models/space_camera";
-import { Frank } from "./frank";
+import { Frank } from "./frank/frank";
 import { SpaceTimers } from "./space_timers";
 import { Container, ObservablePoint } from "pixi.js";
 

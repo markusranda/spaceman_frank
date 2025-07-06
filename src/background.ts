@@ -7,7 +7,7 @@ import {
   Texture,
 } from "pixi.js";
 import { sprites } from "./sprites";
-import { Frank } from "./frank";
+import { Frank } from "./frank/frank";
 
 interface SpaceTile extends Container {
   _starfieldSprite: Sprite;

@@ -1,5 +1,5 @@
 import { Entity } from "./entity";
-import { Frank } from "./frank";
+import { Frank } from "./frank/frank";
 import { Galaxy } from "./galaxy";
 import { sprites } from "./sprites";
 import { Container, Sprite } from "pixi.js";

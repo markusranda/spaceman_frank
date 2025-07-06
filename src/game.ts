@@ -1,5 +1,5 @@
 import { Background } from "./background";
-import { Frank } from "./frank";
+import { Frank } from "./frank/frank";
 import { Galaxy } from "./galaxy";
 import { Application, Container, Culler, Ticker } from "pixi.js";
 import {
@@ -27,7 +27,7 @@ export class Game {
   cameraContainer = new Container();
   uiContainer = new Container();
   timers = new SpaceTimers();
-  gameState = GAME_STATES.NORMAL;
+  gameState = GAME_STATES.normal;
   particles = [];
   pixiApp: Application | null = null;
   culler = new Culler();
@@ -187,7 +187,7 @@ export class Game {
       this.gameState === GAME_STATES.VICTORY &&
       this.timers.victoryTimer <= 0
     ) {
-      this.gameState = GAME_STATES.NORMAL;
+      this.gameState = GAME_STATES.normal;
       for (const particle of this.particles) {
         particle.destroy();
       }

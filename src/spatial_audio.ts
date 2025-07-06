@@ -1,4 +1,4 @@
-import { Frank } from "./frank";
+import { Frank } from "./frank/frank";
 
 const audioCtx = new (window.AudioContext || window.AudioContext)();
 let isPingPlaying = false;

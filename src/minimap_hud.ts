@@ -1,5 +1,5 @@
 import { Container, Graphics } from "pixi.js";
-import { Frank } from "./frank";
+import { Frank } from "./frank/frank";
 
 export class MiniMapHUD {
   width = 150;

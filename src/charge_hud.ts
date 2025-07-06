@@ -1,7 +1,7 @@
 import { Container, Graphics } from "pixi.js";
-import { FRANK_STATE } from "./frankstate";
+import { FRANK_STATE } from "./frank/state";
 import { FRANK_CHARGE_TIMER_MAX } from "./timers";
-import { Frank } from "./frank";
+import { Frank } from "./frank/frank";
 
 export class ChargeHUD {
   barBg = new Graphics();
@@ -43,7 +43,7 @@ export class ChargeHUD {
   }
 
   update(frank: Frank) {
-    if (frank.state === FRANK_STATE.PRE_CHARGING) {
+    if (frank.state === FRANK_STATE.preCharging) {
       if (!this.visible) this.setVisible(true);
 
       const percentage = frank.chargeTimer / FRANK_CHARGE_TIMER_MAX;

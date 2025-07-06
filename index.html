@@ -3,12 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="./assets/favicon-CHp1X6kp.ico" type="image/x-icon" />
     <link
       href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
       rel="stylesheet"
     />
     <title>Spaceman frank</title>
+    <script type="module" crossorigin src="./assets/index-B2Q1unIv.js"></script>
   </head>
   <body id="rootElement">
     <canvas id="game"></canvas>
@@ -46,20 +47,4 @@
       pointer-events: none;
     }
   </style>
-  <script type="module">
-    async function bootstrap() {
-      try {
-        // Load font
-        await document.fonts.load("16px 'Press Start 2P'");
-        await document.fonts.ready;
-
-        // Now load your game logic
-        await import("./index.js");
-      } catch (err) {
-        console.error("Startup failure:", err);
-      }
-    }
-
-    bootstrap();
-  </script>
 </html>

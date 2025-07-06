@@ -53,14 +53,6 @@
         await document.fonts.load("16px 'Press Start 2P'");
         await document.fonts.ready;
 
-        // Dynamically import PixiJS as an ES module
-        const PIXI = await import(
-          "https://cdn.jsdelivr.net/npm/pixi.js@8.10.2/dist/pixi.min.mjs"
-        );
-
-        // Optionally make it globally available
-        window.PIXI = PIXI;
-
         // Now load your game logic
         await import("./index.js");
       } catch (err) {

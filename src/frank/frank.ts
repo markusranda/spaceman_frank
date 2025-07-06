@@ -13,6 +13,7 @@ import { Entity } from "../entity";
 import { Projectile } from "../projectile";
 import { FrankJetpack } from "./jetpack";
 import { FrankCharger } from "./charger";
+import { FrankTrailManager } from "./trail_manager";
 
 export class Frank {
   x = 0;
@@ -36,6 +37,7 @@ export class Frank {
   state = FRANK_STATE.normal;
   jetpack = new FrankJetpack();
   charger = new FrankCharger();
+  trailManager = new FrankTrailManager();
 
   constructor() {
     this.container.label = "frank_container";
@@ -88,6 +90,26 @@ export class Frank {
         console.error(`Unknown state: ${this.state}`);
     }
 
+    this.updateCommon(keys, delta, galaxy, timers, container);
+  }
+
+  updateCommon(
+    keys: Record<string, boolean>,
+    delta: number,
+    galaxy: Galaxy,
+    timers: SpaceTimers,
+    container: Container
+  ) {
+    const shouldSpawn = this.state === FRANK_STATE.charging;
+    this.trailManager.update(
+      delta,
+      this.x,
+      this.y,
+      this.angle,
+      container,
+      shouldSpawn
+    );
+
     this.charger.update(
       delta,
       keys,
@@ -100,15 +122,6 @@ export class Frank {
       this.enterState.bind(this),
       this.setVelocity.bind(this)
     );
-    this.updateCommon(keys, delta, galaxy, timers);
-  }
-
-  updateCommon(
-    keys: Record<string, boolean>,
-    delta: number,
-    galaxy: Galaxy,
-    timers: SpaceTimers
-  ) {
     this.updateFrankMovement(delta, keys, galaxy, timers);
     this.shakeChargeEffect();
     this.updateVisuals();

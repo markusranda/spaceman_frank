@@ -153,7 +153,9 @@ export class GameHUD {
     const fuelHeight = 80;
     const fuelPosX = 20;
     const fuelPosY = 20;
-    let fuelFillHeight = fuelHeight * (frank.fuel / frank.maxFuel) - 2;
+    const fuel = frank.jetpack?.fuel ?? 1;
+    const maxFuel = frank?.jetpack?.maxFuel ?? 1;
+    let fuelFillHeight = fuelHeight * (fuel / maxFuel) - 2;
     if (fuelFillHeight < 0) fuelFillHeight = 0;
 
     this.fuelBarFill.clear();

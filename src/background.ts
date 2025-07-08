@@ -29,7 +29,7 @@ export class Background {
     sun.zIndex = 999999;
     container.addChild(sun);
 
-    this.bgTexture = sprites["starfield_1"];
+    this.bgTexture = sprites["starfield_1"]?.texture;
   }
 
   update(

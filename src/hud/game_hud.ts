@@ -1,10 +1,11 @@
 import { Container, Graphics, Text, TextStyle } from "pixi.js";
-import { DAMAGE_TIMER_MAX } from "./timers";
-import { GAME_STATES } from "./gamestate";
+import { DAMAGE_TIMER_MAX } from "../timers";
+import { GAME_STATES } from "../gamestate";
 import { MiniMapHUD } from "./minimap_hud";
-import { ChargeHUD } from "./charge_hud";
-import { Frank } from "./frank/frank";
-import { SpaceTimers } from "./space_timers";
+import { ChargeHUD } from "../charge_hud";
+import { Frank } from "../frank/frank";
+import { SpaceTimers } from "../space_timers";
+import { StomachHud } from "./stomach_hud";
 
 export class GameHUD {
   levelClearedText = new Text();
@@ -12,10 +13,9 @@ export class GameHUD {
   frankSizeText = new Text();
   fuelBarBg = new Graphics();
   fuelBarFill = new Graphics();
-  fullnessBarBg = new Graphics();
-  fullnessBarFill = new Graphics();
   minimapHUD: MiniMapHUD | null = null;
   chargeHUD: ChargeHUD | null = null;
+  stomachHud = new StomachHud(10, 130);
 
   constructor(
     uiContainer: Container,
@@ -77,30 +77,10 @@ export class GameHUD {
     this.fuelBarFill = new Graphics();
     this.fuelBarFill.label = "fuel_bar_fill";
 
-    // --- Fullness UI ---
-    const fullnessWidth = 40;
-    const fullnessHeight = 80;
-    const fullnessPosX = 20;
-    const fullnessPosY = 120;
-
-    this.fullnessBarBg = new Graphics();
-    this.fullnessBarBg.label = "fullness_bar_bg";
-    this.fullnessBarBg.rect(
-      fullnessPosX,
-      fullnessPosY,
-      fullnessWidth,
-      fullnessHeight
-    );
-    this.fullnessBarBg.fill(0x808080);
-
-    this.fullnessBarFill = new Graphics();
-    this.fullnessBarFill.label = "fullness_bar_fill";
-
     // HUD
     uiContainer.addChild(this.fuelBarBg);
     uiContainer.addChild(this.fuelBarFill);
-    uiContainer.addChild(this.fullnessBarBg);
-    uiContainer.addChild(this.fullnessBarFill);
+    uiContainer.addChild(this.stomachHud.container);
 
     // HUD Messages
     uiContainer.addChild(this.frankSizeText);
@@ -123,7 +103,7 @@ export class GameHUD {
     this.updateDamageOverlay(timers);
     this.updateFrankSizeUI(frank);
     this.updateFuelUI(frank);
-    this.updateFullnessUI(frank);
+    this.stomachHud.update(frank);
     this.minimapHUD.update(frank);
     this.chargeHUD.update(frank);
   }
@@ -166,24 +146,5 @@ export class GameHUD {
       fuelFillHeight
     );
     this.fuelBarFill.fill(0x00ff00);
-  }
-
-  updateFullnessUI(frank: Frank) {
-    const fullnessWidth = 40;
-    const fullnessHeight = 80;
-    const fullnessPosX = 20;
-    const fullnessPosY = 120;
-    let fullnessFillHeight =
-      fullnessHeight * (frank.fullness / frank.getFullnessGoal()) - 2;
-    if (fullnessFillHeight < 0) fullnessFillHeight = 0;
-
-    this.fullnessBarFill.clear();
-    this.fullnessBarFill.rect(
-      fullnessPosX + 2,
-      fullnessPosY + fullnessHeight - fullnessFillHeight - 2,
-      fullnessWidth - 4,
-      fullnessFillHeight
-    );
-    this.fullnessBarFill.fill(0xffc0cb);
   }
 }

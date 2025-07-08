@@ -30,7 +30,7 @@ export class Enemy extends Entity {
     this.y = y;
     this.radius = frank.radius * 0.75;
 
-    this.sprite.texture = sprites["enemy_1"];
+    this.sprite.texture = sprites["enemy_1"]?.texture;
     this.sprite.label = "enemy_1";
     this.sprite.width = this.radius * 2;
     this.sprite.height = this.radius * 2;

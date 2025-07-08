@@ -23,10 +23,10 @@ export class Particle {
 
   getRandomSprite() {
     const particleSprites = [
-      sprites["confetti_1"],
-      sprites["confetti_2"],
-      sprites["confetti_3"],
-      sprites["confetti_4"],
+      sprites["confetti_1"]?.texture,
+      sprites["confetti_2"]?.texture,
+      sprites["confetti_3"]?.texture,
+      sprites["confetti_4"]?.texture,
     ];
     const index = Math.floor(Math.random() * particleSprites.length);
     return particleSprites[index];

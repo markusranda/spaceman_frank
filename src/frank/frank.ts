@@ -40,7 +40,7 @@ export class Frank {
 
   constructor(cameraContainer: Container) {
     this.container.label = "frank_container";
-    this.frankSprite.texture = sprites["frank"];
+    this.frankSprite.texture = sprites["frank"]?.texture;
     this.frankSprite.label = "frank_sprite";
     this.frankSprite.anchor.set(0.5);
     this.radius = this.baseRadius;

@@ -5,7 +5,7 @@ import { Application, Container, Culler, Ticker } from "pixi.js";
 import { VICTORY_TIMER_MAX, FPS_PRINT_TIMEOUT } from "./timers";
 import { GAME_STATES } from "./gamestate";
 import { Particle } from "./particle";
-import { GameHUD } from "./game_hud";
+import { GameHUD } from "./hud/game_hud";
 import { SpaceCamera } from "./models/space_camera";
 import { SpaceTimers } from "./space_timers";
 

@@ -73,9 +73,9 @@ export class Planet extends Entity {
 
   getRandomPlanetSprite() {
     const planetSprites = [
-      sprites["planet_1"],
-      sprites["planet_2"],
-      sprites["planet_3"],
+      sprites["planet_1"]?.texture,
+      sprites["planet_2"]?.texture,
+      sprites["planet_3"]?.texture,
     ];
     const index = Math.floor(Math.random() * planetSprites.length);
     const planet = new Sprite(planetSprites[index]);

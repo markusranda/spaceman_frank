@@ -12,7 +12,7 @@ export class Projectile extends Entity {
   ttl = TTL_MAX;
   speed = 10;
   damage = 100;
-  sprite = new Sprite(sprites["fireball"]);
+  sprite = new Sprite(sprites["fireball"]?.texture);
   dead = false;
 
   constructor(x: number, y: number, angle: number, radius: number) {

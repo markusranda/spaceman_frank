@@ -26,6 +26,7 @@ export class Frank {
   friction = 0.9945;
 
   container = new Container();
+  shakeWrapper = new Container();
   frankSprite = new Sprite();
   radius = 0;
   baseRadius = 50;
@@ -169,15 +170,17 @@ export class Frank {
     const offsetX = Math.cos(angle) * shakeAmount;
     const offsetY = Math.sin(angle) * shakeAmount;
 
-    this.frankSprite.x = offsetX;
-    this.frankSprite.y = offsetY;
+    this.shakeWrapper.x = offsetX;
+    this.shakeWrapper.y = offsetY;
   }
 
   addTo(container: Container) {
-    this.container.addChild(this.frankSprite);
-    if (this.jetpack?.flameGraphics)
-      this.container.addChild(this.jetpack.flameGraphics);
+    if (!this.jetpack) throw Error("Can't addTo without defined jetpack");
+    this.shakeWrapper.addChild(this.frankSprite);
+    this.shakeWrapper.addChild(this.jetpack.flameGraphics);
     this.frankSprite.anchor.set(0.5);
+
+    this.container.addChild(this.shakeWrapper);
 
     container.addChild(this.container);
   }

@@ -41,8 +41,7 @@ export class StomachHud {
     const fillY = y + height - fillHeight;
 
     this.stomachFill.clear();
-    this.stomachFill.beginFill(0xff69b4);
     this.stomachFill.rect(x, fillY, width, fillHeight);
-    this.stomachFill.endFill();
+    this.stomachFill.fill(0xff69b4);
   }
 }

@@ -12,6 +12,8 @@ export async function loadSprites() {
     planet_1: "assets/sprites/planet_1.png",
     planet_2: "assets/sprites/planet_2.png",
     planet_3: "assets/sprites/planet_3.png",
+    planet_shadow: "assets/sprites/planet_shadow.png",
+    planet_treasure: "assets/sprites/planet_treasure.png",
     enemy_1: "assets/sprites/enemy_1.png",
     fireball: "assets/sprites/fireball.png",
     confetti_1: "assets/sprites/confetti_1.png",

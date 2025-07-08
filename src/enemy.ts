@@ -20,7 +20,6 @@ export class Enemy extends Entity {
   sprite = new Sprite();
   attackTimer = MAX_ATTACK_TIMER;
   attackRange = 600;
-  dead = false;
   debugCircle = null;
 
   constructor(galaxy: Galaxy, frank: Frank) {

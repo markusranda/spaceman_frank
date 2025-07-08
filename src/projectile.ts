@@ -13,7 +13,6 @@ export class Projectile extends Entity {
   speed = 10;
   damage = 100;
   sprite = new Sprite(sprites["fireball"]?.texture);
-  dead = false;
 
   constructor(x: number, y: number, angle: number, radius: number) {
     super();

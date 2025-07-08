@@ -129,11 +129,7 @@ export class Frank {
   eatEntity(entity: Entity) {
     if (!entity.radius)
       throw Error(`Can't eat something without radius: ${entity}`);
-    const maxEdible = this.radius * 0.75;
     const minEdible = this.radius * 0.5;
-
-    // Guard - Frank can't eat the big ones
-    if (entity.radius > maxEdible) return;
 
     if (entity.radius >= minEdible) {
       this.fullness += 1.0;
@@ -141,6 +137,9 @@ export class Frank {
       const levelDiff = Math.floor(Math.log2(this.radius / entity.radius));
       this.fullness += 1.0 / 2 ** levelDiff;
     }
+
+    entity.dead = true;
+    this.playEatSound();
   }
 
   evolve() {
@@ -231,7 +230,7 @@ export class Frank {
     collisions.push(...this.detectCollisions(galaxy.planets));
     collisions.push(...this.detectCollisions(galaxy.enemies));
     const projectiles = this.detectCollisions(galaxy.projectiles);
-    this.handleEdibleCollisions(collisions, timers, dt);
+    this.handleEntityCrashes(collisions, timers, dt);
     this.handleProjectileCollisions(projectiles, timers);
   }
 
@@ -243,43 +242,73 @@ export class Frank {
     }
   }
 
-  detectCollisions<T extends Entity>(objects: T[]) {
+  detectCollisions<T extends Entity>(entities: T[]) {
     const collisions: T[] = [];
 
-    for (let i = 0; i < objects.length; i++) {
-      const obj = objects[i];
-      const dx = this.x - obj.x;
-      const dy = this.y - obj.y;
+    for (let i = 0; i < entities.length; i++) {
+      const entity = entities[i];
+      const dx = this.x - entity.x;
+      const dy = this.y - entity.y;
       const dist = Math.hypot(dx, dy);
-      const minDist = this.radius + obj.radius;
+      const minDist = this.radius + entity.radius;
       if (dist < minDist) {
-        collisions.push(obj);
+        collisions.push(entity);
       }
     }
 
     return collisions;
   }
 
-  handleEdibleCollisions(objects: Entity[], timers: SpaceTimers, dt: number) {
+  handleEntityCrashes(entities: Entity[], timers: SpaceTimers, dt: number) {
     const maxEdibleRadius = this.radius * 0.75;
 
-    for (const obj of objects) {
-      const isEdible = obj.radius <= maxEdibleRadius;
+    for (const entity of entities) {
+      const isEdible = entity.radius <= maxEdibleRadius;
 
       if (isEdible) {
-        obj.dead = true;
-        this.eatEntity(obj);
-        this.playEatSound();
+        this.eatEntity(entity);
+      } else if (this.state === FRANK_STATE.charging) {
+        this.handleDamageEntity(entity, timers, dt);
       } else {
-        this.handleCrash(obj, timers, dt);
+        this.handleCrash(entity, timers, dt, false);
       }
     }
   }
 
-  handleCrash(obj: Entity, timers: SpaceTimers, dt: number) {
-    // Vector from obj to Frank
-    const dx = this.x - obj.x;
-    const dy = this.y - obj.y;
+  handleDamageEntity(entity: Entity, timers: SpaceTimers, dt: number) {
+    const dmg = this.calculateDamage(entity);
+    entity.health = Math.max(0, entity.health - dmg);
+
+    if (entity.health <= 0) {
+      this.eatEntity(entity);
+    } else {
+      this.handleCrash(entity, timers, dt, true);
+    }
+  }
+
+  calculateDamage(entity: Entity) {
+    const f = this.radius;
+    const e = entity.radius;
+
+    if (f > e) return Infinity; // Instant kill
+
+    const sizeRatio = f / e;
+
+    // We want damage = 50 when sizeRatio = 1
+    const damage = sizeRatio * 50;
+
+    return Math.max(1, Math.floor(damage));
+  }
+
+  handleCrash(
+    entity: Entity,
+    timers: SpaceTimers,
+    dt: number,
+    invulnerable: boolean
+  ) {
+    // Vector from entity to Frank
+    const dx = this.x - entity.x;
+    const dy = this.y - entity.y;
     const dist = Math.hypot(dx, dy);
     if (dist === 0) return;
 
@@ -293,7 +322,7 @@ export class Frank {
     const impactSpeed = Math.abs(relativeVx * nx + relativeVy * ny);
     const damageThreshold = this.maxSpeed * 0.5;
 
-    if (impactSpeed > damageThreshold) {
+    if (!invulnerable && impactSpeed > damageThreshold) {
       const maxFuel = this.jetpack?.maxFuel ?? 0;
       const fuelLoss = maxFuel / 16;
       this.jetpack?.damageFuelTank(fuelLoss);
@@ -306,7 +335,7 @@ export class Frank {
     this.vy = ny * impactSpeed;
 
     // === Push out of the object (prevent overlap) ===
-    const totalRadius = this.radius + obj.radius;
+    const totalRadius = this.radius + entity.radius;
     const overlap = totalRadius - dist;
     if (overlap > 0) {
       this.x += nx * overlap;

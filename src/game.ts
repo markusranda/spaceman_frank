@@ -28,7 +28,7 @@ export class Game {
   pixiApp: Application | null = null;
   culler = new Culler();
   galaxy: Galaxy | null = null;
-  frank = new Frank();
+  frank = new Frank(this.cameraContainer);
 
   // UI
   background = new Background(this.backgroundContainer);

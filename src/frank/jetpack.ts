@@ -1,17 +1,34 @@
-import { Graphics } from "pixi.js";
+import { Container, Graphics } from "pixi.js";
 import { audios } from "../audio";
+import { JetpackTrail } from "./jetpack_trail";
+import { GlowFilter } from "pixi-filters";
+
+export enum JetpackMode {
+  Normal = "Normal",
+  TotalOverdrive = "TotalOverdrive",
+}
 
 export class FrankJetpack {
   maxFuel = 2500;
   fuel = this.maxFuel;
   fuelConsumption = 0.5;
   thrusting = false;
-  flameSprite = new Graphics();
+  flameGraphics = new Graphics();
   audio = audios["thruster"];
-  thrustColor = 0;
+  mode: JetpackMode = JetpackMode.Normal;
+  trailPoints: { x: number; y: number; alpha: number }[] = [];
+  trailFadeSpeed = 0.05;
 
-  constructor() {
-    this.flameSprite.label = "frank_thruster";
+  trailParent: Container | null = null;
+  activeTrail: JetpackTrail | null = null;
+  trails: JetpackTrail[] = [];
+
+  constructor(trailParent: Container) {
+    this.trailParent = trailParent;
+    this.flameGraphics.label = "frank_thruster";
+    this.flameGraphics.filters = [
+      new GlowFilter({ distance: 15, outerStrength: 2 }),
+    ];
   }
 
   setThrusting(val: boolean) {
@@ -23,8 +40,17 @@ export class FrankJetpack {
     }
   }
 
-  setColor(color: number) {
-    this.thrustColor = color;
+  setMode(mode: JetpackMode) {
+    this.mode = mode;
+  }
+
+  getColor() {
+    const colors = {
+      [JetpackMode.Normal]: 0xffff64,
+      [JetpackMode.TotalOverdrive]: 0x34cceb,
+    };
+
+    return colors[this.mode];
   }
 
   resetFuel() {
@@ -39,21 +65,73 @@ export class FrankJetpack {
     return this.fuel > 0;
   }
 
-  update(radius: number) {
-    this.updateThrusterVisuals(radius);
+  update(radius: number, x: number, y: number) {
+    if (this.mode === JetpackMode.TotalOverdrive) {
+      this.updateOverdriveVisuals(radius, x, y);
+    } else {
+      if (this.activeTrail) {
+        this.activeTrail.startFading();
+        this.activeTrail = null;
+      }
+      this.updateNormalVisuals(radius);
+    }
+
     this.updateThrusterAudio();
     this.updateFuel();
+    this.updateTrails();
   }
 
-  updateThrusterVisuals(radius: number) {
-    const g = this.flameSprite;
+  updateNormalVisuals(radius: number) {
+    const g = this.flameGraphics;
     g.clear();
 
     if (!this.thrusting) {
       g.visible = false;
-    } else {
-      g.visible = true;
-      this.drawFlame(g, radius);
+      return;
+    }
+
+    g.visible = true;
+    this.drawFlame(g, radius);
+  }
+
+  updateOverdriveVisuals(radius: number, x: number, y: number) {
+    if (!this.trailParent)
+      throw Error("Can't create new trail without trailParent");
+    const g = this.flameGraphics;
+    g.clear();
+
+    // Start trail if we just began thrusting
+    if (this.thrusting && !this.activeTrail) {
+      const newTrail = new JetpackTrail(this.getColor(), radius);
+      this.trails.push(newTrail);
+      this.activeTrail = newTrail;
+
+      // Make sure this gets added to cameraContainer
+      const bg = this.trailParent.children.find(
+        (c) => c.label === "background_container"
+      );
+      if (!bg) {
+        throw Error(
+          "Can't update jetpack visuals - failed to find background_container"
+        );
+      }
+      const bgIndex = this.trailParent.getChildIndex(bg);
+      this.trailParent.addChildAt(newTrail.graphics, bgIndex + 1);
+    }
+
+    // Add points while thrusting
+    if (this.thrusting && this.activeTrail) {
+      this.activeTrail.addPoint(x, y);
+    }
+
+    // End trail if thrust stopped
+    if (!this.thrusting && this.activeTrail) {
+      this.activeTrail.startFading();
+    }
+
+    g.visible = this.thrusting;
+    if (this.thrusting) {
+      // this.drawFlame(g, radius);
     }
   }
 
@@ -72,25 +150,63 @@ export class FrankJetpack {
     }
   }
 
+  updateTrailFade() {
+    if (this.thrusting && this.mode === JetpackMode.TotalOverdrive) return;
+
+    for (const point of this.trailPoints) {
+      point.alpha -= this.trailFadeSpeed;
+    }
+
+    // Remove fully faded points
+    this.trailPoints = this.trailPoints.filter((p) => p.alpha > 0);
+  }
+
   updateFuel() {
     if (!this.thrusting) return;
     this.fuel = Math.max(0, this.fuel - this.fuelConsumption);
   }
 
+  updateTrails() {
+    for (const trail of this.trails) {
+      trail.update();
+    }
+
+    // Remove dead trails
+    this.trails = this.trails.filter((trail) => {
+      const dead = trail.isDead();
+      if (dead && this.trailParent?.children.includes(trail.graphics)) {
+        this.trailParent.removeChild(trail.graphics);
+        trail.graphics.destroy({ children: true });
+      }
+      return !dead;
+    });
+  }
+
   drawFlame(g: Graphics, radius: number) {
-    const flameBase = radius * 1.2;
-    const flameLength = radius * 2 + Math.random() * 40;
-
     const baseY = radius;
-    const tipY = baseY + flameLength;
 
-    g.fill({ color: 0xff6400, alpha: 0.4 });
-    g.moveTo(-flameBase / 2, baseY);
-    g.quadraticCurveTo(0, baseY + flameLength * 0.5, 0, tipY);
-    g.quadraticCurveTo(0, baseY + flameLength * 0.5, flameBase / 2, baseY);
+    // Slight flicker for each layer
+    const outerFlameLength = radius * 2 + Math.random() * 40;
+    const innerFlameLength = outerFlameLength * (0.6 + Math.random() * 0.2);
+
+    const outerBase = radius * 1.2;
+    const innerBase = outerBase * 0.6;
+
+    const outerTipY = baseY + outerFlameLength;
+    const innerTipY = baseY + innerFlameLength;
+
+    // Outer flame (orange, soft)
+    g.moveTo(-outerBase / 2, baseY);
+    g.quadraticCurveTo(0, baseY + outerFlameLength * 0.5, 0, outerTipY);
+    g.quadraticCurveTo(0, baseY + outerFlameLength * 0.5, outerBase / 2, baseY);
     g.closePath();
+    g.fill({ color: 0xff6400, alpha: 0.9 });
 
-    g.fill({ color: this.thrustColor, alpha: 0.8 });
-    g.circle(0, baseY + flameLength * 0.2, flameBase * 0.1);
+    // Inner flame (yellow or whatever getColor() returns), hotter
+    g.moveTo(-innerBase / 2, baseY);
+    g.quadraticCurveTo(0, baseY + innerFlameLength * 0.5, 0, innerTipY);
+    g.quadraticCurveTo(0, baseY + innerFlameLength * 0.5, innerBase / 2, baseY);
+    g.closePath();
+    g.fill({ color: this.getColor(), alpha: 0.9 });
   }
 }

@@ -106,7 +106,7 @@ export class FrankCharger {
           setVelocity(FRANK_ACCELERATION_BASE, FRANK_MAX_SPEED_BASE, false);
         }
 
-        this.updateSpawnAfterimage(x, y, sprite, container, angle);
+        // this.updateSpawnAfterimage(x, y, sprite, container, angle);
         break;
     }
 

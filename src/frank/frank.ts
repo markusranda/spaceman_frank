@@ -11,9 +11,8 @@ import { Galaxy } from "../galaxy";
 import { SpaceTimers } from "../space_timers";
 import { Entity } from "../entity";
 import { Projectile } from "../projectile";
-import { FrankJetpack } from "./jetpack";
+import { FrankJetpack, JetpackMode } from "./jetpack";
 import { FrankCharger } from "./charger";
-import { FrankTrailManager } from "./trail_manager";
 
 export class Frank {
   x = 0;
@@ -35,11 +34,10 @@ export class Frank {
   lastDmgAudioIndex = 0;
   lastEatAudioIndex = 0;
   state = FRANK_STATE.normal;
-  jetpack = new FrankJetpack();
+  jetpack: FrankJetpack | null = null;
   charger = new FrankCharger();
-  trailManager = new FrankTrailManager();
 
-  constructor() {
+  constructor(cameraContainer: Container) {
     this.container.label = "frank_container";
     this.frankSprite.texture = sprites["frank"];
     this.frankSprite.label = "frank_sprite";
@@ -47,6 +45,7 @@ export class Frank {
     this.radius = this.baseRadius;
     this.x = 0;
     this.y = 0;
+    this.jetpack = new FrankJetpack(cameraContainer);
   }
 
   getFullnessGoal() {
@@ -71,19 +70,21 @@ export class Frank {
     timers: SpaceTimers,
     container: Container
   ) {
+    if (!this.jetpack) throw Error("Can't update Frank without Jetpack");
+
     switch (this.state) {
       case FRANK_STATE.normal:
-        this.jetpack.setColor(0xffff64);
+        this.jetpack.setMode(JetpackMode.Normal);
         if (keys["w"]) this.jetpack.setThrusting(true);
         else this.jetpack.setThrusting(false);
         break;
       case FRANK_STATE.preCharging:
-        this.jetpack.setColor(0xffff64);
+        this.jetpack.setMode(JetpackMode.Normal);
         if (keys["w"]) this.jetpack.setThrusting(true);
         else this.jetpack.setThrusting(false);
         break;
       case FRANK_STATE.charging:
-        this.jetpack.setColor(0x34cceb);
+        this.jetpack.setMode(JetpackMode.TotalOverdrive);
         this.jetpack.setThrusting(true);
         break;
       default:
@@ -100,16 +101,6 @@ export class Frank {
     timers: SpaceTimers,
     container: Container
   ) {
-    const shouldSpawn = this.state === FRANK_STATE.charging;
-    this.trailManager.update(
-      delta,
-      this.x,
-      this.y,
-      this.angle,
-      container,
-      shouldSpawn
-    );
-
     this.charger.update(
       delta,
       keys,
@@ -125,7 +116,7 @@ export class Frank {
     this.updateFrankMovement(delta, keys, galaxy, timers);
     this.shakeChargeEffect();
     this.updateVisuals();
-    this.jetpack.update(this.radius);
+    this.jetpack?.update(this.radius, this.x, this.y);
   }
 
   enterState(newState: string) {
@@ -154,7 +145,7 @@ export class Frank {
   evolve() {
     this.level++;
     this.fullness = 0;
-    this.jetpack.resetFuel();
+    this.jetpack?.resetFuel();
 
     const b = 147; // switch level
     const a = 205; // base radius after soft cap
@@ -184,7 +175,8 @@ export class Frank {
 
   addTo(container: Container) {
     this.container.addChild(this.frankSprite);
-    this.container.addChild(this.jetpack.flameSprite);
+    if (this.jetpack?.flameGraphics)
+      this.container.addChild(this.jetpack.flameGraphics);
     this.frankSprite.anchor.set(0.5);
 
     container.addChild(this.container);
@@ -206,8 +198,8 @@ export class Frank {
     timers: SpaceTimers
   ) {
     const dt = delta / 1000;
-    const hasFuel = this.jetpack.hasFuel();
-    const isThrusting = this.jetpack.thrusting;
+    const hasFuel = this.jetpack?.hasFuel() ?? 0;
+    const isThrusting = this.jetpack?.thrusting ?? false;
 
     // === ROTATION ===
     if (keys.a) this.angle -= this.rotationSpeed;
@@ -242,7 +234,7 @@ export class Frank {
 
   handleProjectileCollisions(projectiles: Projectile[], timers: SpaceTimers) {
     for (const projectile of projectiles) {
-      this.jetpack.damageFuelTank(projectile.damage);
+      this.jetpack?.damageFuelTank(projectile.damage);
       timers.damageTimer = DAMAGE_TIMER_MAX;
       projectile.dead = true;
     }
@@ -299,8 +291,9 @@ export class Frank {
     const damageThreshold = this.maxSpeed * 0.5;
 
     if (impactSpeed > damageThreshold) {
-      const fuelLoss = this.jetpack.maxFuel / 16;
-      this.jetpack.damageFuelTank(fuelLoss);
+      const maxFuel = this.jetpack?.maxFuel ?? 0;
+      const fuelLoss = maxFuel / 16;
+      this.jetpack?.damageFuelTank(fuelLoss);
       timers.damageTimer = DAMAGE_TIMER_MAX;
       this.playDmgSound();
     }

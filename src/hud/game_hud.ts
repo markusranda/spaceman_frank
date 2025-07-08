@@ -6,6 +6,7 @@ import { ChargeHUD } from "../charge_hud";
 import { Frank } from "../frank/frank";
 import { SpaceTimers } from "../space_timers";
 import { StomachHud } from "./stomach_hud";
+import { FuelHud } from "./fuel_hud";
 
 export class GameHUD {
   levelClearedText = new Text();
@@ -15,7 +16,8 @@ export class GameHUD {
   fuelBarFill = new Graphics();
   minimapHUD: MiniMapHUD | null = null;
   chargeHUD: ChargeHUD | null = null;
-  stomachHud = new StomachHud(10, 130);
+  fuelHud = new FuelHud(20, 40);
+  stomachHud = new StomachHud(20, 130);
 
   constructor(
     uiContainer: Container,
@@ -63,23 +65,8 @@ export class GameHUD {
     this.frankSizeText.x = canvasWidth / 2;
     this.frankSizeText.y = 40;
 
-    // --- Fuel UI ---
-    const fuelWidth = 40;
-    const fuelHeight = 80;
-    const fuelPosX = 20;
-    const fuelPosY = 20;
-
-    this.fuelBarBg = new Graphics();
-    this.fuelBarBg.label = "fuel_bar_bg";
-    this.fuelBarBg.rect(fuelPosX, fuelPosY, fuelWidth, fuelHeight);
-    this.fuelBarBg.fill(0x808080);
-
-    this.fuelBarFill = new Graphics();
-    this.fuelBarFill.label = "fuel_bar_fill";
-
     // HUD
-    uiContainer.addChild(this.fuelBarBg);
-    uiContainer.addChild(this.fuelBarFill);
+    uiContainer.addChild(this.fuelHud.container);
     uiContainer.addChild(this.stomachHud.container);
 
     // HUD Messages
@@ -102,7 +89,7 @@ export class GameHUD {
     this.updateLevelCleared(gameState);
     this.updateDamageOverlay(timers);
     this.updateFrankSizeUI(frank);
-    this.updateFuelUI(frank);
+    this.fuelHud.update(frank);
     this.stomachHud.update(frank);
     this.minimapHUD.update(frank);
     this.chargeHUD.update(frank);
@@ -126,25 +113,5 @@ export class GameHUD {
 
   updateFrankSizeUI(frank: Frank) {
     this.frankSizeText.text = `${Math.floor(frank.radius)}m`;
-  }
-
-  updateFuelUI(frank: Frank) {
-    const fuelWidth = 40;
-    const fuelHeight = 80;
-    const fuelPosX = 20;
-    const fuelPosY = 20;
-    const fuel = frank.jetpack?.fuel ?? 1;
-    const maxFuel = frank?.jetpack?.maxFuel ?? 1;
-    let fuelFillHeight = fuelHeight * (fuel / maxFuel) - 2;
-    if (fuelFillHeight < 0) fuelFillHeight = 0;
-
-    this.fuelBarFill.clear();
-    this.fuelBarFill.rect(
-      fuelPosX + 2,
-      fuelPosY + fuelHeight - fuelFillHeight - 2,
-      fuelWidth - 4,
-      fuelFillHeight
-    );
-    this.fuelBarFill.fill(0x00ff00);
   }
 }

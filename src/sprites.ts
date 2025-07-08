@@ -21,6 +21,8 @@ export async function loadSprites() {
     starfield_1: "assets/sprites/starfield_1.png",
     stomach: "assets/sprites/stomach.png",
     stomach_mask: "assets/sprites/stomach_mask.png",
+    jetpack: "assets/sprites/jetpack.png",
+    jetpack_mask: "assets/sprites/jetpack_mask.png",
   };
 
   const entries = Object.entries(spritePaths);

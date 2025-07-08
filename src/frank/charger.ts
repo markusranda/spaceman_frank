@@ -90,9 +90,11 @@ export class FrankCharger {
         } else if (!boostBtnPressed) {
           enterState(FRANK_STATE.normal);
           this.chargeUpTimer = 0;
-          audio.currentTime = 0;
-          audio.pause();
           gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
+          setTimeout(() => {
+            audio.pause();
+            audio.currentTime = 0;
+          }, 150);
         }
 
         break;

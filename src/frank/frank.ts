@@ -308,8 +308,6 @@ export class Frank {
       if (!this.items[item.id]) this.items[item.id] = item;
       else this.items[item.id].level++;
     }
-
-    console.log(this.items);
   }
 
   handleProjectileCollisions(projectiles: Projectile[], timers: SpaceTimers) {
@@ -338,8 +336,7 @@ export class Frank {
 
   handleDamageEntity(entity: Entity, timers: SpaceTimers, dt: number) {
     const dmg = this.calculateDamage(entity);
-    entity.health = 0;
-    // entity.health = Math.max(0, entity.health - dmg);
+    entity.health = Math.max(0, entity.health - dmg);
 
     // Handle lifecyle of entity
     if (entity.health <= 0) {

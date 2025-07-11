@@ -9,6 +9,7 @@ export abstract class SpaceItem {
   id: string;
   container = new Container();
   sprite = new Sprite();
+  texture: Texture;
   description: string;
   level = 1;
   aquired = false;
@@ -26,7 +27,8 @@ export abstract class SpaceItem {
     this.id = id;
     this.description = description;
 
-    this.sprite.texture = texture;
+    this.texture = texture;
+    this.sprite.texture = this.texture;
     this.container.addChild(this.sprite);
     this.container.x = x;
     this.container.y = y;

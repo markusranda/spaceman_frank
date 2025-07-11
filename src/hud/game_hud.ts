@@ -7,6 +7,7 @@ import { Frank } from "../frank/frank";
 import { SpaceTimers } from "../space_timers";
 import { StomachHud } from "./stomach_hud";
 import { FuelHud } from "./fuel_hud";
+import { ItemsHud } from "./items_hud";
 
 export class GameHUD {
   levelClearedText = new Text();
@@ -18,6 +19,7 @@ export class GameHUD {
   chargeHUD: ChargeHUD | null = null;
   fuelHud = new FuelHud(20, 40);
   stomachHud = new StomachHud(20, 130);
+  itemsHud = new ItemsHud(140, 60);
 
   constructor(
     uiContainer: Container,
@@ -68,6 +70,7 @@ export class GameHUD {
     // HUD
     uiContainer.addChild(this.fuelHud.container);
     uiContainer.addChild(this.stomachHud.container);
+    uiContainer.addChild(this.itemsHud.container);
 
     // HUD Messages
     uiContainer.addChild(this.frankSizeText);
@@ -93,6 +96,7 @@ export class GameHUD {
     this.stomachHud.update(frank);
     this.minimapHUD.update(frank);
     this.chargeHUD.update(frank);
+    this.itemsHud.update(frank);
   }
 
   updateLevelCleared(gameState: number) {

@@ -8,7 +8,7 @@ import { SpaceTimers } from "../space_timers";
 import { Container, ObservablePoint } from "pixi.js";
 import { UniversePlanetSpawner } from "./universe_planet_spawner";
 
-export class Galaxy {
+export class Universe {
   planets: Planet[] = [];
   enemies: Enemy[] = [];
   projectiles: Projectile[] = [];

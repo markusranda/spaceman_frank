@@ -1,6 +1,6 @@
 import { Background } from "./background";
 import { Frank } from "./frank/frank";
-import { Galaxy } from "./universe/universe";
+import { Universe } from "./universe/universe";
 import { Application, Container, Culler, Ticker } from "pixi.js";
 import { VICTORY_TIMER_MAX, FPS_PRINT_TIMEOUT } from "./timers";
 import { GAME_STATES } from "./gamestate";
@@ -27,7 +27,7 @@ export class Game {
   particles: Particle[] = [];
   pixiApp: Application | null = null;
   culler = new Culler();
-  universe: Galaxy | null = null;
+  universe: Universe | null = null;
   frank = new Frank(this.cameraContainer);
 
   // UI
@@ -68,7 +68,7 @@ export class Game {
     });
 
     // Setup entities
-    this.universe = new Galaxy(this.camera);
+    this.universe = new Universe(this.camera);
     this.universe.spawnNextPlanetBelt(this.frank, this.cameraContainer);
 
     // Setup UI and background
@@ -167,7 +167,7 @@ export class Game {
     }
   }
 
-  evolveGalaxy() {
+  evolveUniverse() {
     this.gameState = GAME_STATES.VICTORY;
     this.frank.evolve();
     this.spawnVictoryParticles();
@@ -178,7 +178,7 @@ export class Game {
     if (!this.universe) throw Error("Can't update game without universe");
     const hasEatenEnoughPlanets =
       this.frank.fullness >= this.frank.getFullnessGoal();
-    if (hasEatenEnoughPlanets) this.evolveGalaxy();
+    if (hasEatenEnoughPlanets) this.evolveUniverse();
 
     if (
       this.gameState === GAME_STATES.VICTORY &&

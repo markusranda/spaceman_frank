@@ -9,13 +9,14 @@ import {
   FRANK_MAX_SPEED_CHARGING,
   FRANK_STATE,
 } from "./const";
-import { Galaxy } from "../universe/universe";
+import { Universe } from "../universe/universe";
 import { SpaceTimers } from "../space_timers";
 import { Entity } from "../entity";
 import { Projectile } from "../projectile";
 import { FrankJetpack, JetpackMode } from "./jetpack";
 import { FrankCharger } from "./charger";
 import { SpaceItem } from "../items/space_item";
+import { detectEntityCollisions } from "../collisions";
 
 export class Frank {
   x = 0;
@@ -108,7 +109,7 @@ export class Frank {
   update(
     delta: number,
     keys: Record<string, boolean>,
-    universe: Galaxy,
+    universe: Universe,
     timers: SpaceTimers,
     container: Container
   ) {
@@ -139,7 +140,7 @@ export class Frank {
   updateCommon(
     keys: Record<string, boolean>,
     delta: number,
-    universe: Galaxy,
+    universe: Universe,
     timers: SpaceTimers,
     container: Container
   ) {
@@ -159,6 +160,14 @@ export class Frank {
     this.shakeChargeEffect();
     this.updateVisuals();
     this.jetpack?.update(this.radius, this.x, this.y);
+
+    this.updateItems(universe, delta, container);
+  }
+
+  updateItems(universe: Universe, delta: number, container: Container) {
+    for (const item of Object.values(this.getItems())) {
+      item?.update(this, universe, delta, container);
+    }
   }
 
   enterState(newState: string) {
@@ -236,7 +245,7 @@ export class Frank {
   updateFrankMovement(
     delta: number,
     keys: Record<string, boolean>,
-    universe: Galaxy,
+    universe: Universe,
     timers: SpaceTimers
   ) {
     const dt = delta / 1000;
@@ -267,9 +276,18 @@ export class Frank {
 
     // === COLLISIONS ===
     const collisions: Entity[] = [];
-    collisions.push(...this.detectCollisions(universe.planets));
-    collisions.push(...this.detectCollisions(universe.enemies));
-    const projectiles = this.detectCollisions(universe.projectiles);
+    collisions.push(
+      ...detectEntityCollisions(universe.planets, this.x, this.y, this.radius)
+    );
+    collisions.push(
+      ...detectEntityCollisions(universe.enemies, this.x, this.y, this.radius)
+    );
+    const projectiles = detectEntityCollisions(
+      universe.projectiles,
+      this.x,
+      this.y,
+      this.radius
+    );
     this.handleEntityCrashes(collisions, timers, dt);
     this.handleProjectileCollisions(projectiles, timers);
   }
@@ -280,23 +298,6 @@ export class Frank {
       timers.damageTimer = DAMAGE_TIMER_MAX;
       projectile.dead = true;
     }
-  }
-
-  detectCollisions<T extends Entity>(entities: T[]) {
-    const collisions: T[] = [];
-
-    for (let i = 0; i < entities.length; i++) {
-      const entity = entities[i];
-      const dx = this.x - entity.x;
-      const dy = this.y - entity.y;
-      const dist = Math.hypot(dx, dy);
-      const minDist = this.radius + entity.radius;
-      if (dist < minDist) {
-        collisions.push(entity);
-      }
-    }
-
-    return collisions;
   }
 
   handleEntityCrashes(entities: Entity[], timers: SpaceTimers, dt: number) {

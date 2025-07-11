@@ -1,6 +1,8 @@
-import { Texture } from "pixi.js";
+import { Container, Texture } from "pixi.js";
+import { Frank } from "../frank/frank";
+import { Universe } from "../universe/universe";
 
-export class SpaceItem {
+export abstract class SpaceItem {
   id: string;
   texture: Texture;
   description: string;
@@ -34,5 +36,10 @@ export class SpaceItem {
   }
 
   // Default behavior hook
-  update(): void {}
+  update(
+    _frank: Frank,
+    _universe: Universe,
+    _delta: number,
+    _container: Container
+  ): void {}
 }

@@ -1,6 +1,6 @@
 import { Background } from "./background";
 import { Frank } from "./frank/frank";
-import { Galaxy } from "./universe";
+import { Galaxy } from "./universe/universe";
 import { Application, Container, Culler, Ticker } from "pixi.js";
 import { VICTORY_TIMER_MAX, FPS_PRINT_TIMEOUT } from "./timers";
 import { GAME_STATES } from "./gamestate";

@@ -7,7 +7,7 @@ import {
   FRANK_MAX_SPEED_BASE,
   FRANK_STATE,
 } from "./const";
-import { Galaxy } from "../universe";
+import { Galaxy } from "../universe/universe";
 import { SpaceTimers } from "../space_timers";
 import { Entity } from "../entity";
 import { Projectile } from "../projectile";

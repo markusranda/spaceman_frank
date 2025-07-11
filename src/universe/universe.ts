@@ -1,12 +1,12 @@
-import { Enemy, MAX_ATTACK_TIMER } from "./enemy";
-import { Planet } from "./planet/planet";
-import { SPAWN_TIMER_MAX } from "./timers";
-import { Projectile } from "./projectile";
-import { SpaceCamera } from "./models/space_camera";
-import { Frank } from "./frank/frank";
-import { SpaceTimers } from "./space_timers";
+import { Enemy, MAX_ATTACK_TIMER } from "../enemy";
+import { Planet } from "../planet/planet";
+import { SPAWN_TIMER_MAX } from "../timers";
+import { Projectile } from "../projectile";
+import { SpaceCamera } from "../models/space_camera";
+import { Frank } from "../frank/frank";
+import { SpaceTimers } from "../space_timers";
 import { Container, ObservablePoint } from "pixi.js";
-import { TreasurePlanet } from "./planet/treasure_planet";
+import { UniversePlanetSpawner } from "./universe_planet_spawner";
 
 export class Galaxy {
   planets: Planet[] = [];
@@ -16,6 +16,7 @@ export class Galaxy {
   currentEvolution = 1;
   planetSpacing = 125;
   camera: SpaceCamera | null = null;
+  planetSpawner = new UniversePlanetSpawner();
 
   constructor(camera: SpaceCamera) {
     if (!camera) throw Error("Can't create universe without camera");
@@ -148,62 +149,17 @@ export class Galaxy {
   }
 
   spawnNextPlanetBelt(frank: Frank, container: Container) {
-    const centerX = 0;
-    const centerY = 0;
-
-    const basePlanetSize = frank.radius * 4;
-    const donutSpacing = basePlanetSize * 3;
-
-    const innerRadius = this.currentEvolution * donutSpacing + basePlanetSize;
-    const treasureRadius = frank.radius * 8;
-
-    const treasureAngle = Math.random() * 2 * Math.PI;
-    const treasureDist = innerRadius + Math.random() * donutSpacing;
-    const treasureX = centerX + Math.cos(treasureAngle) * treasureDist;
-    const treasureY = centerY + Math.sin(treasureAngle) * treasureDist;
-
-    const treasurePlanet = new TreasurePlanet(
-      treasureX,
-      treasureY,
-      treasureRadius
+    const planets = this.planetSpawner.getNextPlanets(
+      this.currentEvolution,
+      frank
     );
-    this.planets.push(treasurePlanet);
-    treasurePlanet.addTo(container);
 
-    const planetCount = 20;
-    const angleStep = (2 * Math.PI) / planetCount;
-
-    // How much angle should we "blacklist" around the treasure planet?
-    const angleBuffer = Math.asin((treasureRadius * 2) / treasureDist); // total angular width
-
-    const angleOffset = Math.random() * 2 * Math.PI;
-
-    for (let i = 0; i < planetCount; i++) {
-      const angle = angleOffset + i * angleStep;
-
-      // Check if this angle overlaps with the treasure planet's zone
-      const angleDiff = this.shortestAngleDiff(angle, treasureAngle);
-      if (Math.abs(angleDiff) < angleBuffer) {
-        continue; // Skip to avoid overlap
-      }
-
-      const dist = innerRadius + Math.random() * donutSpacing;
-      const x = centerX + Math.cos(angle) * dist;
-      const y = centerY + Math.sin(angle) * dist;
-
-      const multiplier =
-        Math.random() < 0.5
-          ? 0.5 + Math.random() * 0.25
-          : 0.75 + Math.random() * 0.25;
-      const radius = frank.radius * multiplier;
-
-      const planet = new Planet(x, y, radius);
-      this.planets.push(planet);
+    // Update container
+    for (const planet of planets) {
       planet.addTo(container);
     }
-  }
 
-  shortestAngleDiff(a: number, b: number): number {
-    return ((a - b + Math.PI * 3) % (2 * Math.PI)) - Math.PI;
+    // Update state
+    this.planets.push(...planets);
   }
 }

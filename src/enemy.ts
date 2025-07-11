@@ -1,6 +1,6 @@
 import { Entity } from "./entity";
 import { Frank } from "./frank/frank";
-import { Galaxy } from "./universe";
+import { Galaxy } from "./universe/universe";
 import { sprites } from "./sprites";
 import { Container, Sprite } from "pixi.js";
 

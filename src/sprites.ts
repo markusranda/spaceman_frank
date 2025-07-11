@@ -13,6 +13,7 @@ export async function loadSprites() {
     planet_2: "assets/sprites/planet_2.png",
     planet_3: "assets/sprites/planet_3.png",
     planet_shadow: "assets/sprites/planet_shadow.png",
+    planet_mask: "assets/sprites/planet_mask.png",
     planet_treasure: "assets/sprites/planet_treasure.png",
     enemy_1: "assets/sprites/enemy_1.png",
     fireball: "assets/sprites/fireball.png",
@@ -25,16 +26,41 @@ export async function loadSprites() {
     stomach_mask: "assets/sprites/stomach_mask.png",
     jetpack: "assets/sprites/jetpack.png",
     jetpack_mask: "assets/sprites/jetpack_mask.png",
+    crack_animation: "assets/sprites/crack_animation.json",
   };
 
   const entries = Object.entries(spritePaths);
   for (const [key, path] of entries) {
-    const texture = await Assets.load<Texture>(path);
-    const bounds = await getAlphaBounds(path);
-    sprites[key] = {
-      texture: texture,
-      croppedDimensions: bounds,
-    } as SpaceTexture;
+    if (path.endsWith(".json")) {
+      // Aseprite spritesheet
+      const sheet = await Assets.load(path); // Automatically loads the image too
+      const baseTexture = sheet.textures;
+
+      // Load all frames from the sheet
+      const frames = Object.keys(baseTexture);
+      frames.forEach((frameName, index) => {
+        const tex = baseTexture[frameName];
+        const spaceTex: SpaceTexture = {
+          texture: tex,
+          croppedDimensions: {
+            x: 0,
+            y: 0,
+            width: tex.width,
+            height: tex.height,
+          },
+        };
+        // Optional: append frame index to key for multiple frames
+        sprites[`${key}_${index}`] = spaceTex;
+      });
+    } else {
+      // Single-frame sprite
+      const texture = await Assets.load<Texture>(path);
+      const bounds = await getAlphaBounds(path);
+      sprites[key] = {
+        texture: texture,
+        croppedDimensions: bounds,
+      } as SpaceTexture;
+    }
   }
 }
 

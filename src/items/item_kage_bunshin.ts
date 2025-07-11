@@ -10,8 +10,10 @@ export class ItemKageBunshin extends SpaceItem {
   previousState = "";
   kageBunshins: KageBunshin[] = [];
 
-  constructor() {
+  constructor(x: number, y: number) {
     super(
+      x,
+      y,
       "kage_bunshin",
       sprites["item_kage_bunshin"].texture,
       "Charge attack spawns a clone attacking in the same direction"

@@ -274,7 +274,10 @@ export class Frank {
     this.x += this.vx * dt;
     this.y += this.vy * dt;
 
-    // === COLLISIONS ===
+    this.handleCollisions(universe, timers, dt);
+  }
+
+  handleCollisions(universe: Universe, timers: SpaceTimers, dt: number) {
     const collisions: Entity[] = [];
     collisions.push(
       ...detectEntityCollisions(universe.planets, this.x, this.y, this.radius)
@@ -290,6 +293,23 @@ export class Frank {
     );
     this.handleEntityCrashes(collisions, timers, dt);
     this.handleProjectileCollisions(projectiles, timers);
+    this.handleItemCollisions(universe);
+  }
+
+  handleItemCollisions(universe: Universe) {
+    const collisions = detectEntityCollisions(
+      universe.items,
+      this.x,
+      this.y,
+      this.radius
+    );
+    for (const item of collisions) {
+      item.aquired = true;
+      if (!this.items[item.id]) this.items[item.id] = item;
+      else this.items[item.id].level++;
+    }
+
+    console.log(this.items);
   }
 
   handleProjectileCollisions(projectiles: Projectile[], timers: SpaceTimers) {
@@ -318,7 +338,8 @@ export class Frank {
 
   handleDamageEntity(entity: Entity, timers: SpaceTimers, dt: number) {
     const dmg = this.calculateDamage(entity);
-    entity.health = Math.max(0, entity.health - dmg);
+    entity.health = 0;
+    // entity.health = Math.max(0, entity.health - dmg);
 
     // Handle lifecyle of entity
     if (entity.health <= 0) {

@@ -2,8 +2,10 @@ import { sprites } from "../sprites/sprites";
 import { SpaceItem } from "./space_item";
 
 export class ItemFuelTank extends SpaceItem {
-  constructor() {
+  constructor(x: number, y: number) {
     super(
+      x,
+      y,
       "item_fuel_tank",
       sprites["item_fuel_tank"]?.texture,
       "Increases fuel capacity by 10%"

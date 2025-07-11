@@ -2,8 +2,10 @@ import { sprites } from "../sprites/sprites";
 import { SpaceItem } from "./space_item";
 
 export class ItemRocketThrusters extends SpaceItem {
-  constructor() {
+  constructor(x: number, y: number) {
     super(
+      x,
+      y,
       "rocket_thrusters",
       sprites["item_rocket_thrusters"]?.texture,
       "Increases acceleration by 10%. Increases maxSpeed by 10%"

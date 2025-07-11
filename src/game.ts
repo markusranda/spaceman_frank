@@ -8,9 +8,11 @@ import { Particle } from "./particle";
 import { GameHUD } from "./hud/game_hud";
 import { SpaceCamera } from "./models/space_camera";
 import { SpaceTimers } from "./space_timers";
+import { eventQueue } from "./event_queue/event_queue";
+import { SpaceEventSpawnItem } from "./event_queue/space_event_spawn_item";
 
 export class Game {
-  camera: SpaceCamera | null = null;
+  camera: SpaceCamera;
   keys: Record<string, boolean> = {
     w: false,
     a: false,
@@ -25,14 +27,14 @@ export class Game {
   timers = new SpaceTimers();
   gameState = GAME_STATES.NORMAL;
   particles: Particle[] = [];
-  pixiApp: Application | null = null;
+  pixiApp: Application;
   culler = new Culler();
-  universe: Universe | null = null;
+  universe: Universe;
   frank = new Frank(this.cameraContainer);
 
   // UI
   background = new Background(this.backgroundContainer);
-  gameHud: GameHUD | null = null;
+  gameHud: GameHUD;
 
   constructor(pixiApp: Application) {
     this.pixiApp = pixiApp;
@@ -108,6 +110,7 @@ export class Game {
       }
 
       this.timers.tick(delta);
+      this.updateEventQueue();
       this.updateGame();
       this.frank.update(
         delta,
@@ -140,6 +143,19 @@ export class Game {
       const error = e as Error;
       console.error(`Tick update failed: ${error}`);
       console.error(error.stack);
+    }
+  }
+
+  updateEventQueue() {
+    const events = eventQueue.consume();
+    for (const event of events) {
+      if (event instanceof SpaceEventSpawnItem) {
+        const item = new event.classType(event.x, event.y);
+        item.addTo(this.cameraContainer);
+        this.universe?.addItem(item);
+      } else {
+        console.error(`Found event that I don't have handler for ${event}`);
+      }
     }
   }
 

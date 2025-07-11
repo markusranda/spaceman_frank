@@ -1,6 +1,7 @@
 import { Entity } from "./entity";
+import { SpaceItem } from "./items/space_item";
 
-export function detectEntityCollisions<T extends Entity>(
+export function detectEntityCollisions<T extends Entity | SpaceItem>(
   entities: T[],
   x: number,
   y: number,

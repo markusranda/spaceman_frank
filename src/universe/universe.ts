@@ -7,11 +7,13 @@ import { Frank } from "../frank/frank";
 import { SpaceTimers } from "../space_timers";
 import { Container, ObservablePoint } from "pixi.js";
 import { UniversePlanetSpawner } from "./universe_planet_spawner";
+import { SpaceItem } from "../items/space_item";
 
 export class Universe {
   planets: Planet[] = [];
   enemies: Enemy[] = [];
   projectiles: Projectile[] = [];
+  items: SpaceItem[] = [];
   enemyMaxCount = 10;
   currentEvolution = 1;
   planetSpacing = 125;
@@ -34,6 +36,7 @@ export class Universe {
     this.updateEnemies(delta, frank, container, cameraScale);
     this.updateProjectiles(delta);
     this.updatePlanets();
+    this.updateItems();
   }
 
   updateSpawnEnemies(timers: SpaceTimers, container: Container, frank: Frank) {
@@ -148,6 +151,16 @@ export class Universe {
     }
   }
 
+  updateItems() {
+    for (let i = this.items.length - 1; i >= 0; i--) {
+      const item = this.items[i];
+      if (item.aquired) {
+        this.items.splice(i, 1);
+        item.destroy();
+      }
+    }
+  }
+
   spawnNextPlanetBelt(frank: Frank, container: Container) {
     const planets = this.planetSpawner.getNextPlanets(
       this.currentEvolution,
@@ -161,5 +174,9 @@ export class Universe {
 
     // Update state
     this.planets.push(...planets);
+  }
+
+  addItem(item: SpaceItem) {
+    this.items.push(item);
   }
 }

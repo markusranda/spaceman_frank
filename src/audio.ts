@@ -21,6 +21,7 @@ export async function loadAudios() {
     eat_5: { src: "assets/audio/eat_5.mp3", volume: 0.1 },
     eat_6: { src: "assets/audio/eat_6.mp3", volume: 0.1 },
     charging: { src: "assets/audio/charging.mp3", volume: 0.1 },
+    kick: { src: "assets/audio/kick.mp3", volume: 0.1 },
   };
 
   const entries = Object.entries(configs);

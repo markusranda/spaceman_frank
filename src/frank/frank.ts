@@ -38,6 +38,18 @@ export class Frank {
   jetpack: FrankJetpack | null = null;
   charger = new FrankCharger();
 
+  // Audio
+  impactAudio = audios["kick"];
+  audioListDmg = [audios["damage_1"], audios["damage_2"]];
+  audioListEat = [
+    audios["eat_1"],
+    audios["eat_2"],
+    audios["eat_3"],
+    audios["eat_4"],
+    audios["eat_5"],
+    audios["eat_6"],
+  ];
+
   constructor(cameraContainer: Container) {
     this.container.label = "frank_container";
     this.frankSprite.texture = sprites["frank"]?.texture;
@@ -279,9 +291,11 @@ export class Frank {
     const dmg = this.calculateDamage(entity);
     entity.health = Math.max(0, entity.health - dmg);
 
+    // Handle lifecyle of entity
     if (entity.health <= 0) {
       this.eatEntity(entity);
     } else {
+      // Go crash
       this.handleCrash(entity, timers, dt, true);
     }
   }
@@ -328,6 +342,8 @@ export class Frank {
       this.jetpack?.damageFuelTank(fuelLoss);
       timers.damageTimer = DAMAGE_TIMER_MAX;
       this.playDmgSound();
+    } else {
+      this.playImpactSound();
     }
 
     // === Apply knockback velocity ===
@@ -347,26 +363,26 @@ export class Frank {
     this.y += this.vy * dt;
   }
 
+  playImpactSound() {
+    console.log("Play impact");
+    const { audio, gainNode, audioCtx } = this.impactAudio;
+    gainNode.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05);
+    audio.play();
+  }
+
   playDmgSound() {
-    const audioList = [audios["damage_1"], audios["damage_2"]];
-    const index = (this.lastDmgAudioIndex + 1) % audioList.length;
-    const audio = audioList[index];
-    audio.audio.play();
+    const index = (this.lastEatAudioIndex + 1) % this.audioListDmg.length;
+    const { audio, gainNode, audioCtx } = this.audioListDmg[index];
+    gainNode.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05);
+    audio.play();
     this.lastDmgAudioIndex = index;
   }
 
   playEatSound() {
-    const audioList = [
-      audios["eat_1"],
-      audios["eat_2"],
-      audios["eat_3"],
-      audios["eat_4"],
-      audios["eat_5"],
-      audios["eat_6"],
-    ];
-    const index = (this.lastEatAudioIndex + 1) % audioList.length;
-    const audio = audioList[index];
-    audio.audio.play();
+    const index = (this.lastEatAudioIndex + 1) % this.audioListEat.length;
+    const { audio, gainNode, audioCtx } = this.audioListEat[index];
+    gainNode.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05);
+    audio.play();
     this.lastEatAudioIndex = index;
   }
 }

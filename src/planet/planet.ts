@@ -14,6 +14,17 @@ export class Planet extends Entity {
   shadowContainerMask = new Graphics();
   angle = 0;
   type = "planet";
+  animationFrames = [
+    sprites.crack_animation_0.texture,
+    sprites.crack_animation_1.texture,
+    sprites.crack_animation_2.texture,
+    sprites.crack_animation_3.texture,
+    sprites.crack_animation_4.texture,
+    sprites.crack_animation_5.texture,
+    sprites.crack_animation_6.texture,
+    sprites.crack_animation_7.texture,
+  ];
+  crackSprite = new Sprite();
 
   constructor(x: number, y: number, radius: number, sprite?: Sprite | null) {
     super();
@@ -25,10 +36,19 @@ export class Planet extends Entity {
     else this.planetSprite = sprite;
 
     this.shadowSprite.texture = sprites["planet_shadow"]?.texture;
+
+    this.planetSprite.label = "planet_sprite";
     this.planetSprite.anchor.set(0.5);
     this.planetSprite.width = radius * 2;
     this.planetSprite.height = radius * 2;
 
+    this.crackSprite.label = "crack_sprite";
+    this.crackSprite.anchor.set(0.5);
+    this.crackSprite.width = radius * 2;
+    this.crackSprite.height = radius * 2;
+    this.crackSprite.rotation = Math.random() * 2 * Math.PI;
+
+    this.shadowSprite.label = "shadow_sprite";
     this.shadowSprite.anchor.set(0.5);
     this.shadowSprite.width = radius * 2;
     this.shadowSprite.height = radius * 2;
@@ -39,22 +59,45 @@ export class Planet extends Entity {
     this.container.addChild(this.planetSprite);
     this.container.position.set(this.x, this.y);
 
+    const planetMask = new Sprite(sprites["planet_mask"]?.texture);
+    planetMask.anchor.set(0.5);
+    planetMask.width = radius * 2;
+    planetMask.height = radius * 2;
+
     this.populateShadowContainer(this.radius);
-    this.container.addChild(this.shadowContainer);
 
     this.rotateShadowTowardSun();
 
+    this.debugText.label = "debug_text";
     this.debugText.style = { fontSize: 24, fill: 0xffffff, align: "center" };
     this.debugText.anchor.set(0.5);
     this.debugText.position.set(0, 0);
+
+    this.container.addChild(this.crackSprite);
+    this.container.addChild(this.shadowContainer);
     this.container.addChild(this.debugText);
+    this.container.setMask({ mask: planetMask, inverse: false });
+    this.container.addChild(planetMask);
 
     this.planetSprite.texture.source.scaleMode = "nearest";
     this.shadowSprite.texture.source.scaleMode = "nearest";
+    this.crackSprite.texture = this.animationFrames[7];
+    this.crackSprite.texture.source.scaleMode = "nearest";
+    planetMask.texture.source.scaleMode = "nearest";
   }
 
   update() {
     this.debugText.text = this.health;
+    this.updateCrack();
+  }
+
+  updateCrack() {
+    if (this.health >= this.maxHealth) return;
+    const percentHealth = 1 - this.health / this.maxHealth;
+    const index = Math.floor(percentHealth * this.animationFrames.length);
+    const texture = this.animationFrames[index];
+    this.crackSprite.texture = texture;
+    this.crackSprite.texture.source.scaleMode = "nearest";
   }
 
   rotateShadowTowardSun() {

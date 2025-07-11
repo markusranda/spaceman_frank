@@ -1,6 +1,6 @@
 import { Background } from "./background";
 import { Frank } from "./frank/frank";
-import { Galaxy } from "./galaxy";
+import { Galaxy } from "./universe";
 import { Application, Container, Culler, Ticker } from "pixi.js";
 import { VICTORY_TIMER_MAX, FPS_PRINT_TIMEOUT } from "./timers";
 import { GAME_STATES } from "./gamestate";
@@ -27,7 +27,7 @@ export class Game {
   particles: Particle[] = [];
   pixiApp: Application | null = null;
   culler = new Culler();
-  galaxy: Galaxy | null = null;
+  universe: Galaxy | null = null;
   frank = new Frank(this.cameraContainer);
 
   // UI
@@ -68,8 +68,8 @@ export class Game {
     });
 
     // Setup entities
-    this.galaxy = new Galaxy(this.camera);
-    this.galaxy.spawnNextPlanetBelt(this.frank, this.cameraContainer);
+    this.universe = new Galaxy(this.camera);
+    this.universe.spawnNextPlanetBelt(this.frank, this.cameraContainer);
 
     // Setup UI and background
     this.gameHud = new GameHUD(
@@ -96,7 +96,7 @@ export class Game {
 
   update(ticker: Ticker) {
     try {
-      if (!this.galaxy) throw Error("Can't run game without galaxy");
+      if (!this.universe) throw Error("Can't run game without universe");
       if (!this.gameHud) throw Error("Can't run game without gameHud");
       if (!this.pixiApp) throw Error("Can't run game without pixiApp");
 
@@ -113,11 +113,11 @@ export class Game {
       this.frank.update(
         delta,
         this.keys,
-        this.galaxy,
+        this.universe,
         this.timers,
         this.cameraContainer
       );
-      this.galaxy.update(
+      this.universe.update(
         delta,
         this.frank,
         this.timers,
@@ -176,7 +176,7 @@ export class Game {
   }
 
   updateGame() {
-    if (!this.galaxy) throw Error("Can't update game without galaxy");
+    if (!this.universe) throw Error("Can't update game without universe");
     const hasEatenEnoughPlanets =
       this.frank.fullness >= this.frank.getFullnessGoal();
     if (hasEatenEnoughPlanets) this.evolveGalaxy();
@@ -190,8 +190,8 @@ export class Game {
         particle.destroy();
       }
       this.particles = [];
-      this.galaxy.spawnNextPlanetBelt(this.frank, this.cameraContainer);
-      this.galaxy.currentEvolution++;
+      this.universe.spawnNextPlanetBelt(this.frank, this.cameraContainer);
+      this.universe.currentEvolution++;
     }
   }
 

@@ -7,7 +7,7 @@ import {
   FRANK_MAX_SPEED_BASE,
   FRANK_STATE,
 } from "./const";
-import { Galaxy } from "../galaxy";
+import { Galaxy } from "../universe";
 import { SpaceTimers } from "../space_timers";
 import { Entity } from "../entity";
 import { Projectile } from "../projectile";
@@ -79,7 +79,7 @@ export class Frank {
   update(
     delta: number,
     keys: Record<string, boolean>,
-    galaxy: Galaxy,
+    universe: Galaxy,
     timers: SpaceTimers,
     container: Container
   ) {
@@ -104,13 +104,13 @@ export class Frank {
         console.error(`Unknown state: ${this.state}`);
     }
 
-    this.updateCommon(keys, delta, galaxy, timers, container);
+    this.updateCommon(keys, delta, universe, timers, container);
   }
 
   updateCommon(
     keys: Record<string, boolean>,
     delta: number,
-    galaxy: Galaxy,
+    universe: Galaxy,
     timers: SpaceTimers,
     container: Container
   ) {
@@ -126,7 +126,7 @@ export class Frank {
       this.enterState.bind(this),
       this.setVelocity.bind(this)
     );
-    this.updateFrankMovement(delta, keys, galaxy, timers);
+    this.updateFrankMovement(delta, keys, universe, timers);
     this.shakeChargeEffect();
     this.updateVisuals();
     this.jetpack?.update(this.radius, this.x, this.y);
@@ -208,7 +208,7 @@ export class Frank {
   updateFrankMovement(
     delta: number,
     keys: Record<string, boolean>,
-    galaxy: Galaxy,
+    universe: Galaxy,
     timers: SpaceTimers
   ) {
     const dt = delta / 1000;
@@ -239,9 +239,9 @@ export class Frank {
 
     // === COLLISIONS ===
     const collisions: Entity[] = [];
-    collisions.push(...this.detectCollisions(galaxy.planets));
-    collisions.push(...this.detectCollisions(galaxy.enemies));
-    const projectiles = this.detectCollisions(galaxy.projectiles);
+    collisions.push(...this.detectCollisions(universe.planets));
+    collisions.push(...this.detectCollisions(universe.enemies));
+    const projectiles = this.detectCollisions(universe.projectiles);
     this.handleEntityCrashes(collisions, timers, dt);
     this.handleProjectileCollisions(projectiles, timers);
   }

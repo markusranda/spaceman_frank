@@ -18,7 +18,7 @@ export class Galaxy {
   camera: SpaceCamera | null = null;
 
   constructor(camera: SpaceCamera) {
-    if (!camera) throw Error("Can't create galaxy without camera");
+    if (!camera) throw Error("Can't create universe without camera");
     this.camera = camera;
   }
 

@@ -1,6 +1,6 @@
 import { Entity } from "./entity";
 import { Frank } from "./frank/frank";
-import { Galaxy } from "./galaxy";
+import { Galaxy } from "./universe";
 import { sprites } from "./sprites";
 import { Container, Sprite } from "pixi.js";
 
@@ -22,9 +22,9 @@ export class Enemy extends Entity {
   attackRange = 600;
   debugCircle = null;
 
-  constructor(galaxy: Galaxy, frank: Frank) {
+  constructor(universe: Galaxy, frank: Frank) {
     super();
-    const { x, y } = this.getRandomEdgeSpawnCoords(galaxy);
+    const { x, y } = this.getRandomEdgeSpawnCoords(universe);
     this.x = x;
     this.y = y;
     this.radius = frank.radius * 0.75;
@@ -54,10 +54,10 @@ export class Enemy extends Entity {
     this.sprite.y = y;
   }
 
-  getRandomEdgeSpawnCoords(galaxy: Galaxy) {
-    const camera = galaxy.camera;
+  getRandomEdgeSpawnCoords(universe: Galaxy) {
+    const camera = universe.camera;
     if (!camera)
-      throw Error("Can't get randomEdgeSpawnCoords without galaxy.camera");
+      throw Error("Can't get randomEdgeSpawnCoords without universe.camera");
     const x0 = camera.x;
     const y0 = camera.y;
     const w = camera.width;

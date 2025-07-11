@@ -1,7 +1,6 @@
 import { Entity } from "../entity";
 import { sprites } from "../sprites";
 import { Container, Graphics, Sprite, Text } from "pixi.js";
-import { OutlineFilter } from "pixi-filters";
 
 export class Planet extends Entity {
   radius = 0;
@@ -90,7 +89,7 @@ export class Planet extends Entity {
 
   update() {
     if (this.dead) return;
-    this.debugText.text = this.health;
+    // this.debugText.text = this.health;
     this.updateCrack();
   }
 

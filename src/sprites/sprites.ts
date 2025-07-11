@@ -44,6 +44,4 @@ export async function loadSprites() {
   for (const path of Object.values(tilesetPaths)) {
     await buildTileAtlas(sprites, path);
   }
-
-  console.log(sprites);
 }

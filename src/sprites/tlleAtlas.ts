@@ -10,6 +10,9 @@ interface TileCoord {
 
 const indexes: Record<string, TileCoord> = {
   item_charge_overclocker: { x: 0, y: 0 },
+  item_kage_bunshin: { x: 1, y: 0 },
+  item_rocket_thrusters: { x: 2, y: 0 },
+  item_fuel_tank: { x: 3, y: 0 },
 };
 
 export async function buildTileAtlas(

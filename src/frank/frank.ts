@@ -4,7 +4,9 @@ import { DAMAGE_TIMER_MAX } from "../timers";
 import { audios } from "../audio";
 import {
   FRANK_ACCELERATION_BASE,
+  FRANK_ACCELERATION_CHARGING,
   FRANK_MAX_SPEED_BASE,
+  FRANK_MAX_SPEED_CHARGING,
   FRANK_STATE,
 } from "./const";
 import { Galaxy } from "../universe/universe";
@@ -13,6 +15,7 @@ import { Entity } from "../entity";
 import { Projectile } from "../projectile";
 import { FrankJetpack, JetpackMode } from "./jetpack";
 import { FrankCharger } from "./charger";
+import { SpaceItem } from "../items/space_item";
 
 export class Frank {
   x = 0;
@@ -20,9 +23,11 @@ export class Frank {
   vx = 0;
   vy = 0;
   angle = (3 * Math.PI) / 2;
-  acceleration = FRANK_ACCELERATION_BASE;
-  rotationSpeed = 0.08;
-  maxSpeed = FRANK_MAX_SPEED_BASE;
+  baseAcceleration = FRANK_ACCELERATION_BASE;
+  acceleration = this.baseAcceleration;
+  rotationSpeed = 5;
+  baseMaxSpeed = FRANK_MAX_SPEED_BASE;
+  maxSpeed = this.baseMaxSpeed;
   friction = 0.9945;
 
   container = new Container();
@@ -36,7 +41,8 @@ export class Frank {
   lastEatAudioIndex = 0;
   state = FRANK_STATE.normal;
   jetpack: FrankJetpack | null = null;
-  charger = new FrankCharger();
+  charger: FrankCharger | null = null;
+  items: Record<string, SpaceItem> = {};
 
   // Audio
   impactAudio = audios["kick"];
@@ -58,22 +64,45 @@ export class Frank {
     this.radius = this.baseRadius;
     this.x = 0;
     this.y = 0;
-    this.jetpack = new FrankJetpack(cameraContainer);
+
+    const getItems = this.getItems.bind(this);
+    this.jetpack = new FrankJetpack(cameraContainer, getItems);
+    this.charger = new FrankCharger(getItems);
+  }
+
+  getAcceleration(): number {
+    let value = this.baseAcceleration;
+    if (this.state === FRANK_STATE.charging)
+      value = FRANK_ACCELERATION_CHARGING;
+    for (const item of Object.values(this.getItems())) {
+      value = item.modifyAcceleration(value);
+    }
+    return value;
+  }
+
+  getMaxSpeed(): number {
+    let value = this.baseMaxSpeed;
+    if (this.state === FRANK_STATE.charging) value = FRANK_MAX_SPEED_CHARGING;
+
+    for (const item of Object.values(this.getItems())) {
+      value = item.modifyMaxSpeed(value);
+    }
+    return value;
+  }
+
+  getItems() {
+    return this.items;
   }
 
   getFullnessGoal() {
     return 10;
   }
 
-  setVelocity(acceleration: number, maxSpeed: number, immediate: boolean) {
-    this.acceleration = acceleration;
-    this.maxSpeed = maxSpeed;
-    if (immediate) {
-      const dirX = Math.cos(this.angle);
-      const dirY = Math.sin(this.angle);
-      this.vx = dirX * maxSpeed;
-      this.vy = dirY * maxSpeed;
-    }
+  setVelocity(speed: number) {
+    const dirX = Math.cos(this.angle);
+    const dirY = Math.sin(this.angle);
+    this.vx = dirX * speed;
+    this.vy = dirY * speed;
   }
 
   update(
@@ -114,7 +143,7 @@ export class Frank {
     timers: SpaceTimers,
     container: Container
   ) {
-    this.charger.update(
+    this.charger?.update(
       delta,
       keys,
       this.state,
@@ -167,13 +196,12 @@ export class Frank {
     } else {
       this.radius = a + 4 * Math.log(this.level + 1); // soft-capped curve
     }
-
-    console.log(`Level ${this.level} → Radius: ${this.radius.toFixed(2)}`);
   }
 
   shakeChargeEffect() {
+    if (!this.charger) throw Error("Can't shake without my charger");
     const intensity =
-      this.charger.chargeUpTimer / this.charger.chargeUpDuration; // Scale with timer (assuming timer max is ~1000ms)
+      this.charger.chargeUpTimer / this.charger.getChargeUpDuration(); // Scale with timer (assuming timer max is ~1000ms)
     const maxShake = 8; // pixels
     const shakeAmount = Math.min(maxShake, intensity * maxShake);
 
@@ -216,19 +244,19 @@ export class Frank {
     const isThrusting = this.jetpack?.thrusting ?? false;
 
     // === ROTATION ===
-    if (keys.a) this.angle -= this.rotationSpeed;
-    if (keys.d) this.angle += this.rotationSpeed;
+    if (keys.a) this.angle -= this.rotationSpeed * dt;
+    if (keys.d) this.angle += this.rotationSpeed * dt;
 
     // === THRUST ===
     if (hasFuel && isThrusting) {
-      this.vx += Math.cos(this.angle) * this.acceleration * dt;
-      this.vy += Math.sin(this.angle) * this.acceleration * dt;
+      this.vx += Math.cos(this.angle) * this.getAcceleration() * dt;
+      this.vy += Math.sin(this.angle) * this.getAcceleration() * dt;
     }
 
     // === Clamp speed ===
     const speed = Math.hypot(this.vx, this.vy);
-    if (speed > this.maxSpeed) {
-      const scale = this.maxSpeed / speed;
+    if (speed > this.getMaxSpeed()) {
+      const scale = this.getMaxSpeed() / speed;
       this.vx *= scale;
       this.vy *= scale;
     }
@@ -334,10 +362,10 @@ export class Frank {
     const relativeVx = this.vx;
     const relativeVy = this.vy;
     const impactSpeed = Math.abs(relativeVx * nx + relativeVy * ny);
-    const damageThreshold = this.maxSpeed * 0.5;
+    const damageThreshold = this.getMaxSpeed() * 0.5;
 
     if (!invulnerable && impactSpeed > damageThreshold) {
-      const maxFuel = this.jetpack?.maxFuel ?? 0;
+      const maxFuel = this.jetpack?.getMaxFuel() ?? 0;
       const fuelLoss = maxFuel / 16;
       this.jetpack?.damageFuelTank(fuelLoss);
       timers.damageTimer = DAMAGE_TIMER_MAX;
@@ -364,7 +392,6 @@ export class Frank {
   }
 
   playImpactSound() {
-    console.log("Play impact");
     const { audio, gainNode, audioCtx } = this.impactAudio;
     gainNode.gain.setTargetAtTime(1, audioCtx.currentTime, 0.05);
     audio.play();

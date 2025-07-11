@@ -1,29 +1,44 @@
-import {
-  FRANK_ACCELERATION_BASE,
-  FRANK_ACCELERATION_CHARGING,
-  FRANK_MAX_SPEED_BASE,
-  FRANK_MAX_SPEED_CHARGING,
-  FRANK_STATE,
-} from "./const";
+import { FRANK_MAX_SPEED_CHARGING, FRANK_STATE } from "./const";
 import { audios } from "../audio";
 import { Container, Sprite } from "pixi.js";
+import { SpaceItem } from "../items/space_item";
 
 export class FrankCharger {
   lastTailReplay = 0;
   chargeUpTimer = 0;
-  chargeUpDuration = 1500;
+  baseChargeUpDuration = 1500;
   chargeTimer = 0;
   chargeDuration = 1000;
   chargeCooldownTimer = 0;
-  cooldownDuration = 5000;
+  baseCooldownDuration = 5000;
+  cooldownDuration = this.baseCooldownDuration;
+  getItems: () => Record<string, SpaceItem> = () => ({});
 
   chargingAudioObj = audios["charging"];
   multiheadTimer = 0;
 
-  constructor() {}
+  constructor(getItems: () => Record<string, SpaceItem>) {
+    this.getItems = getItems;
+  }
 
   public getChargeTimer(): number {
     return this.chargeUpTimer;
+  }
+
+  getChargeUpDuration(): number {
+    let value = this.baseChargeUpDuration;
+    for (const item of Object.values(this.getItems())) {
+      value = item.modifyChargeUpDuration(value);
+    }
+    return value;
+  }
+
+  getChargeCooldownDuration(): number {
+    let value = this.baseCooldownDuration;
+    for (const item of Object.values(this.getItems())) {
+      value = item.modifyChargeCooldown(value);
+    }
+    return value;
   }
 
   public update(
@@ -36,11 +51,7 @@ export class FrankCharger {
     y: number,
     angle: number,
     enterState: (val: string) => void,
-    setVelocity: (
-      acceleration: number,
-      maxSpeed: number,
-      immediate: boolean
-    ) => void
+    setVelocity: (speed: number) => void
   ) {
     const boostBtnPressed = keys[" "];
     const { audio, gainNode, audioCtx } = this.chargingAudioObj;
@@ -58,9 +69,9 @@ export class FrankCharger {
         break;
 
       case FRANK_STATE.preCharging: {
-        const fullyCharged = this.chargeUpTimer >= this.chargeUpDuration;
+        const fullyCharged = this.chargeUpTimer >= this.getChargeUpDuration();
         this.chargeUpTimer = Math.min(
-          this.chargeUpDuration,
+          this.getChargeUpDuration(),
           this.chargeUpTimer + delta
         );
 
@@ -80,13 +91,9 @@ export class FrankCharger {
           enterState(FRANK_STATE.charging);
           this.chargeTimer = this.chargeDuration;
           this.chargeUpTimer = 0;
-          setVelocity(
-            FRANK_ACCELERATION_CHARGING,
-            FRANK_MAX_SPEED_CHARGING,
-            true
-          );
+          setVelocity(FRANK_MAX_SPEED_CHARGING);
 
-          this.chargeCooldownTimer = this.cooldownDuration;
+          this.chargeCooldownTimer = this.getChargeCooldownDuration();
         } else if (!boostBtnPressed) {
           enterState(FRANK_STATE.normal);
           this.chargeUpTimer = 0;
@@ -105,7 +112,6 @@ export class FrankCharger {
           this.chargeTimer = Math.max(0, this.chargeTimer - delta);
         } else {
           enterState(FRANK_STATE.normal);
-          setVelocity(FRANK_ACCELERATION_BASE, FRANK_MAX_SPEED_BASE, false);
         }
 
         // this.updateSpawnAfterimage(x, y, sprite, container, angle);

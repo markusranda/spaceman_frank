@@ -2,6 +2,7 @@ import { Container, Graphics } from "pixi.js";
 import { audios } from "../audio";
 import { JetpackTrail } from "./jetpack_trail";
 import { GlowFilter } from "pixi-filters";
+import { SpaceItem } from "../items/space_item";
 
 export enum JetpackMode {
   Normal = "Normal",
@@ -9,8 +10,8 @@ export enum JetpackMode {
 }
 
 export class FrankJetpack {
-  maxFuel = 2500;
-  fuel = this.maxFuel;
+  baseMaxFuel = 2500;
+  fuel = this.baseMaxFuel;
   fuelConsumption = 0.5;
   thrusting = false;
   flameGraphics = new Graphics();
@@ -18,17 +19,22 @@ export class FrankJetpack {
   mode: JetpackMode = JetpackMode.Normal;
   trailPoints: { x: number; y: number; alpha: number }[] = [];
   trailFadeSpeed = 0.05;
+  getItems: () => Record<string, SpaceItem> = () => ({});
 
   trailParent: Container | null = null;
   activeTrail: JetpackTrail | null = null;
   trails: JetpackTrail[] = [];
 
-  constructor(trailParent: Container) {
+  constructor(
+    trailParent: Container,
+    getItems: () => Record<string, SpaceItem>
+  ) {
     this.trailParent = trailParent;
     this.flameGraphics.label = "frank_thruster";
     this.flameGraphics.filters = [
       new GlowFilter({ distance: 15, outerStrength: 2 }),
     ];
+    this.getItems = getItems;
   }
 
   setThrusting(val: boolean) {
@@ -44,6 +50,15 @@ export class FrankJetpack {
     this.mode = mode;
   }
 
+  getMaxFuel() {
+    let value = this.baseMaxFuel;
+    for (const item of Object.values(this.getItems())) {
+      value = item.modifyMaxFuel(value);
+    }
+
+    return value;
+  }
+
   getColor() {
     const colors = {
       [JetpackMode.Normal]: 0xffff64,
@@ -54,7 +69,7 @@ export class FrankJetpack {
   }
 
   resetFuel() {
-    this.fuel = this.maxFuel;
+    this.fuel = this.getMaxFuel();
   }
 
   damageFuelTank(fuelDamage: number) {

@@ -90,7 +90,6 @@ export class Game {
     const ticker = new Ticker();
     ticker.add(this.update);
     ticker.minFPS = 60;
-    ticker.maxFPS = 60;
     ticker.start();
   }
 

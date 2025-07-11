@@ -1,5 +1,5 @@
 import { Entity } from "./entity";
-import { sprites } from "./sprites";
+import { sprites } from "./sprites/sprites";
 import { Sprite } from "pixi.js";
 
 const TTL_MAX = 1000 * 5;
@@ -13,7 +13,6 @@ export class Projectile extends Entity {
   speed = 10;
   damage = 100;
   sprite = new Sprite(sprites["fireball"]?.texture);
-  dead = false;
 
   constructor(x: number, y: number, angle: number, radius: number) {
     super();

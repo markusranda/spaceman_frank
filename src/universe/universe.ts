@@ -1,23 +1,27 @@
-import { Enemy, MAX_ATTACK_TIMER } from "./enemy";
-import { Planet } from "./planet";
-import { SPAWN_TIMER_MAX } from "./timers";
-import { Projectile } from "./projectile";
-import { SpaceCamera } from "./models/space_camera";
-import { Frank } from "./frank/frank";
-import { SpaceTimers } from "./space_timers";
+import { Enemy, MAX_ATTACK_TIMER } from "../enemy";
+import { Planet } from "../planet/planet";
+import { SPAWN_TIMER_MAX } from "../timers";
+import { Projectile } from "../projectile";
+import { SpaceCamera } from "../models/space_camera";
+import { Frank } from "../frank/frank";
+import { SpaceTimers } from "../space_timers";
 import { Container, ObservablePoint } from "pixi.js";
+import { UniversePlanetSpawner } from "./universe_planet_spawner";
+import { SpaceItem } from "../items/space_item";
 
-export class Galaxy {
+export class Universe {
   planets: Planet[] = [];
   enemies: Enemy[] = [];
   projectiles: Projectile[] = [];
+  items: SpaceItem[] = [];
   enemyMaxCount = 10;
   currentEvolution = 1;
   planetSpacing = 125;
   camera: SpaceCamera | null = null;
+  planetSpawner = new UniversePlanetSpawner();
 
   constructor(camera: SpaceCamera) {
-    if (!camera) throw Error("Can't create galaxy without camera");
+    if (!camera) throw Error("Can't create universe without camera");
     this.camera = camera;
   }
 
@@ -32,6 +36,7 @@ export class Galaxy {
     this.updateEnemies(delta, frank, container, cameraScale);
     this.updateProjectiles(delta);
     this.updatePlanets();
+    this.updateItems();
   }
 
   updateSpawnEnemies(timers: SpaceTimers, container: Container, frank: Frank) {
@@ -141,37 +146,37 @@ export class Galaxy {
         this.planets.splice(i, 1);
         planet.destroy();
       }
+
+      planet.update();
+    }
+  }
+
+  updateItems() {
+    for (let i = this.items.length - 1; i >= 0; i--) {
+      const item = this.items[i];
+      if (item.aquired) {
+        this.items.splice(i, 1);
+        item.destroy();
+      }
     }
   }
 
   spawnNextPlanetBelt(frank: Frank, container: Container) {
-    const centerX = 0;
-    const centerY = 0;
+    const planets = this.planetSpawner.getNextPlanets(
+      this.currentEvolution,
+      frank
+    );
 
-    const basePlanetSize = frank.radius * 4;
-    const donutSpacing = basePlanetSize * 3;
-
-    const innerRadius = this.currentEvolution * donutSpacing + basePlanetSize;
-
-    const planetCount = 20;
-    const angleStep = (2 * Math.PI) / planetCount;
-    const angleOffset = Math.random() * 2 * Math.PI;
-
-    for (let i = 0; i < planetCount; i++) {
-      const angle = angleOffset + i * angleStep;
-      const dist = innerRadius + Math.random() * donutSpacing;
-      const x = centerX + Math.cos(angle) * dist;
-      const y = centerY + Math.sin(angle) * dist;
-      // 50% [0.5, 0.75) and 50% [0.75, 1)
-      const multiplier =
-        Math.random() < 0.5
-          ? 0.5 + Math.random() * 0.25
-          : 0.75 + Math.random() * 0.25;
-      const radius = frank.radius * multiplier;
-      const planet = new Planet(x, y, radius);
-
-      this.planets.push(planet);
+    // Update container
+    for (const planet of planets) {
       planet.addTo(container);
     }
+
+    // Update state
+    this.planets.push(...planets);
+  }
+
+  addItem(item: SpaceItem) {
+    this.items.push(item);
   }
 }

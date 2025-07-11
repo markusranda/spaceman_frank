@@ -1,5 +1,5 @@
 import { Graphics, Container, Sprite } from "pixi.js";
-import { sprites } from "../sprites";
+import { sprites } from "../sprites/sprites";
 import { Frank } from "../frank/frank";
 
 export class FuelHud {
@@ -32,7 +32,7 @@ export class FuelHud {
 
   update(frank: Frank) {
     const fuel = frank.jetpack?.fuel ?? 1;
-    const maxFuel = frank?.jetpack?.maxFuel ?? 1;
+    const maxFuel = frank?.jetpack?.getMaxFuel() ?? 1;
     const percent = Math.min(1, Math.max(0, fuel / maxFuel));
 
     const { x, y, width, height } = this.fuelMask.croppedDimensions;

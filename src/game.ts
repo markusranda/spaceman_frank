@@ -1,6 +1,6 @@
 import { Background } from "./background";
 import { Frank } from "./frank/frank";
-import { Galaxy } from "./galaxy";
+import { Universe } from "./universe/universe";
 import { Application, Container, Culler, Ticker } from "pixi.js";
 import { VICTORY_TIMER_MAX, FPS_PRINT_TIMEOUT } from "./timers";
 import { GAME_STATES } from "./gamestate";
@@ -8,9 +8,11 @@ import { Particle } from "./particle";
 import { GameHUD } from "./hud/game_hud";
 import { SpaceCamera } from "./models/space_camera";
 import { SpaceTimers } from "./space_timers";
+import { eventQueue } from "./event_queue/event_queue";
+import { SpaceEventSpawnItem } from "./event_queue/space_event_spawn_item";
 
 export class Game {
-  camera: SpaceCamera | null = null;
+  camera: SpaceCamera;
   keys: Record<string, boolean> = {
     w: false,
     a: false,
@@ -25,14 +27,14 @@ export class Game {
   timers = new SpaceTimers();
   gameState = GAME_STATES.NORMAL;
   particles: Particle[] = [];
-  pixiApp: Application | null = null;
+  pixiApp: Application;
   culler = new Culler();
-  galaxy: Galaxy | null = null;
+  universe: Universe;
   frank = new Frank(this.cameraContainer);
 
   // UI
   background = new Background(this.backgroundContainer);
-  gameHud: GameHUD | null = null;
+  gameHud: GameHUD;
 
   constructor(pixiApp: Application) {
     this.pixiApp = pixiApp;
@@ -68,8 +70,8 @@ export class Game {
     });
 
     // Setup entities
-    this.galaxy = new Galaxy(this.camera);
-    this.galaxy.spawnNextPlanetBelt(this.frank, this.cameraContainer);
+    this.universe = new Universe(this.camera);
+    this.universe.spawnNextPlanetBelt(this.frank, this.cameraContainer);
 
     // Setup UI and background
     this.gameHud = new GameHUD(
@@ -90,13 +92,12 @@ export class Game {
     const ticker = new Ticker();
     ticker.add(this.update);
     ticker.minFPS = 60;
-    ticker.maxFPS = 60;
     ticker.start();
   }
 
   update(ticker: Ticker) {
     try {
-      if (!this.galaxy) throw Error("Can't run game without galaxy");
+      if (!this.universe) throw Error("Can't run game without universe");
       if (!this.gameHud) throw Error("Can't run game without gameHud");
       if (!this.pixiApp) throw Error("Can't run game without pixiApp");
 
@@ -109,15 +110,16 @@ export class Game {
       }
 
       this.timers.tick(delta);
+      this.updateEventQueue();
       this.updateGame();
       this.frank.update(
         delta,
         this.keys,
-        this.galaxy,
+        this.universe,
         this.timers,
         this.cameraContainer
       );
-      this.galaxy.update(
+      this.universe.update(
         delta,
         this.frank,
         this.timers,
@@ -141,6 +143,19 @@ export class Game {
       const error = e as Error;
       console.error(`Tick update failed: ${error}`);
       console.error(error.stack);
+    }
+  }
+
+  updateEventQueue() {
+    const events = eventQueue.consume();
+    for (const event of events) {
+      if (event instanceof SpaceEventSpawnItem) {
+        const item = new event.classType(event.x, event.y);
+        item.addTo(this.cameraContainer);
+        this.universe?.addItem(item);
+      } else {
+        console.error(`Found event that I don't have handler for ${event}`);
+      }
     }
   }
 
@@ -168,7 +183,7 @@ export class Game {
     }
   }
 
-  evolveGalaxy() {
+  evolveUniverse() {
     this.gameState = GAME_STATES.VICTORY;
     this.frank.evolve();
     this.spawnVictoryParticles();
@@ -176,10 +191,10 @@ export class Game {
   }
 
   updateGame() {
-    if (!this.galaxy) throw Error("Can't update game without galaxy");
+    if (!this.universe) throw Error("Can't update game without universe");
     const hasEatenEnoughPlanets =
       this.frank.fullness >= this.frank.getFullnessGoal();
-    if (hasEatenEnoughPlanets) this.evolveGalaxy();
+    if (hasEatenEnoughPlanets) this.evolveUniverse();
 
     if (
       this.gameState === GAME_STATES.VICTORY &&
@@ -190,8 +205,8 @@ export class Game {
         particle.destroy();
       }
       this.particles = [];
-      this.galaxy.spawnNextPlanetBelt(this.frank, this.cameraContainer);
-      this.galaxy.currentEvolution++;
+      this.universe.spawnNextPlanetBelt(this.frank, this.cameraContainer);
+      this.universe.currentEvolution++;
     }
   }
 

@@ -1,4 +1,4 @@
-import { sprites } from "./sprites";
+import { sprites } from "./sprites/sprites";
 import { Sprite } from "pixi.js";
 
 export class Particle {

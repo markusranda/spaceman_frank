@@ -6,6 +6,8 @@ export class Entity {
   radius = 0;
   dead = false;
   sprite = new Sprite();
+  maxHealth = 100;
+  health = this.maxHealth;
 
   setPosition(x: number, y: number) {
     this.x = x;

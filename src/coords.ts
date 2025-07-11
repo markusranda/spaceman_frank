@@ -18,3 +18,26 @@ export function getDistance(x1: number, y1: number, x2: number, y2: number) {
   const dy = y2 - y1;
   return Math.sqrt(dx * dx + dy * dy);
 }
+
+export function getIntersectionPoint(
+  fx: number,
+  fy: number,
+  px: number,
+  py: number,
+  pr: number
+) {
+  const dx = fx - px;
+  const dy = fy - py;
+  const dist = Math.hypot(dx, dy);
+
+  if (dist === 0) return { x: px, y: py }; // fallback for exact overlap
+
+  const nx = dx / dist;
+  const ny = dy / dist;
+
+  // Contact point on the planet's edge
+  const contactX = px + nx * pr;
+  const contactY = py + ny * pr;
+
+  return { x: contactX, y: contactY };
+}

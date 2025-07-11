@@ -1,6 +1,7 @@
 import { Entity } from "../entity";
 import { sprites } from "../sprites";
 import { Container, Graphics, Sprite, Text } from "pixi.js";
+import { OutlineFilter } from "pixi-filters";
 
 export class Planet extends Entity {
   radius = 0;
@@ -25,6 +26,7 @@ export class Planet extends Entity {
     sprites.crack_animation_7.texture,
   ];
   crackSprite = new Sprite();
+  previousCrackIndex = -1;
 
   constructor(x: number, y: number, radius: number, sprite?: Sprite | null) {
     super();
@@ -47,6 +49,8 @@ export class Planet extends Entity {
     this.crackSprite.width = radius * 2;
     this.crackSprite.height = radius * 2;
     this.crackSprite.rotation = Math.random() * 2 * Math.PI;
+    this.crackSprite.tint = 0x000000;
+    this.crackSprite.alpha = 0.3;
 
     this.shadowSprite.label = "shadow_sprite";
     this.shadowSprite.anchor.set(0.5);
@@ -81,21 +85,31 @@ export class Planet extends Entity {
 
     this.planetSprite.texture.source.scaleMode = "nearest";
     this.shadowSprite.texture.source.scaleMode = "nearest";
-    this.crackSprite.texture = this.animationFrames[7];
-    this.crackSprite.texture.source.scaleMode = "nearest";
     planetMask.texture.source.scaleMode = "nearest";
   }
 
   update() {
+    if (this.dead) return;
     this.debugText.text = this.health;
     this.updateCrack();
   }
 
   updateCrack() {
-    if (this.health >= this.maxHealth) return;
+    if (this.health >= this.maxHealth) {
+      this.crackSprite.visible = false;
+      return;
+    }
+    this.crackSprite.visible = true;
+
+    // Index
     const percentHealth = 1 - this.health / this.maxHealth;
     const index = Math.floor(percentHealth * this.animationFrames.length);
-    const texture = this.animationFrames[index];
+    if (this.previousCrackIndex === index) return;
+    this.previousCrackIndex = index;
+
+    // Texture
+    const texture =
+      this.animationFrames[Math.min(index, this.animationFrames.length - 1)];
     this.crackSprite.texture = texture;
     this.crackSprite.texture.source.scaleMode = "nearest";
   }

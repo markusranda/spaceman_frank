@@ -1,5 +1,5 @@
 import { Graphics, Container, Sprite } from "pixi.js";
-import { sprites } from "../sprites";
+import { sprites } from "../sprites/sprites";
 import { Frank } from "../frank/frank";
 
 export class StomachHud {

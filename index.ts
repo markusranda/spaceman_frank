@@ -1,4 +1,4 @@
-import { loadSprites } from "./src/sprites";
+import { loadSprites } from "./src/sprites/sprites";
 import {
   createBackgroundCanvasElementMenu,
   drawStartGame,

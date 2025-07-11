@@ -1,5 +1,5 @@
 import { Sprite } from "pixi.js";
-import { sprites } from "../sprites";
+import { sprites } from "../sprites/sprites";
 import { Planet } from "./planet";
 
 export class TreasurePlanet extends Planet {

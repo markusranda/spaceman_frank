@@ -1,5 +1,5 @@
 import { Entity } from "./entity";
-import { sprites } from "./sprites";
+import { sprites } from "./sprites/sprites";
 import { Sprite } from "pixi.js";
 
 const TTL_MAX = 1000 * 5;

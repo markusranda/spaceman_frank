@@ -1,4 +1,4 @@
-import { sprites } from "../sprites";
+import { sprites } from "../sprites/sprites";
 import { Container, Sprite } from "pixi.js";
 import { DAMAGE_TIMER_MAX } from "../timers";
 import { audios } from "../audio";

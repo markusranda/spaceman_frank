@@ -1,7 +1,7 @@
 import { Entity } from "./entity";
 import { Frank } from "./frank/frank";
 import { Galaxy } from "./universe/universe";
-import { sprites } from "./sprites";
+import { sprites } from "./sprites/sprites";
 import { Container, Sprite } from "pixi.js";
 
 export const MAX_ATTACK_TIMER = 2000;

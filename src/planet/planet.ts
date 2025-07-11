@@ -1,5 +1,5 @@
 import { Entity } from "../entity";
-import { sprites } from "../sprites";
+import { sprites } from "../sprites/sprites";
 import { Container, Graphics, Sprite, Text } from "pixi.js";
 
 export class Planet extends Entity {

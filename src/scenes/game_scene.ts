@@ -71,7 +71,7 @@ export class GameScene extends BaseScene {
 
     // Setup entities
     this.universe = new Universe(this.camera);
-    this.universe.spawnNextPlanetBelt(this.frank, this.cameraContainer);
+    this.universe.spawnNextPlanetBelt(this.frank, this.cameraContainer, true);
 
     // Setup UI and background
     this.gameHud = new GameHUD(
@@ -204,7 +204,11 @@ export class GameScene extends BaseScene {
         particle.destroy();
       }
       this.particles = [];
-      this.universe.spawnNextPlanetBelt(this.frank, this.cameraContainer);
+      this.universe.spawnNextPlanetBelt(
+        this.frank,
+        this.cameraContainer,
+        false
+      );
       this.universe.currentEvolution++;
     }
   }

@@ -161,10 +161,11 @@ export class Universe {
     }
   }
 
-  spawnNextPlanetBelt(frank: Frank, container: Container) {
+  spawnNextPlanetBelt(frank: Frank, container: Container, firstSpawn: boolean) {
     const planets = this.planetSpawner.getNextPlanets(
       this.currentEvolution,
-      frank
+      frank,
+      firstSpawn
     );
 
     // Update container

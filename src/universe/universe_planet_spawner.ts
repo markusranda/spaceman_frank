@@ -5,7 +5,7 @@ import { Planet } from "../planet/planet";
 export class UniversePlanetSpawner {
   constructor() {}
 
-  getNextPlanets(currentEvolution: number, frank: Frank) {
+  getNextPlanets(currentEvolution: number, frank: Frank, firstSpawn: boolean) {
     const planets = [];
     const centerX = 0;
     const centerY = 0;
@@ -21,12 +21,14 @@ export class UniversePlanetSpawner {
     const treasureX = centerX + Math.cos(treasureAngle) * treasureDist;
     const treasureY = centerY + Math.sin(treasureAngle) * treasureDist;
 
-    const treasurePlanet = new TreasurePlanet(
-      treasureX,
-      treasureY,
-      treasureRadius
-    );
-    planets.push(treasurePlanet);
+    if (firstSpawn || Math.random() <= 0.1) {
+      const treasurePlanet = new TreasurePlanet(
+        treasureX,
+        treasureY,
+        treasureRadius
+      );
+      planets.push(treasurePlanet);
+    }
 
     const planetCount = 20;
     const angleStep = (2 * Math.PI) / planetCount;

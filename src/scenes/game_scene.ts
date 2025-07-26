@@ -1,17 +1,18 @@
-import { Background } from "./background";
-import { Frank } from "./frank/frank";
-import { Universe } from "./universe/universe";
+import { Background } from "../background";
+import { Frank } from "../frank/frank";
+import { Universe } from "../universe/universe";
 import { Application, Container, Culler, Ticker } from "pixi.js";
-import { VICTORY_TIMER_MAX, FPS_PRINT_TIMEOUT } from "./timers";
-import { GAME_STATES } from "./gamestate";
-import { Particle } from "./particle";
-import { GameHUD } from "./hud/game_hud";
-import { SpaceCamera } from "./models/space_camera";
-import { SpaceTimers } from "./space_timers";
-import { eventQueue } from "./event_queue/event_queue";
-import { SpaceEventSpawnItem } from "./event_queue/space_event_spawn_item";
+import { VICTORY_TIMER_MAX, FPS_PRINT_TIMEOUT } from "../timers";
+import { GAME_STATES } from "../gamestate";
+import { Particle } from "../particle";
+import { GameHUD } from "../hud/game_hud";
+import { SpaceCamera } from "../models/space_camera";
+import { SpaceTimers } from "../space_timers";
+import { eventQueue } from "../event_queue/event_queue";
+import { SpaceEventSpawnItem } from "../event_queue/space_event_spawn_item";
+import { BaseScene } from "./base_scene";
 
-export class Game {
+export class GameScene extends BaseScene {
   camera: SpaceCamera;
   keys: Record<string, boolean> = {
     w: false,
@@ -27,7 +28,6 @@ export class Game {
   timers = new SpaceTimers();
   gameState = GAME_STATES.NORMAL;
   particles: Particle[] = [];
-  pixiApp: Application;
   culler = new Culler();
   universe: Universe;
   frank = new Frank(this.cameraContainer);
@@ -36,8 +36,8 @@ export class Game {
   background = new Background(this.backgroundContainer);
   gameHud: GameHUD;
 
-  constructor(pixiApp: Application) {
-    this.pixiApp = pixiApp;
+  constructor(pixiApp: Application, onComplete: () => void) {
+    super(pixiApp, onComplete);
     this.backgroundContainer.label = "background_container";
     this.backgroundContainer.sortableChildren = true;
     this.cameraContainer.label = "camera_container";
@@ -91,7 +91,6 @@ export class Game {
     this.update = this.update.bind(this);
     const ticker = new Ticker();
     ticker.add(this.update);
-    ticker.minFPS = 60;
     ticker.start();
   }
 
@@ -268,5 +267,9 @@ export class Game {
       this.particles.push(particle);
       this.uiContainer.addChild(particle.sprite);
     }
+  }
+
+  destroy() {
+    throw Error("Not implemented");
   }
 }

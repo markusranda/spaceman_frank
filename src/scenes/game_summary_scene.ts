@@ -11,6 +11,7 @@ import { sprites } from "../sprites/sprites";
 import { BaseScene } from "./base_scene";
 import { SceneConstructor } from "../models/scene_constructor";
 import { GameStats } from "../game_stats";
+import { GameScene } from "./game_scene";
 
 export class GameSummaryScene extends BaseScene {
   private backgroundContainer = new Container();
@@ -18,6 +19,9 @@ export class GameSummaryScene extends BaseScene {
 
   gameStats: GameStats;
   ticker = new Ticker();
+  keys: Record<string, boolean> = {
+    " ": false,
+  };
 
   constructor(
     pixiApp: Application,
@@ -37,13 +41,21 @@ export class GameSummaryScene extends BaseScene {
     this.addBackground();
     this.addStatsTable(gameStats);
 
+    this.addKeyListeners();
+
     this.update = this.update.bind(this);
     this.ticker.add(this.update);
     this.ticker.minFPS = 60;
     this.ticker.start();
   }
 
-  private update() {}
+  private update() {
+    if (this.keys[" "]) {
+      this.ticker.stop();
+      this.onComplete(GameScene);
+      return;
+    }
+  }
 
   public destroy() {
     this.backgroundContainer.destroy({ children: true });
@@ -54,8 +66,8 @@ export class GameSummaryScene extends BaseScene {
     const labelValuePairs: [string, string][] = [
       ["PLANETS EATEN", `${stats.planetsEaten}`],
       ["ENEMIES EATEN", `${stats.enemiesEaten}`],
-      ["FRANK SIZE", `${stats.frankSize}`],
-      ["UNIVERSE RADIUS", `${Math.round(stats.universeRadius)}`],
+      ["FRANK SIZE", `${Math.round(stats.frankSize)}m`],
+      ["UNIVERSE RADIUS", `${Math.round(stats.universeRadius)}m`],
     ];
 
     const itemKeys = Object.keys(stats.frankItems);
@@ -138,6 +150,20 @@ export class GameSummaryScene extends BaseScene {
     textContainer.x = this.pixiApp.renderer.width / 2 - totalWidth / 2;
     textContainer.y = this.pixiApp.renderer.height / 2 - totalHeight / 2;
 
+    const startNewText = new Text({
+      text: "Press SPACEBAR to start a new game",
+      style: new TextStyle({
+        fontFamily: "'Press Start 2P'",
+        fontSize: 25,
+        fill: 0xf1f1f1,
+        align: "left",
+        stroke: { color: 0x000000 },
+      }),
+    });
+    startNewText.x = textContainer.width / 2 - startNewText.width / 2;
+    startNewText.y = textContainer.height - 2 * startNewText.height;
+    textContainer.addChild(startNewText);
+
     this.uiContainer.addChild(textContainer);
   }
 
@@ -155,5 +181,19 @@ export class GameSummaryScene extends BaseScene {
         this.backgroundContainer.addChild(sprite);
       }
     }
+  }
+
+  private addKeyListeners() {
+    window.addEventListener("keydown", (e) => {
+      if (e.key.toLowerCase() in this.keys) {
+        const key = e.key.toLowerCase();
+        this.keys[key] = true;
+      }
+    });
+    window.addEventListener("keyup", (e) => {
+      if (e.key.toLowerCase() in this.keys) {
+        this.keys[e.key.toLowerCase()] = false;
+      }
+    });
   }
 }

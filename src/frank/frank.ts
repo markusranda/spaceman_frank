@@ -17,6 +17,7 @@ import { FrankJetpack, JetpackMode } from "./jetpack";
 import { FrankCharger } from "./charger";
 import { SpaceItem } from "../items/space_item";
 import { detectEntityCollisions } from "../collisions";
+import { GAME_STATES } from "../gamestate";
 
 export class Frank {
   x = 0;
@@ -111,7 +112,8 @@ export class Frank {
     keys: Record<string, boolean>,
     universe: Universe,
     timers: SpaceTimers,
-    container: Container
+    container: Container,
+    gameState: string
   ) {
     if (!this.jetpack) throw Error("Can't update Frank without Jetpack");
 
@@ -134,7 +136,7 @@ export class Frank {
         console.error(`Unknown state: ${this.state}`);
     }
 
-    this.updateCommon(keys, delta, universe, timers, container);
+    this.updateCommon(keys, delta, universe, timers, container, gameState);
   }
 
   updateCommon(
@@ -142,21 +144,24 @@ export class Frank {
     delta: number,
     universe: Universe,
     timers: SpaceTimers,
-    container: Container
+    container: Container,
+    gameState: string
   ) {
-    this.charger?.update(
-      delta,
-      keys,
-      this.state,
-      this.frankSprite,
-      container,
-      this.x,
-      this.y,
-      this.angle,
-      this.enterState.bind(this),
-      this.setVelocity.bind(this)
-    );
-    this.updateFrankMovement(delta, keys, universe, timers);
+    if (gameState !== GAME_STATES.end) {
+      this.charger?.update(
+        delta,
+        keys,
+        this.state,
+        this.frankSprite,
+        container,
+        this.x,
+        this.y,
+        this.angle,
+        this.enterState.bind(this),
+        this.setVelocity.bind(this)
+      );
+    }
+    this.updateFrankMovement(delta, keys, universe, timers, gameState);
     this.shakeChargeEffect();
     this.updateVisuals();
     this.jetpack?.update(this.radius, this.x, this.y);
@@ -246,15 +251,22 @@ export class Frank {
     delta: number,
     keys: Record<string, boolean>,
     universe: Universe,
-    timers: SpaceTimers
+    timers: SpaceTimers,
+    gameState: string
   ) {
     const dt = delta / 1000;
     const hasFuel = this.jetpack?.hasFuel() ?? 0;
-    const isThrusting = this.jetpack?.thrusting ?? false;
 
-    // === ROTATION ===
-    if (keys.a) this.angle -= this.rotationSpeed * dt;
-    if (keys.d) this.angle += this.rotationSpeed * dt;
+    // No new movement if game is over
+    let isThrusting = false;
+    if (gameState !== GAME_STATES.end) {
+      // === ROTATION ===
+      if (keys.a) this.angle -= this.rotationSpeed * dt;
+      if (keys.d) this.angle += this.rotationSpeed * dt;
+
+      // === THRUST CHECK ===
+      isThrusting = this.jetpack?.thrusting ?? false;
+    }
 
     // === THRUST ===
     if (hasFuel && isThrusting) {

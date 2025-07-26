@@ -83,7 +83,7 @@ export class GameHUD {
     this.chargeHUD = new ChargeHUD(uiContainer, canvasWidth, canvasHeight);
   }
 
-  update(frank: Frank, timers: SpaceTimers, gameState: number) {
+  update(frank: Frank, timers: SpaceTimers, gameState: string) {
     if (!this.minimapHUD)
       throw Error("Can't update game hud without minimap hud");
     if (!this.chargeHUD)
@@ -99,8 +99,8 @@ export class GameHUD {
     this.itemsHud.update(frank);
   }
 
-  updateLevelCleared(gameState: number) {
-    this.levelClearedText.visible = gameState === GAME_STATES.VICTORY;
+  updateLevelCleared(gameState: string) {
+    this.levelClearedText.visible = gameState === GAME_STATES.victory;
   }
 
   updateDamageOverlay(timers: SpaceTimers) {

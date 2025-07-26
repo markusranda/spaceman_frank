@@ -11,6 +11,7 @@ import { SpaceTimers } from "../space_timers";
 import { eventQueue } from "../event_queue/event_queue";
 import { SpaceEventSpawnItem } from "../event_queue/space_event_spawn_item";
 import { BaseScene } from "./base_scene";
+import { GameOverHud } from "../hud/game_over_hud";
 
 export class GameScene extends BaseScene {
   camera: SpaceCamera;
@@ -26,7 +27,7 @@ export class GameScene extends BaseScene {
   cameraContainer = new Container();
   uiContainer = new Container();
   timers = new SpaceTimers();
-  gameState = GAME_STATES.NORMAL;
+  gameState = GAME_STATES.normal;
   particles: Particle[] = [];
   culler = new Culler();
   universe: Universe;
@@ -35,6 +36,7 @@ export class GameScene extends BaseScene {
   // UI
   background = new Background(this.backgroundContainer);
   gameHud: GameHUD;
+  gameOverHud: GameOverHud | null = null;
 
   constructor(pixiApp: Application, onComplete: () => void) {
     super(pixiApp, onComplete);
@@ -108,6 +110,15 @@ export class GameScene extends BaseScene {
         this.timers.debugEvolveTimer = 500;
       }
 
+      if (this.gameState === GAME_STATES.end) {
+        if (!this.gameOverHud)
+          this.gameOverHud = new GameOverHud(
+            this.uiContainer,
+            this.pixiApp.renderer.width,
+            this.pixiApp.renderer.height
+          );
+      }
+
       this.timers.tick(delta);
       this.updateEventQueue();
       this.updateGame();
@@ -116,7 +127,8 @@ export class GameScene extends BaseScene {
         this.keys,
         this.universe,
         this.timers,
-        this.cameraContainer
+        this.cameraContainer,
+        this.gameState
       );
       this.universe.update(
         delta,
@@ -138,6 +150,10 @@ export class GameScene extends BaseScene {
 
       this.updateCamera();
       this.updateCull();
+
+      if ((this.frank.jetpack?.fuel ?? 1) <= 0) {
+        this.gameState = GAME_STATES.end;
+      }
     } catch (e) {
       const error = e as Error;
       console.error(`Tick update failed: ${error}`);
@@ -183,7 +199,7 @@ export class GameScene extends BaseScene {
   }
 
   evolveUniverse() {
-    this.gameState = GAME_STATES.VICTORY;
+    this.gameState = GAME_STATES.victory;
     this.frank.evolve();
     this.spawnVictoryParticles();
     this.timers.victoryTimer = VICTORY_TIMER_MAX;
@@ -196,10 +212,10 @@ export class GameScene extends BaseScene {
     if (hasEatenEnoughPlanets) this.evolveUniverse();
 
     if (
-      this.gameState === GAME_STATES.VICTORY &&
+      this.gameState === GAME_STATES.victory &&
       this.timers.victoryTimer <= 0
     ) {
-      this.gameState = GAME_STATES.NORMAL;
+      this.gameState = GAME_STATES.normal;
       for (const particle of this.particles) {
         particle.destroy();
       }

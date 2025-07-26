@@ -1,7 +1,7 @@
 import { Application } from "pixi.js";
 import { StartGameScene } from "./scenes/start_game_scene";
 import { BaseScene } from "./scenes/base_scene";
-import { GameScene } from "./scenes/game_scene";
+import { SceneConstructor } from "./models/scene_constructor";
 
 export class SceneManager {
   currentScene: BaseScene | null = null;
@@ -13,13 +13,10 @@ export class SceneManager {
     this.setScene(StartGameScene);
   }
 
-  setScene(
-    SceneClass: new (app: Application, onComplete: () => void) => BaseScene
-  ) {
+  setScene(SceneClass: SceneConstructor) {
     this.currentScene?.destroy();
-
-    this.currentScene = new SceneClass(this.pixiApp, () => {
-      this.setScene(GameScene);
+    this.currentScene = new SceneClass(this.pixiApp, (nextScene) => {
+      this.setScene(nextScene);
     });
   }
 

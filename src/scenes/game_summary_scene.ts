@@ -6,18 +6,11 @@ import {
   TextStyle,
   Ticker,
 } from "pixi.js";
-import { loadSprites, sprites } from "../sprites/sprites";
-import { loadAudios } from "../audio";
+import { sprites } from "../sprites/sprites";
 import { BaseScene } from "./base_scene";
 import { SceneConstructor } from "../models/scene_constructor";
-import { GameScene } from "./game_scene";
 
-const STATES = {
-  startGame: "START_GAME",
-  loading: "LOADING",
-};
-
-export class StartGameScene extends BaseScene {
+export class GameSummaryScene extends BaseScene {
   private backgroundContainer = new Container();
   private uiContainer = new Container();
   private centerText = new Text();
@@ -25,10 +18,6 @@ export class StartGameScene extends BaseScene {
 
   textBlinkPhase = 0;
   ticker = new Ticker();
-
-  private state = STATES.loading;
-  private loadedAssets = false;
-  private pressedAny = false;
 
   constructor(
     pixiApp: Application,
@@ -42,11 +31,11 @@ export class StartGameScene extends BaseScene {
     this.pixiApp.stage.addChild(this.backgroundContainer);
     this.pixiApp.stage.addChild(this.uiContainer);
 
-    this.setCenterText("LOADING...");
+    this.setCenterText("This game is unfortunately over..");
     this.uiContainer.addChild(this.centerText);
     this.uiContainer.addChild(this.helperText);
 
-    this.loadAssets();
+    this.addBackground();
 
     this.update = this.update.bind(this);
     this.ticker.add(this.update);
@@ -54,48 +43,11 @@ export class StartGameScene extends BaseScene {
     this.ticker.start();
   }
 
-  private update(ticker: Ticker) {
-    switch (this.state) {
-      case STATES.loading:
-        if (this.loadedAssets) {
-          this.addBackground();
-          this.state = STATES.startGame;
-          this.setCenterText("Press any key to start");
-          document.addEventListener("keydown", () => (this.pressedAny = true), {
-            once: true,
-          });
-          this.setupHelperText();
-        }
-        break;
-      case STATES.startGame:
-        this.updateCenterText(ticker);
-
-        if (this.pressedAny) {
-          this.onComplete(GameScene);
-          this.ticker.stop();
-        }
-
-        break;
-      default:
-        throw Error(`Unknown state: ${this.state}`);
-    }
-  }
+  private update() {}
 
   public destroy() {
     this.backgroundContainer.destroy({ children: true });
     this.uiContainer.destroy({ children: true });
-  }
-
-  private loadAssets() {
-    const minWait = new Promise((resolve) => setTimeout(resolve, 500));
-    const assetLoading = Promise.all([loadSprites(), loadAudios()]);
-    Promise.all([minWait, assetLoading])
-      .then(() => {
-        this.loadedAssets = true;
-      })
-      .catch((e) => {
-        throw Error(`Failed to load resources: ${e}`);
-      });
   }
 
   updateCenterText(ticker: Ticker) {
@@ -109,23 +61,6 @@ export class StartGameScene extends BaseScene {
     const mid = minAlpha + range;
 
     this.centerText.alpha = mid + range * Math.sin(this.textBlinkPhase);
-  }
-
-  private setupHelperText() {
-    this.helperText.style = {
-      fontFamily: "'Press Start 2P'",
-      fontSize: 32,
-      fill: 0xffffff,
-      align: "center",
-      stroke: { color: 0x000000 },
-      lineHeight: 42,
-    };
-    this.helperText.text =
-      "Navigate with WASD\nCharge with SPACEBAR\n\nEAT THE UNIVERSE!";
-
-    this.helperText.anchor = 0.5;
-    this.helperText.x = this.pixiApp.renderer.width / 2;
-    this.helperText.y = this.centerText.y - this.helperText.height;
   }
 
   private setCenterText(text: string) {

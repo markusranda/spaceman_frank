@@ -2,7 +2,11 @@ import { Background } from "../background";
 import { Frank } from "../frank/frank";
 import { Universe } from "../universe/universe";
 import { Application, Container, Culler, Ticker } from "pixi.js";
-import { VICTORY_TIMER_MAX, FPS_PRINT_TIMEOUT } from "../timers";
+import {
+  VICTORY_TIMER_MAX,
+  FPS_PRINT_TIMEOUT,
+  GAME_END_TIMER_MAX,
+} from "../timers";
 import { GAME_STATES } from "../gamestate";
 import { Particle } from "../particle";
 import { GameHUD } from "../hud/game_hud";
@@ -12,6 +16,8 @@ import { eventQueue } from "../event_queue/event_queue";
 import { SpaceEventSpawnItem } from "../event_queue/space_event_spawn_item";
 import { BaseScene } from "./base_scene";
 import { GameOverHud } from "../hud/game_over_hud";
+import { SceneConstructor } from "../models/scene_constructor";
+import { GameSummaryScene } from "./game_summary_scene";
 
 export class GameScene extends BaseScene {
   camera: SpaceCamera;
@@ -20,6 +26,7 @@ export class GameScene extends BaseScene {
     a: false,
     s: false,
     d: false,
+    ø: false,
     å: false,
     " ": false,
   };
@@ -38,7 +45,10 @@ export class GameScene extends BaseScene {
   gameHud: GameHUD;
   gameOverHud: GameOverHud | null = null;
 
-  constructor(pixiApp: Application, onComplete: () => void) {
+  constructor(
+    pixiApp: Application,
+    onComplete: (scene: SceneConstructor) => void
+  ) {
     super(pixiApp, onComplete);
     this.backgroundContainer.label = "background_container";
     this.backgroundContainer.sortableChildren = true;
@@ -109,6 +119,9 @@ export class GameScene extends BaseScene {
         this.frank.fullness = this.frank.getFullnessGoal();
         this.timers.debugEvolveTimer = 500;
       }
+      if (this.keys.ø && this.frank?.jetpack) {
+        this.frank.jetpack.fuel = 0;
+      }
 
       if (this.gameState === GAME_STATES.end) {
         if (!this.gameOverHud)
@@ -117,6 +130,17 @@ export class GameScene extends BaseScene {
             this.pixiApp.renderer.width,
             this.pixiApp.renderer.height
           );
+
+        if (this.timers.gameEndTimer <= 0) {
+          ticker.stop();
+          this.onComplete(GameSummaryScene);
+          return;
+        }
+      } else {
+        if ((this.frank.jetpack?.fuel ?? 1) <= 0) {
+          this.gameState = GAME_STATES.end;
+          this.timers.gameEndTimer = GAME_END_TIMER_MAX;
+        }
       }
 
       this.timers.tick(delta);
@@ -150,10 +174,6 @@ export class GameScene extends BaseScene {
 
       this.updateCamera();
       this.updateCull();
-
-      if ((this.frank.jetpack?.fuel ?? 1) <= 0) {
-        this.gameState = GAME_STATES.end;
-      }
     } catch (e) {
       const error = e as Error;
       console.error(`Tick update failed: ${error}`);
@@ -290,6 +310,8 @@ export class GameScene extends BaseScene {
   }
 
   destroy() {
-    throw Error("Not implemented");
+    this.backgroundContainer.destroy({ children: true });
+    this.cameraContainer.destroy({ children: true });
+    this.uiContainer.destroy({ children: true });
   }
 }

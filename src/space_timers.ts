@@ -6,6 +6,7 @@ export class SpaceTimers {
   victoryTimer = 0;
   debugEvolveTimer = 0;
   fpsTimer = FPS_PRINT_TIMEOUT;
+  gameEndTimer = 0;
 
   constructor() {}
 

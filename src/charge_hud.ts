@@ -44,6 +44,8 @@ export class ChargeHUD {
   update(frank: Frank) {
     if (frank.state === FRANK_STATE.preCharging) {
       if (!this.visible) this.setVisible(true);
+      if (!frank.charger)
+        throw Error("Can't update charge hud without frank.charger");
 
       const percentage =
         frank.charger.chargeUpTimer / frank.charger.getChargeUpDuration();

@@ -8,7 +8,7 @@ export class FrankCharger {
   chargeUpTimer = 0;
   baseChargeUpDuration = 1500;
   chargeTimer = 0;
-  chargeDuration = 1000;
+  chargeDuration = 500;
   chargeCooldownTimer = 0;
   baseCooldownDuration = 5000;
   cooldownDuration = this.baseCooldownDuration;

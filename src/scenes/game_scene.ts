@@ -18,6 +18,7 @@ import { BaseScene } from "./base_scene";
 import { GameOverHud } from "../hud/game_over_hud";
 import { SceneConstructor } from "../models/scene_constructor";
 import { GameSummaryScene } from "./game_summary_scene";
+import { GameStats } from "../game_stats";
 
 export class GameScene extends BaseScene {
   camera: SpaceCamera;
@@ -38,7 +39,8 @@ export class GameScene extends BaseScene {
   particles: Particle[] = [];
   culler = new Culler();
   universe: Universe;
-  frank = new Frank(this.cameraContainer);
+  gameStats = new GameStats();
+  frank = new Frank(this.cameraContainer, this.gameStats);
 
   // UI
   background = new Background(this.backgroundContainer);
@@ -133,7 +135,7 @@ export class GameScene extends BaseScene {
 
         if (this.timers.gameEndTimer <= 0) {
           ticker.stop();
-          this.onComplete(GameSummaryScene);
+          this.onComplete(GameSummaryScene, this.gameStats);
           return;
         }
       } else {
@@ -174,6 +176,9 @@ export class GameScene extends BaseScene {
 
       this.updateCamera();
       this.updateCull();
+
+      // Update game stats
+      this.gameStats.universeRadius = this.universe.radius;
     } catch (e) {
       const error = e as Error;
       console.error(`Tick update failed: ${error}`);

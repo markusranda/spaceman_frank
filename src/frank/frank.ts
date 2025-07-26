@@ -18,6 +18,9 @@ import { FrankCharger } from "./charger";
 import { SpaceItem } from "../items/space_item";
 import { detectEntityCollisions } from "../collisions";
 import { GAME_STATES } from "../gamestate";
+import { GameStats } from "../game_stats";
+import { Enemy } from "../enemy";
+import { Planet } from "../planet/planet";
 
 export class Frank {
   x = 0;
@@ -42,6 +45,7 @@ export class Frank {
   lastDmgAudioIndex = 0;
   lastEatAudioIndex = 0;
   state = FRANK_STATE.normal;
+  gameStats: GameStats;
   jetpack: FrankJetpack | null = null;
   charger: FrankCharger | null = null;
   items: Record<string, SpaceItem> = {};
@@ -58,7 +62,8 @@ export class Frank {
     audios["eat_6"],
   ];
 
-  constructor(cameraContainer: Container) {
+  constructor(cameraContainer: Container, gameStats: GameStats) {
+    this.gameStats = gameStats;
     this.container.label = "frank_container";
     this.frankSprite.texture = sprites["frank"]?.texture;
     this.frankSprite.label = "frank_sprite";
@@ -195,6 +200,10 @@ export class Frank {
 
     entity.dead = true;
     this.playEatSound();
+
+    // Update game stats
+    if (entity instanceof Enemy) this.gameStats.enemiesEaten++;
+    if (entity instanceof Planet) this.gameStats.planetsEaten++;
   }
 
   evolve() {
@@ -210,6 +219,9 @@ export class Frank {
     } else {
       this.radius = a + 4 * Math.log(this.level + 1); // soft-capped curve
     }
+
+    // Update game stats
+    this.gameStats.frankSize = this.radius;
   }
 
   shakeChargeEffect() {
@@ -320,6 +332,9 @@ export class Frank {
       if (!this.items[item.id]) this.items[item.id] = item;
       else this.items[item.id].level++;
     }
+
+    // Update game stats
+    this.gameStats.frankItems = this.items;
   }
 
   handleProjectileCollisions(projectiles: Projectile[], timers: SpaceTimers) {

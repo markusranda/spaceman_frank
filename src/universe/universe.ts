@@ -8,6 +8,7 @@ import { SpaceTimers } from "../space_timers";
 import { Container, ObservablePoint } from "pixi.js";
 import { UniversePlanetSpawner } from "./universe_planet_spawner";
 import { SpaceItem } from "../items/space_item";
+import { getDistance } from "../coords";
 
 export class Universe {
   planets: Planet[] = [];
@@ -19,6 +20,7 @@ export class Universe {
   planetSpacing = 125;
   camera: SpaceCamera | null = null;
   planetSpawner = new UniversePlanetSpawner();
+  radius = 0;
 
   constructor(camera: SpaceCamera) {
     if (!camera) throw Error("Can't create universe without camera");
@@ -175,6 +177,13 @@ export class Universe {
 
     // Update state
     this.planets.push(...planets);
+
+    this.radius = this.planets.reduce((max: number, planet: Planet) => {
+      const dist = getDistance(planet.x, planet.y, 0, 0);
+      if (dist > max) max = dist;
+
+      return max;
+    }, this.radius);
   }
 
   addItem(item: SpaceItem) {
